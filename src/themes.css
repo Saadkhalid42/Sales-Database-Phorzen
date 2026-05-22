@@ -1,0 +1,241 @@
+/* 
+  AETHER-style Theme Architecture 
+*/
+
+:root, [data-theme="theme-default-light"] {
+  /* Theme 1 — Clinical Light */
+  --canvas: #F4F5FA;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #EEF0F7;
+  --border: #E4E7F0;
+  --divider: #EDEFF5;
+  --text-primary: #1B1D2A;
+  --text-secondary: #5A5E72;
+  --text-muted: #9296AB;
+  --accent: #6D5DE6;
+  --accent-hover: #5B4BD4;
+  --accent-subtle: #ECEAFD;
+  --on-accent: #FFFFFF;
+  --contrast: #15161F;
+  --on-contrast: #FFFFFF;
+  --success: #16A06A;
+  --success-subtle: #E2F6EE;
+  --warning: #E0892F;
+  --warning-subtle: #FBF0E1;
+  --danger: #E0533D;
+  --danger-subtle: #FBE7E3;
+  --info: #3B82E0;
+  --info-subtle: #E5F0FC;
+  --tint-peach: #FBE7D5;
+  --tint-blue: #DCE6FB;
+  --tint-lilac: #E8E4FB;
+  --tint-mint: #DEF4E8;
+  --shadow-sm: 0 1px 2px rgba(20, 22, 40, .05);
+  --shadow-md: 0 6px 20px rgba(20, 22, 40, .10);
+  --shadow-lg: 0 20px 48px rgba(20, 22, 40, .16);
+  --focus-ring: rgba(109, 93, 230, .35);
+  --zebra: rgba(20, 22, 40, .022);
+}
+
+[data-theme="theme-soft-light"] {
+  /* Theme 2 — Soft Light */
+  --canvas: #ECEAF6;
+  --surface: #FBFBFE;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #F1EFFA;
+  --border: #E2DEF2;
+  --divider: #EAE7F5;
+  --text-primary: #211F33;
+  --text-secondary: #5E5A75;
+  --text-muted: #948FB0;
+  --accent: #7367F0;
+  --accent-hover: #6354E6;
+  --accent-subtle: #EAE6FD;
+  --on-accent: #FFFFFF;
+  --contrast: #1B1830;
+  --on-contrast: #FFFFFF;
+  --success: #16A06A;
+  --success-subtle: #E2F6EE;
+  --warning: #E0892F;
+  --warning-subtle: #FBF0E1;
+  --danger: #E0533D;
+  --danger-subtle: #FBE7E3;
+  --info: #4C7EF0;
+  --info-subtle: #E7EEFD;
+  --tint-peach: #FBE3D2;
+  --tint-blue: #D9E3FB;
+  --tint-lilac: #E6E0FC;
+  --tint-mint: #DBF2E6;
+  --shadow-sm: 0 1px 3px rgba(60, 50, 120, .06);
+  --shadow-md: 0 8px 24px rgba(60, 50, 120, .10);
+  --shadow-lg: 0 24px 52px rgba(60, 50, 120, .18);
+  --focus-ring: rgba(115, 103, 240, .38);
+  --zebra: rgba(60, 50, 120, .025);
+}
+
+[data-theme="theme-warm-light"] {
+  /* Theme 3 — Warm Light */
+  --canvas: #F6F1EA;
+  --surface: #FFFDFA;
+  --surface-raised: #FFFFFF;
+  --surface-sunken: #F1EAE0;
+  --border: #EAE0D2;
+  --divider: #EFE7DB;
+  --text-primary: #2A2520;
+  --text-secondary: #6A6157;
+  --text-muted: #A89D8E;
+  --accent: #7A5AF0;
+  --accent-hover: #6A49E0;
+  --accent-subtle: #ECE6FB;
+  --on-accent: #FFFFFF;
+  --contrast: #2A211C;
+  --on-contrast: #FFF8F0;
+  --success: #2C9C5E;
+  --success-subtle: #E4F4E8;
+  --warning: #D2841F;
+  --warning-subtle: #FAEFD8;
+  --danger: #D24E2E;
+  --danger-subtle: #FAE6DF;
+  --info: #3F7BD8;
+  --info-subtle: #E6EFFA;
+  --tint-peach: #FBE0CB;
+  --tint-blue: #DBE5F7;
+  --tint-lilac: #ECE2F8;
+  --tint-mint: #DDEFD8;
+  --shadow-sm: 0 1px 3px rgba(90, 60, 30, .06);
+  --shadow-md: 0 8px 22px rgba(90, 60, 30, .10);
+  --shadow-lg: 0 22px 48px rgba(90, 60, 30, .16);
+  --focus-ring: rgba(122, 90, 240, .35);
+  --zebra: rgba(90, 60, 30, .03);
+}
+
+[data-theme="theme-deep-dark"] {
+  /* Theme 4 — Deep Dark */
+  --canvas: #15161C;
+  --surface: #1D1F28;
+  --surface-raised: #232633;
+  --surface-sunken: #16171E;
+  --border: #2E3140;
+  --divider: #282B38;
+  --text-primary: #ECEDF5;
+  --text-secondary: #A6A9BD;
+  --text-muted: #6E7185;
+  --accent: #8B7BFF;
+  --accent-hover: #9B8DFF;
+  --accent-subtle: #2A2747;
+  --on-accent: #FFFFFF;
+  --contrast: #ECEDF5;
+  --on-contrast: #15161C;
+  --success: #3DD68C;
+  --success-subtle: #16261D;
+  --warning: #F0A33D;
+  --warning-subtle: #2C2113;
+  --danger: #F26A52;
+  --danger-subtle: #2E1A16;
+  --info: #5B9BFF;
+  --info-subtle: #16203A;
+  --tint-peach: #3A2C20;
+  --tint-blue: #1F2940;
+  --tint-lilac: #2A2545;
+  --tint-mint: #1C3329;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .40);
+  --shadow-md: 0 10px 28px rgba(0, 0, 0, .50);
+  --shadow-lg: 0 24px 52px rgba(0, 0, 0, .60);
+  --focus-ring: rgba(139, 123, 255, .50);
+  --zebra: rgba(255, 255, 255, .022);
+}
+
+[data-theme="theme-midnight-blue"] {
+  /* Theme 5 — Midnight Blue */
+  --canvas: #0E1422;
+  --surface: #17203A;
+  --surface-raised: #1D2A48;
+  --surface-sunken: #0C1120;
+  --border: #243352;
+  --divider: #1E2C48;
+  --text-primary: #E8EDFA;
+  --text-secondary: #9DAAC8;
+  --text-muted: #647193;
+  --accent: #7C8CFF;
+  --accent-hover: #8E9CFF;
+  --accent-subtle: #1E2A52;
+  --on-accent: #FFFFFF;
+  --contrast: #E8EDFA;
+  --on-contrast: #0E1422;
+  --success: #3FD18F;
+  --success-subtle: #0F2A20;
+  --warning: #F0AE4D;
+  --warning-subtle: #2E2412;
+  --danger: #F06B5A;
+  --danger-subtle: #2E1719;
+  --info: #5AA0FF;
+  --info-subtle: #112441;
+  --tint-peach: #36281E;
+  --tint-blue: #1B2C52;
+  --tint-lilac: #272A55;
+  --tint-mint: #15302A;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, .45);
+  --shadow-md: 0 10px 28px rgba(5, 10, 30, .55);
+  --shadow-lg: 0 24px 52px rgba(5, 10, 30, .65);
+  --focus-ring: rgba(124, 140, 255, .50);
+  --zebra: rgba(255, 255, 255, .020);
+}
+
+[data-theme="theme-oled-black"] {
+  /* Theme 6 — OLED Black */
+  --canvas: #000000;
+  --surface: #0C0C10;
+  --surface-raised: #141418;
+  --surface-sunken: #060608;
+  --border: #24242C;
+  --divider: #1B1B22;
+  --text-primary: #F4F4F8;
+  --text-secondary: #ABABB8;
+  --text-muted: #6C6C7A;
+  --accent: #927FFF;
+  --accent-hover: #A593FF;
+  --accent-subtle: #1C1830;
+  --on-accent: #FFFFFF;
+  --contrast: #F4F4F8;
+  --on-contrast: #000000;
+  --success: #3DDB8E;
+  --success-subtle: #0C2419;
+  --warning: #F4A93D;
+  --warning-subtle: #2A1F0F;
+  --danger: #F4654E;
+  --danger-subtle: #2A1411;
+  --info: #5E9DFF;
+  --info-subtle: #0E1E3C;
+  --tint-peach: #2C2016;
+  --tint-blue: #141E3A;
+  --tint-lilac: #221C3C;
+  --tint-mint: #102A20;
+  --shadow-sm: 0 0 0 1px rgba(255, 255, 255, .05);
+  --shadow-md: 0 10px 28px rgba(0, 0, 0, .65);
+  --shadow-lg: 0 24px 52px rgba(0, 0, 0, .75);
+  --focus-ring: rgba(146, 127, 255, .55);
+  --zebra: rgba(255, 255, 255, .025);
+}
+
+/* Global Scales */
+:root {
+  --r-xs: 8px;
+  --r-sm: 12px;
+  --r-md: 16px;
+  --r-lg: 24px;
+
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+
+  /* Density Defaults */
+  --row-h: 34px;
+  --cell-pad-x: 12px;
+  --header-h: 46px;
+  --tabs-h: 38px;
+  --colhead-h: 38px;
+}

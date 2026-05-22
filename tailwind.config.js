@@ -1,0 +1,66 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', '"Segoe UI"', 'system-ui', 'sans-serif'],
+        mono: ['"IBM Plex Mono"', 'monospace'],
+      },
+      colors: {
+        canvas: 'var(--canvas)',
+        surface: 'var(--surface)',
+        'surface-raised': 'var(--surface-raised)',
+        'surface-sunken': 'var(--surface-sunken)',
+        border: 'var(--border)',
+        divider: 'var(--divider)',
+        'text-primary': 'var(--text-primary)',
+        'text-secondary': 'var(--text-secondary)',
+        'text-muted': 'var(--text-muted)',
+        accent: 'var(--accent)',
+        'accent-hover': 'var(--accent-hover)',
+        'accent-subtle': 'var(--accent-subtle)',
+        'on-accent': 'var(--on-accent)',
+        contrast: 'var(--contrast)',
+        'on-contrast': 'var(--on-contrast)',
+        success: 'var(--success)',
+        'success-subtle': 'var(--success-subtle)',
+        warning: 'var(--warning)',
+        'warning-subtle': 'var(--warning-subtle)',
+        danger: 'var(--danger)',
+        'danger-subtle': 'var(--danger-subtle)',
+        info: 'var(--info)',
+        'info-subtle': 'var(--info-subtle)',
+        'tint-peach': 'var(--tint-peach)',
+        'tint-blue': 'var(--tint-blue)',
+        'tint-lilac': 'var(--tint-lilac)',
+        'tint-mint': 'var(--tint-mint)',
+        zebra: 'var(--zebra)',
+      },
+      boxShadow: {
+        sm: 'var(--shadow-sm)',
+        md: 'var(--shadow-md)',
+        lg: 'var(--shadow-lg)',
+        focus: '0 0 0 3px var(--focus-ring)',
+      },
+      borderRadius: {
+        xs: 'var(--r-xs)',
+        sm: 'var(--r-sm)',
+        md: 'var(--r-md)',
+        lg: 'var(--r-lg)',
+      },
+      spacing: {
+        1: 'var(--sp-1)',
+        2: 'var(--sp-2)',
+        3: 'var(--sp-3)',
+        4: 'var(--sp-4)',
+        5: 'var(--sp-5)',
+        6: 'var(--sp-6)',
+      }
+    },
+  },
+  plugins: [],
+}

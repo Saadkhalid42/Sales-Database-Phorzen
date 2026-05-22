@@ -1,0 +1,6 @@
+id,name,age,is_active,signup_date
+1,Alice,28,true,2023-01-15
+2,Bob,34,false,2023-02-20
+3,Charlie,22,yes,2023-03-05
+4,Diana,41,no,2023-04-10
+5,Eve,29,1,2023-05-12
