@@ -154,46 +154,9 @@ export interface AppState {
   toggleFilters: (viewId: string, disabled: boolean) => void;
 }
 
-const initialColumns: GridColumn[] = [
-  { key: 'doctor_name', label: 'Doctor Name', type: 'single_line_text', width: 180 },
-  { key: 'notes', label: 'Notes', type: 'long_text', width: 250 },
-  { key: 'contract_value', label: 'Contract Value', type: 'number', width: 130 },
-  { key: 'follow_up_date', label: 'Follow-up Date', type: 'date', width: 130 },
-  { key: 'is_active', label: 'Is Active', type: 'boolean', width: 100 },
-  { key: 'priority', label: 'Priority', type: 'rating', width: 130 },
-  { key: 'email', label: 'Email', type: 'email', width: 180 },
-  { key: 'phone', label: 'Phone', type: 'phone_number', width: 150 },
-  { key: 'website', label: 'Website', type: 'url', width: 180 },
-  { key: 'stage', label: 'Stage', type: 'single_select', width: 150, typeOptions: { options: [{label: 'Lead', color: '#cbd5e1'}, {label: 'Contacted', color: '#93c5fd'}, {label: 'Qualified', color: '#86efac'}, {label: 'Proposal', color: '#fcd34d'}, {label: 'Negotiation', color: '#fdba74'}, {label: 'Closed Won', color: '#6ee7b7'}, {label: 'Closed Lost', color: '#fca5a5'}] } },
-  { key: 'specialties', label: 'Specialties', type: 'multiple_select', width: 200, typeOptions: { options: [{label: 'Cardiology', color: '#fda4af'}, {label: 'Neurology', color: '#c4b5fd'}, {label: 'Pediatrics', color: '#67e8f9'}, {label: 'Oncology', color: '#f0abfc'}, {label: 'Dermatology', color: '#fdba74'}] } },
-  { key: 'call_duration', label: 'Call Duration', type: 'duration', width: 120 },
-  { key: 'contract_file', label: 'Contract File', type: 'file', width: 120 },
-  { key: 'created_on', label: 'Created On', type: 'created_on', width: 160 },
-];
+const initialColumns: GridColumn[] = [];
 
-const mockNames = ['Dr. Smith', 'Dr. Johnson', 'Dr. Williams', 'Dr. Brown', 'Dr. Jones', 'Dr. Garcia', 'Dr. Miller', 'Dr. Davis', 'Dr. Rodriguez', 'Dr. Martinez'];
-const mockStages = ['Lead', 'Contacted', 'Qualified', 'Proposal', 'Negotiation', 'Closed Won', 'Closed Lost'];
-const mockSpecialties = ['Cardiology', 'Neurology', 'Pediatrics', 'Oncology', 'Dermatology'];
-
-const initialRecords: GridRecord[] = Array.from({ length: 50 }).map((_, i) => ({
-  id: `rec-${i}`,
-  cells: {
-    doctor_name: mockNames[i % mockNames.length] + ' ' + (Math.floor(i / mockNames.length) + 1),
-    notes: 'Initial contact made. Needs follow-up regarding Q3 contract.',
-    contract_value: Math.floor(Math.random() * 50000) + 10000,
-    follow_up_date: new Date(Date.now() + Math.random() * 10000000000).toISOString(),
-    is_active: Math.random() > 0.5,
-    priority: Math.floor(Math.random() * 5) + 1,
-    email: `dr.${i}@example.clinic.com`,
-    phone: `555123${String(i).padStart(4, '0')}`,
-    website: `https://clinic-${i}.com`,
-    stage: mockStages[i % mockStages.length],
-    specialties: [mockSpecialties[i % mockSpecialties.length], mockSpecialties[(i + 1) % mockSpecialties.length]],
-    call_duration: '0' + (Math.floor(Math.random() * 4) + 1) + ':' + String(Math.floor(Math.random() * 60)).padStart(2, '0'),
-    contract_file: ['contract.pdf'],
-    created_on: new Date(Date.now() - Math.random() * 10000000000).toISOString(),
-  }
-}));
+const initialRecords: GridRecord[] = [];
 
 const initialDatabases: Database[] = [
   { 
