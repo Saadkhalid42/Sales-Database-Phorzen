@@ -187,7 +187,7 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
       return {
         id: generateUUID(),
         cells,
-        ...(_timezone && { _timezone })
+        ...(_timezone ? { _timezone } : {})
       };
     });
 
