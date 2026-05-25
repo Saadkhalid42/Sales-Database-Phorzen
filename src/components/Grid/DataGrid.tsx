@@ -97,6 +97,22 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
   const [dragCurrent, setDragCurrent] = useState<{ rowId: string, colKey: string } | null>(null);
   const isDragging = useRef(false);
 
+  const handleAddRow = () => {
+    const newRecordId = 'rec_' + Math.random().toString(36).substring(2, 9);
+    addRecord({ id: newRecordId, cells: {} });
+    
+    if (visibleColumns.length > 0) {
+      setTimeout(() => {
+        setSelectionRange({
+          startRowId: newRecordId,
+          startColKey: visibleColumns[0].key,
+          endRowId: newRecordId,
+          endColKey: visibleColumns[0].key
+        });
+      }, 50);
+    }
+  };
+
   const dynamicRowHeightRef = useRef(
     rowHeightSetting === 'compact' ? 32 : rowHeightSetting === 'tall' ? 48 : 40
   );
@@ -108,7 +124,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
   const viewRecords = records;
 
   const rowVirtualizer = useVirtualizer({
-    count: viewRecords.length,
+    count: viewRecords.length + 1,
     getScrollElement: () => parentRef.current,
     estimateSize: () => dynamicRowHeightRef.current,
     overscan: 10,
@@ -441,6 +457,73 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
           {/* Rows */}
           <div style={{ transform: 'translateY(40px)', position: 'absolute', top: 0, left: 0, width: '100%' }}>
             {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+              const isSyntheticRow = virtualRow.index === viewRecords.length;
+
+              if (isSyntheticRow) {
+                return (
+                  <div
+                    key="synthetic-add-row"
+                    className="absolute top-0 left-0 w-full flex flex-nowrap transition-snappy will-change-transform group"
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${virtualRow.start}px)`,
+                      borderBottom: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`
+                    }}
+                  >
+                    {/* Empty index cell */}
+                    <div
+                      className="absolute top-0 h-full w-10 shrink-0 bg-surface row-index-cell"
+                      style={{
+                        position: 'sticky',
+                        left: 0,
+                        zIndex: 40,
+                        borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`,
+                      }}
+                    />
+                    
+                    {columnVirtualizer.getVirtualItems().map((virtualCol) => {
+                      const col = visibleColumns[virtualCol.index];
+                      const isFrozen = col.key === frozenField;
+                      const baseZIndex = isFrozen ? 40 : 10;
+                      const isPrimaryCell = virtualCol.index === 0;
+
+                      return (
+                        <div
+                          key={virtualCol.key}
+                          className={`absolute top-0 h-full shrink-0 ${isFrozen ? 'frozen-cell' : 'standard-cell'}`}
+                          style={{
+                            left: 0,
+                            top: 0,
+                            width: `${col.width || 150}px`,
+                            transform: isFrozen ? 'none' : `translateX(${virtualCol.start + 40}px)`,
+                            position: isFrozen ? 'sticky' : 'absolute',
+                            ...(isFrozen ? { left: '40px', zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` } : { zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` }),
+                            backgroundColor: 'transparent'
+                          }}
+                        >
+                          {isPrimaryCell ? (
+                            <button
+                              onClick={handleAddRow}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleAddRow();
+                                }
+                              }}
+                              className="w-full h-full flex items-center px-4 text-text-muted hover:text-accent hover:bg-accent-subtle/50 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent font-medium text-[13px] bg-surface"
+                            >
+                              + Add row
+                            </button>
+                          ) : (
+                            <div className="w-full h-full bg-surface-raised/20 pointer-events-none" />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              }
+
               const record = viewRecords[virtualRow.index];
               const isAlt = altColoringEnabled && virtualRow.index % 2 !== 0;
               const isRowActive = selectionRange?.startRowId === record.id;
@@ -449,7 +532,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
               return (
                 <div
                   key={virtualRow.key}
-                  className={`absolute top-0 left-0 w-full group transition-colors flex flex-nowrap grid-row ${isAlt ? 'is-alternate' : 'is-default'} ${isCheckboxSelected ? 'is-selected' : ''}`}
+                  className={`absolute top-0 left-0 w-full group transition-snappy flex flex-nowrap grid-row will-change-transform ${isAlt ? 'is-alternate' : 'is-default'} ${isCheckboxSelected ? 'is-selected' : ''}`}
                   style={{
                     height: `${virtualRow.size}px`,
                     top: `${virtualRow.start}px`,

@@ -2,9 +2,10 @@ import React, { useMemo } from 'react';
 import type { GridRecord } from '../../store/useStore';
 import { useStore } from '../../store/useStore';
 import { RecordCard } from './RecordCard';
-import { FileQuestion } from 'lucide-react';
+import { FileQuestion, Plus } from 'lucide-react';
 
 export function CardView({ records }: { records: GridRecord[] }) {
+  const addRecord = useStore(state => state.addRecord);
   const databases = useStore(state => state.databases);
   const activeDatabaseId = useStore(state => state.activeDatabaseId);
   const activeWorkspaceId = useStore(state => state.activeWorkspaceId);
@@ -55,6 +56,20 @@ export function CardView({ records }: { records: GridRecord[] }) {
             visibleColumns={visibleColumns} 
           />
         ))}
+
+        {/* Synthetic Add Row Card */}
+        <div 
+          onClick={() => {
+            const newRecordId = 'rec_' + Math.random().toString(36).substring(2, 9);
+            addRecord({ id: newRecordId, cells: {} });
+          }}
+          className="flex flex-col min-h-[160px] border-2 border-dashed border-divider bg-surface-raised/50 hover:bg-surface-raised rounded-2xl cursor-pointer items-center justify-center text-text-muted hover:text-text-primary transition-all duration-200 group"
+        >
+          <div className="w-12 h-12 rounded-full bg-surface-sunken group-hover:bg-accent/10 flex items-center justify-center mb-3 group-hover:text-accent transition-colors">
+            <Plus size={24} />
+          </div>
+          <span className="font-medium text-sm">Add Record</span>
+        </div>
       </div>
     </div>
   );
