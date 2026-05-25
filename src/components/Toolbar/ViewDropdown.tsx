@@ -152,7 +152,7 @@ export function ViewDropdown() {
 
         <DropdownMenu.Portal>
           <DropdownMenu.Content 
-            className="bg-surface-raised w-64 border border-border shadow-xl rounded-xl p-2 z-50 mt-1 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
+            className="bg-surface-raised w-64 border border-border shadow-xl rounded-xl p-2 z-50 mt-1 data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out"
             align="start"
             sideOffset={4}
             

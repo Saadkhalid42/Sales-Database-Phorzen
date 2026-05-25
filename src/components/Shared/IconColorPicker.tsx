@@ -82,7 +82,7 @@ export function IconColorPicker({ icon, color, onChange }: IconColorPickerProps)
       
       <Popover.Portal>
         <Popover.Content 
-          className="w-[300px] border border-border shadow-2xl rounded-xl p-3 z-[2000] bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
+          className="w-[300px] border border-border shadow-2xl rounded-xl p-3 z-[2000] bg-surface-raised data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out"
           sideOffset={8}
           align="start"
         >

@@ -87,7 +87,7 @@ export const ColumnHeader = React.memo(function ColumnHeader({ col }: ColumnHead
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          className="w-48 border border-border shadow-2xl rounded-xl p-2 z-[100] mt-1 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2"
+          className="w-48 border border-border shadow-2xl rounded-xl p-2 z-[100] mt-1 data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out"
           align="start"
           sideOffset={4}
           

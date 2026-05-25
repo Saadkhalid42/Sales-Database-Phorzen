@@ -66,7 +66,7 @@ export function SettingsMenu() {
         </button>
       </DropdownMenu.Trigger>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content className="w-56 border border-border shadow-md rounded-2xl p-2 z-[200] mt-1 bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 max-md:!fixed max-md:!top-1/2 max-md:!left-1/2 max-md:!-translate-x-1/2 max-md:!-translate-y-1/2 max-md:!w-64 max-md:!max-w-[90vw] max-md:!max-h-[85vh] max-md:!overflow-y-auto">
+        <DropdownMenu.Content className="w-56 border border-border shadow-md rounded-2xl p-2 z-[200] mt-1 bg-surface-raised data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out max-md:!fixed max-md:!top-1/2 max-md:!left-1/2 max-md:!-translate-x-1/2 max-md:!-translate-y-1/2 max-md:!w-64 max-md:!max-w-[90vw] max-md:!max-h-[85vh] max-md:!overflow-y-auto">
           
           <DropdownMenu.CheckboxItem 
             checked={currentView?.showTimezones || false} 
@@ -82,7 +82,7 @@ export function SettingsMenu() {
               <Clock size={14} />
               <span>Time Zone Badge</span>
             </div>
-            <DropdownMenu.ItemIndicator>
+            <DropdownMenu.ItemIndicator className="animate-scale-in will-change-transform">
               <Check size={14} />
             </DropdownMenu.ItemIndicator>
           </DropdownMenu.CheckboxItem>
@@ -96,7 +96,7 @@ export function SettingsMenu() {
               <PaletteIcon size={14} />
               <span>Alternate Coloring</span>
             </div>
-            <DropdownMenu.ItemIndicator>
+            <DropdownMenu.ItemIndicator className="animate-scale-in will-change-transform">
               <Check size={14} />
             </DropdownMenu.ItemIndicator>
           </DropdownMenu.CheckboxItem>
@@ -110,7 +110,7 @@ export function SettingsMenu() {
               <Clock size={14} />
               <span>Time Widget</span>
             </div>
-            <DropdownMenu.ItemIndicator>
+            <DropdownMenu.ItemIndicator className="animate-scale-in will-change-transform">
               <Check size={14} />
             </DropdownMenu.ItemIndicator>
           </DropdownMenu.CheckboxItem>
@@ -126,7 +126,7 @@ export function SettingsMenu() {
               <ChevronRight size={14} />
             </DropdownMenu.SubTrigger>
             <DropdownMenu.Portal>
-              <DropdownMenu.SubContent className="w-64 border border-border shadow-md rounded-2xl p-4 z-[210] flex flex-col gap-6 bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=right]:slide-in-from-left-2 max-md:!fixed max-md:!top-1/2 max-md:!left-1/2 max-md:!-translate-x-1/2 max-md:!-translate-y-1/2 max-md:!w-64 max-md:!max-w-[90vw] max-md:!max-h-[85vh] max-md:!overflow-y-auto" sideOffset={8}>
+              <DropdownMenu.SubContent className="w-64 border border-border shadow-md rounded-2xl p-4 z-[210] flex flex-col gap-6 bg-surface-raised data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out max-md:!fixed max-md:!top-1/2 max-md:!left-1/2 max-md:!-translate-x-1/2 max-md:!-translate-y-1/2 max-md:!w-64 max-md:!max-w-[90vw] max-md:!max-h-[85vh] max-md:!overflow-y-auto" sideOffset={8}>
                 
                 <div className="flex flex-col gap-3">
                   <label className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Row Height</label>

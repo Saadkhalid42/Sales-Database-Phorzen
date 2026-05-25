@@ -509,12 +509,10 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                         selectionStyle = {
                           backgroundColor: isFrozen ? 'color-mix(in srgb, var(--surface-raised) 90%, rgb(var(--primary-color)))' : 'rgba(var(--primary-color), 0.08)'
                         };
-                      } else {
-                        selectionStyle = {
-                          boxShadow: 'inset 0 0 0 1.5px rgb(var(--primary-color))'
-                        };
                       }
                     }
+                    
+                    
                     
                     return (
                       <div
