@@ -111,6 +111,15 @@ export interface AppState {
 
   notifiedFieldKeys: string[];
   toggleFieldNotification: (colKey: string, enabled: boolean) => void;
+
+  confirmModal: {
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onConfirm: (() => void) | null;
+  };
+  openConfirmModal: (title: string, description: string, onConfirm: () => void) => void;
+  closeConfirmModal: () => void;
   
   past: Array<{ databases: Database[] }>;
   future: Array<{ databases: Database[] }>;
@@ -302,6 +311,19 @@ export const useStore = create<AppState>()(
         }
         return { notifiedFieldKeys: Array.from(keys) };
       }),
+
+      confirmModal: {
+        isOpen: false,
+        title: '',
+        description: '',
+        onConfirm: null
+      },
+      openConfirmModal: (title, description, onConfirm) => set({
+        confirmModal: { isOpen: true, title, description, onConfirm }
+      }),
+      closeConfirmModal: () => set((state) => ({
+        confirmModal: { ...state.confirmModal, isOpen: false }
+      })),
 
 
       past: [],

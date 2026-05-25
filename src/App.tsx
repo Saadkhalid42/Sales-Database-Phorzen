@@ -9,6 +9,7 @@ import { CardView } from './components/Grid/CardView';
 
 import { ExpandedRecordModal } from './components/Grid/ExpandedRecordModal';
 import { DateFormatInterceptModal } from './components/Shared/DateFormatInterceptModal';
+import { ConfirmModal } from './components/Shared/ConfirmModal';
 import { Database } from 'lucide-react';
 import { useRealtimeNotifications } from './hooks/useRealtimeNotifications';
 
@@ -71,6 +72,7 @@ function App() {
       </main>
 
       <ExpandedRecordModal />
+      <ConfirmModal />
       <DateFormatInterceptModal />
 
       {/* Global Toast */}

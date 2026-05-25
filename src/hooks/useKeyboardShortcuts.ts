@@ -56,8 +56,14 @@ export function useKeyboardShortcuts() {
       // Delete Row (Cmd + Backspace)
       if (isCmdOrCtrl && (e.key === 'Backspace' || e.key === 'Delete')) {
         e.preventDefault();
-        state.deleteRecord(recordId);
-        state.setSelectionRange(null);
+        state.openConfirmModal(
+          'Delete Record',
+          'Are you sure you want to delete this record? This action cannot be undone.',
+          () => {
+            state.deleteRecord(recordId);
+            state.setSelectionRange(null);
+          }
+        );
         return;
       }
 

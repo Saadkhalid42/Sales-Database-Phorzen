@@ -624,7 +624,14 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
           <button 
             onClick={() => {
               if (deleteRecords) {
-                deleteRecords(selectedRowIds);
+                useStore.getState().openConfirmModal(
+                  'Delete Records',
+                  `Are you sure you want to delete ${selectedRowIds.length} record(s)? This action cannot be undone.`,
+                  () => {
+                    deleteRecords(selectedRowIds);
+                    if (clearRowSelection) clearRowSelection();
+                  }
+                );
               }
             }}
             className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium text-danger hover:bg-danger-subtle transition-colors"

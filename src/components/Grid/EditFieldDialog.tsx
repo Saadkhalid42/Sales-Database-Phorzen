@@ -105,11 +105,17 @@ function SortableOptionItem({ opt, idx, updateOption, deleteOption }: SortableOp
         className="flex-1 px-3 py-1.5 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus:border-primary text-sm"
       />
       <button 
-        type="button"
-        onClick={() => deleteOption(idx)}
-        className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-md transition-colors focus:outline-none"
+        type="button" 
+        onClick={() => {
+          useStore.getState().openConfirmModal(
+            'Delete Option',
+            `Are you sure you want to delete the "${opt.label}" option?`,
+            () => deleteOption(idx)
+          );
+        }}
+        className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-md transition-colors"
       >
-        <Trash2 size={14} />
+        <X size={14} />
       </button>
     </div>
   );

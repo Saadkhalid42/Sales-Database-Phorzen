@@ -121,7 +121,16 @@ export const ColumnHeader = React.memo(function ColumnHeader({ col }: ColumnHead
 
           <DropdownMenu.Separator className="h-px bg-surface-sunken my-1" />
 
-          <DropdownMenu.Item onSelect={() => deleteColumn(col.key)} className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-sm">
+          <DropdownMenu.Item 
+            onSelect={() => {
+              useStore.getState().openConfirmModal(
+                'Delete Field',
+                `Are you sure you want to delete the "${col.label}" field? This action cannot be undone.`,
+                () => deleteColumn(col.key)
+              );
+            }} 
+            className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-sm"
+          >
             <Trash2 size={14} /> Delete Field
           </DropdownMenu.Item>
 
