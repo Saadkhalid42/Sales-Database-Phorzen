@@ -76,6 +76,10 @@ export function Toolbar() {
     document.documentElement.style.setProperty('--zebra-opacity', `${vals[0]}%`);
   };
 
+  const altColoringEnabled = useStore(state => state.altColoringEnabled);
+  const setAltColoringEnabled = useStore(state => state.setAltColoringEnabled);
+  const setTimeWidgetEnabled = useStore(state => state.setTimeWidgetEnabled);
+
 
   const SettingsMenu = () => (
         <DropdownMenu.Root>
@@ -109,8 +113,8 @@ export function Toolbar() {
 
               {/* Alternative Coloring Toggle */}
               <DropdownMenu.CheckboxItem 
-                checked={useStore(state => state.altColoringEnabled)} 
-                onCheckedChange={(v) => useStore.getState().setAltColoringEnabled(v)} 
+                checked={altColoringEnabled} 
+                onCheckedChange={(v) => setAltColoringEnabled(v)} 
                 className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-full text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
               >
                 <div className="flex items-center gap-2 flex-1">
@@ -125,7 +129,7 @@ export function Toolbar() {
               {/* Time Widget Toggle */}
               <DropdownMenu.CheckboxItem 
                 checked={timeWidgetEnabled}
-                onCheckedChange={(v) => useStore.getState().setTimeWidgetEnabled?.(v)} 
+                onCheckedChange={(v) => setTimeWidgetEnabled?.(v)} 
                 className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-full text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
               >
                 <div className="flex items-center gap-2 flex-1">
