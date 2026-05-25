@@ -65,6 +65,59 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
   const undo = useStore(state => state.undo);
   const redo = useStore(state => state.redo);
   const selectedRowIds = useStore(state => state.selectedRowIds) || [];
+  const stagedEvictions = useStore(state => state.stagedEvictions);
+  const stageEviction = useStore(state => state.stageEviction);
+  const commitEviction = useStore(state => state.commitEviction);
+  const clearEviction = useStore(state => state.clearEviction);
+
+  // Eviction Timer & Click-Away Logic
+  useEffect(() => {
+    const timers: Record<string, NodeJS.Timeout> = {};
+
+    Object.entries(stagedEvictions).forEach(([id, data]) => {
+      if (data.mode === 'timer') {
+        const remaining = 5000 - (Date.now() - data.addedAt);
+        if (remaining <= 0) {
+          commitEviction(id);
+        } else {
+          timers[id] = setTimeout(() => {
+            commitEviction(id);
+          }, remaining);
+        }
+      }
+    });
+
+    return () => {
+      Object.values(timers).forEach(clearTimeout);
+    };
+  }, [stagedEvictions, commitEviction]);
+
+  useEffect(() => {
+    if (selectionRange?.startRowId) {
+       const activeEviction = stagedEvictions[selectionRange.startRowId];
+       if (activeEviction && activeEviction.mode === 'timer') {
+         stageEviction(selectionRange.startRowId, 'click-away');
+       }
+       
+       Object.entries(stagedEvictions).forEach(([id, data]) => {
+         if (data.mode === 'click-away' && id !== selectionRange.startRowId) {
+           commitEviction(id);
+         }
+       });
+    }
+  }, [selectionRange, stagedEvictions, commitEviction, stageEviction]);
+
+  const TimerTicker = ({ addedAt }: { addedAt: number }) => {
+    const [left, setLeft] = useState(Math.max(0, Math.ceil((5000 - (Date.now() - addedAt)) / 1000)));
+    useEffect(() => {
+      const interval = setInterval(() => {
+        setLeft(Math.max(0, Math.ceil((5000 - (Date.now() - addedAt)) / 1000)));
+      }, 200);
+      return () => clearInterval(interval);
+    }, [addedAt]);
+    return <span className="font-bold text-danger animate-pulse">{left}s</span>;
+  };
+
   const toggleRowSelection = useStore(state => state.toggleRowSelection);
   const clearRowSelection = useStore(state => state.clearRowSelection);
   const deleteRecords = useStore(state => state.deleteRecords);
@@ -126,14 +179,19 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
   const rowVirtualizer = useVirtualizer({
     count: viewRecords.length + 1,
     getScrollElement: () => parentRef.current,
-    estimateSize: () => dynamicRowHeightRef.current,
+    estimateSize: (index) => {
+      if (index < viewRecords.length) {
+         if (viewRecords[index]?._evictionMode === 'evicting') return 0;
+      }
+      return dynamicRowHeightRef.current;
+    },
     overscan: 10,
   });
 
   // Task 3: Fix TanStack Virtualizer Desync
   useEffect(() => {
     rowVirtualizer.measure();
-  }, [viewRecords.length, rowVirtualizer]);
+  }, [viewRecords.length, stagedEvictions, rowVirtualizer]);
 
   useEffect(() => {
     const handleRowHeightDrag = (e: any) => {
@@ -527,17 +585,30 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
               const isAlt = altColoringEnabled && virtualRow.index % 2 !== 0;
               const isRowActive = selectionRange?.startRowId === record.id;
               const isCheckboxSelected = selectedRowIds?.includes(record.id);
+              
+              const isSoftEvicted = record._isSoftEvicted;
+              const evictionMode = record._evictionMode;
+              const addedAt = stagedEvictions[record.id]?.addedAt || Date.now();
             
               return (
                 <div
                   key={virtualRow.key}
-                  className={`absolute top-0 left-0 w-full group transition-snappy flex flex-nowrap grid-row will-change-transform ${isAlt ? 'is-alternate' : 'is-default'} ${isCheckboxSelected ? 'is-selected' : ''}`}
+                  className={`absolute top-0 left-0 w-full group transition-snappy flex flex-nowrap grid-row will-change-transform ${isSoftEvicted ? 'bg-danger/10 is-invalidated-row border-b-danger/30 z-30' : (isAlt ? 'is-alternate' : 'is-default')} ${isCheckboxSelected ? 'is-selected' : ''}`}
                   style={{
                     height: `${virtualRow.size}px`,
                     top: `${virtualRow.start}px`,
-                    borderBottom: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`
+                    opacity: evictionMode === 'evicting' ? 0 : 1,
+                    overflow: evictionMode === 'evicting' ? 'hidden' : 'visible',
+                    borderBottom: evictionMode === 'evicting' ? 'none' : (isSoftEvicted ? '1px solid rgba(var(--danger-color), 0.3)' : `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`)
                   }}
                 >
+                  {isSoftEvicted && evictionMode === 'click-away' && (
+                    <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-20">
+                       <div className="absolute top-0 right-8 bg-danger text-white text-[10px] px-2 py-0.5 rounded-b-md shadow-sm font-medium">
+                         Row will be removed on click-away
+                       </div>
+                    </div>
+                  )}
                   {/* Row Index Cell */}
                   <div
                     className={`absolute top-0 h-full w-10 flex items-center justify-center text-xs text-[rgba(var(--text-color),0.5)] transition-colors shrink-0 row-index-cell`}
@@ -562,9 +633,13 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                         />
                       </div>
                       <span className={`flex flex-col items-center justify-center ${(selectedRowIds && selectedRowIds.length > 0) || selectedRowIds?.includes(record.id) ? 'opacity-0' : 'group-hover/checkbox:opacity-0'} transition-opacity`}>
-                        <span className={showTimezones && record._timezone ? 'font-semibold text-[10px]' : ''}>
-                          {showTimezones && record._timezone ? record._timezone : (virtualRow.index + 1)}
-                        </span>
+                        {isSoftEvicted && evictionMode === 'timer' ? (
+                          <TimerTicker addedAt={addedAt} />
+                        ) : (
+                          <span className={showTimezones && record._timezone ? 'font-semibold text-[10px]' : ''}>
+                            {showTimezones && record._timezone ? record._timezone : (virtualRow.index + 1)}
+                          </span>
+                        )}
                       </span>
                     </div>
                   </div>

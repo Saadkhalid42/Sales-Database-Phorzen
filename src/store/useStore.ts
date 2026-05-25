@@ -37,6 +37,8 @@ export interface GridRecord {
   _flagged?: Record<string, boolean>;
   changelog?: ChangelogEntry[];
   _timezone?: string | null;
+  _isSoftEvicted?: boolean;
+  _evictionMode?: 'click-away' | 'timer' | 'evicting';
 }
 
 
@@ -126,6 +128,11 @@ export interface AppState {
   takeSnapshot: () => void;
   undo: () => void;
   redo: () => void;
+
+  stagedEvictions: Record<string, { mode: 'click-away' | 'timer' | 'evicting', addedAt: number }>;
+  stageEviction: (recordId: string, mode: 'click-away' | 'timer' | 'evicting') => void;
+  clearEviction: (recordId: string) => void;
+  commitEviction: (recordId: string) => void;
 
   // 3-Tier Data
   databases: Database[];
@@ -235,6 +242,35 @@ export const useStore = create<AppState>()(
           
           return { databases: newDatabases, selectedRowIds: [] };
         });
+      },
+      stagedEvictions: {},
+      stageEviction: (recordId, mode) => set((state) => ({
+        stagedEvictions: { ...state.stagedEvictions, [recordId]: { mode, addedAt: Date.now() } }
+      })),
+      clearEviction: (recordId) => set((state) => {
+        const newEvictions = { ...state.stagedEvictions };
+        delete newEvictions[recordId];
+        return { stagedEvictions: newEvictions };
+      }),
+      commitEviction: (recordId) => {
+        set((state) => {
+          if (!state.stagedEvictions[recordId]) return state;
+          return {
+            stagedEvictions: { 
+              ...state.stagedEvictions, 
+              [recordId]: { ...state.stagedEvictions[recordId], mode: 'evicting' } 
+            }
+          };
+        });
+        
+        // After 200ms of animation, finalize and completely unmount
+        setTimeout(() => {
+          set((state) => {
+            const newEvictions = { ...state.stagedEvictions };
+            delete newEvictions[recordId];
+            return { stagedEvictions: newEvictions };
+          });
+        }, 200);
       },
       isHydrated: false,
       hydrateStore: async () => {

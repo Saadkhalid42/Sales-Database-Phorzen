@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useRef, useEffect } from 'react';
 import { useStore } from '../store/useStore';
 
 export function useProjectedData() {
@@ -7,6 +7,12 @@ export function useProjectedData() {
   const activeWorkspaceId = useStore(state => state.activeWorkspaceId);
   const activeViewId = useStore(state => state.activeViewId);
   const searchQuery = useStore(state => state.searchQuery);
+  const stagedEvictions = useStore(state => state.stagedEvictions);
+  const stageEviction = useStore(state => state.stageEviction);
+  const expandedRecordId = useStore(state => state.expandedRecordId);
+  
+  const prevPassingRef = useRef<Set<string>>(new Set());
+  const pendingEvictionsRef = useRef<{ id: string, mode: 'click-away' | 'timer' }[]>([]);
 
   const activeDb = databases.find(db => db.id === activeDatabaseId);
   const activeWs = activeDb?.workspaces.find(ws => ws.id === activeWorkspaceId);
@@ -18,11 +24,16 @@ export function useProjectedData() {
   const isFilterDisabled = currentView?.isFilterDisabled || false;
 
   const projectedData = useMemo(() => {
-    let filtered = [...records];
+    let result: any[] = [];
+    const currentlyPassing = new Set<string>();
+    pendingEvictionsRef.current = [];
 
-    // Apply Filters
-    if (activeFilters.length > 0 && !isFilterDisabled) {
-      filtered = filtered.filter(r => {
+    // Evaluate each record manually to handle staged evictions
+    for (const r of records) {
+      let passes = true;
+      
+      // Check filters
+      if (activeFilters.length > 0 && !isFilterDisabled) {
         const evaluateSingleFilter = (f: any) => {
           const val = r.cells[f.colKey];
           const isArr = Array.isArray(val);
@@ -47,22 +58,38 @@ export function useProjectedData() {
           }
         };
         const operator = currentView?.filterJoinOperator || 'and';
-        return operator === 'or' 
+        passes = operator === 'or' 
           ? activeFilters.some(evaluateSingleFilter) 
           : activeFilters.every(evaluateSingleFilter);
-      });
-    }
+      }
+      
+      // Check search
+      if (passes && searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        passes = Object.values(r.cells).some(val => String(val || '').toLowerCase().includes(q));
+      }
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      filtered = filtered.filter(r => 
-        Object.values(r.cells).some(val => String(val || '').toLowerCase().includes(q))
-      );
+      if (passes) {
+        currentlyPassing.add(r.id);
+        result.push(r);
+      } else {
+        // If it failed but it was passing in the PREVIOUS frame, soft evict it
+        const wasPassing = prevPassingRef.current.has(r.id);
+        
+        if (wasPassing) {
+          const mode = expandedRecordId === r.id ? 'timer' : 'click-away';
+          pendingEvictionsRef.current.push({ id: r.id, mode });
+          result.push({ ...r, _isSoftEvicted: true, _evictionMode: mode });
+        } else if (stagedEvictions[r.id]) {
+          // If it was already staged for eviction, keep it in the projected data
+          result.push({ ...r, _isSoftEvicted: true, _evictionMode: stagedEvictions[r.id].mode });
+        }
+      }
     }
-
-    // Apply Sorts
+    
+    // Sort logic (only on result)
     if (activeSorts.length > 0) {
-      filtered.sort((a, b) => {
+      result.sort((a, b) => {
         for (const sort of activeSorts) {
           const valA = a.cells[sort.colKey];
           const valB = b.cells[sort.colKey];
@@ -84,8 +111,22 @@ export function useProjectedData() {
       });
     }
 
-    return filtered;
-  }, [records, activeViewId, searchQuery, activeFilters, activeSorts, isFilterDisabled]);
+    // Update the cache for the next render
+    prevPassingRef.current = currentlyPassing;
+    return result as any;
+  }, [records, activeViewId, searchQuery, activeFilters, activeSorts, isFilterDisabled, stagedEvictions, expandedRecordId]);
+
+  // Safely trigger state updates for pending evictions outside of the render cycle
+  useEffect(() => {
+    if (pendingEvictionsRef.current.length > 0) {
+      pendingEvictionsRef.current.forEach(ev => {
+        if (!stagedEvictions[ev.id]) {
+          stageEviction(ev.id, ev.mode);
+        }
+      });
+      pendingEvictionsRef.current = [];
+    }
+  }, [projectedData, stageEviction, stagedEvictions]);
 
   return projectedData;
 }
