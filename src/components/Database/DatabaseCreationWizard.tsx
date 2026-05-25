@@ -347,9 +347,15 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
                           }}
                           disabled={mapping.skip}
                         >
-                          <Select.Trigger className="w-48 flex items-center justify-between px-2 py-1.5 rounded border border-border bg-surface text-text-primary text-xs focus:outline-none disabled:opacity-50">
-                            <Select.Value />
-                            <Select.Icon><ChevronDown size={14} className="opacity-50" /></Select.Icon>
+                          <Select.Trigger className="w-48 relative flex items-center px-2 py-1.5 rounded border border-border bg-surface text-text-primary text-xs focus:outline-none disabled:opacity-50">
+                            <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap pr-8 text-left">
+                              <Select.Value />
+                            </span>
+                            <Select.Icon asChild>
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+                                <ChevronDown size={14} className="opacity-50" />
+                              </div>
+                            </Select.Icon>
                           </Select.Trigger>
                           <Select.Portal>
                             <Select.Content className="z-[70] bg-surface border border-border rounded-md shadow-xl overflow-hidden">
