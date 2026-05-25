@@ -92,28 +92,32 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
     };
   }, [stagedEvictions, commitEviction]);
 
-  // Focus Loss (Locked -> Countdown) and Return Focus (Countdown -> Locked)
+  // Sync Eviction State with Grid Selection Focus
+  useEffect(() => {
+    Object.entries(stagedEvictions).forEach(([id, data]) => {
+      const isFocused = selectionRange?.startRowId === id;
+      if (data.mode === 'locked' && !isFocused) {
+        stageEviction(id, 'countdown'); // Start 5-second countdown
+      } else if (data.mode === 'countdown' && isFocused) {
+        stageEviction(id, 'locked'); // Kill timer, return to locked
+      }
+    });
+  }, [selectionRange, stagedEvictions, stageEviction]);
+
+  // Global Click-Away: Clear selection if clicking outside the grid
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      Object.entries(stagedEvictions).forEach(([id, data]) => {
-        const rowEl = document.querySelector(`[data-row-id="${id}"]`);
-        const clickedInside = rowEl && rowEl.contains(target);
-        
-        if (data.mode === 'locked') {
-          if (!clickedInside) {
-            stageEviction(id, 'countdown'); // Reset timer and start countdown
-          }
-        } else if (data.mode === 'countdown') {
-          if (clickedInside) {
-            stageEviction(id, 'locked'); // Kill timer and lock focus
-          }
-        }
-      });
+      const isInsideGrid = target.closest('.grid-row') || target.closest('.column-header');
+      const isInsideMenu = target.closest('[role="menu"]') || target.closest('[role="dialog"]');
+      
+      if (!isInsideGrid && !isInsideMenu && selectionRange) {
+        setSelectionRange(null);
+      }
     };
     document.addEventListener('mousedown', handleGlobalClick);
     return () => document.removeEventListener('mousedown', handleGlobalClick);
-  }, [stagedEvictions, stageEviction]);
+  }, [selectionRange, setSelectionRange]);
 
   const TimerTicker = ({ addedAt }: { addedAt: number }) => {
     const [left, setLeft] = useState(Math.max(0, Math.ceil((5000 - (Date.now() - addedAt)) / 1000)));
