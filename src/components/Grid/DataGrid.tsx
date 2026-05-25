@@ -765,7 +765,13 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
 
       {/* Floating Evict Button */}
       <div 
-        className={`fixed bottom-8 left-1/2 -translate-x-1/2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${Object.keys(stagedEvictions).length > 0 ? 'translate-y-0 opacity-100 z-[9999] scale-100' : 'translate-y-16 opacity-0 pointer-events-none scale-95'}`}
+        className={`fixed bottom-8 left-1/2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] flex justify-center`}
+        style={{ 
+          transform: `translateX(-50%) translateY(${Object.keys(stagedEvictions).length > 0 ? '0px' : '64px'}) scale(${Object.keys(stagedEvictions).length > 0 ? '1' : '0.95'})`,
+          opacity: Object.keys(stagedEvictions).length > 0 ? 1 : 0,
+          pointerEvents: Object.keys(stagedEvictions).length > 0 ? 'auto' : 'none',
+          zIndex: 99999 
+        }}
       >
         <button
           onClick={() => {
