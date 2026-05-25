@@ -93,18 +93,23 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
   }, [stagedEvictions, commitEviction]);
 
   useEffect(() => {
+    // If the user clicked inside the grid, check if we need to interrupt a timer
     if (selectionRange?.startRowId) {
-       const activeEviction = stagedEvictions[selectionRange.startRowId];
-       if (activeEviction && activeEviction.mode === 'timer') {
-         stageEviction(selectionRange.startRowId, 'click-away');
-       }
-       
-       Object.entries(stagedEvictions).forEach(([id, data]) => {
-         if (data.mode === 'click-away' && id !== selectionRange.startRowId) {
-           commitEviction(id);
-         }
-       });
+      const activeEviction = stagedEvictions[selectionRange.startRowId];
+      if (activeEviction && activeEviction.mode === 'timer') {
+        stageEviction(selectionRange.startRowId, 'click-away');
+      }
     }
+
+    // Process click-away evictions
+    Object.entries(stagedEvictions).forEach(([id, data]) => {
+      if (data.mode === 'click-away') {
+        // If selection is null (clicked outside grid) or on a different row
+        if (!selectionRange || selectionRange.startRowId !== id) {
+          commitEviction(id);
+        }
+      }
+    });
   }, [selectionRange, stagedEvictions, commitEviction, stageEviction]);
 
   const TimerTicker = ({ addedAt }: { addedAt: number }) => {
@@ -602,13 +607,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                     borderBottom: evictionMode === 'evicting' ? 'none' : (isSoftEvicted ? '1px solid rgba(var(--danger-color), 0.3)' : `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`)
                   }}
                 >
-                  {isSoftEvicted && evictionMode === 'click-away' && (
-                    <div className="absolute top-0 left-0 w-full h-full pointer-events-none overflow-hidden z-20">
-                       <div className="absolute top-0 right-8 bg-danger text-white text-[10px] px-2 py-0.5 rounded-b-md shadow-sm font-medium">
-                         Row will be removed on click-away
-                       </div>
-                    </div>
-                  )}
+
                   {/* Row Index Cell */}
                   <div
                     className={`absolute top-0 h-full w-10 flex items-center justify-center text-xs text-[rgba(var(--text-color),0.5)] transition-colors shrink-0 row-index-cell`}
@@ -633,8 +632,12 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                         />
                       </div>
                       <span className={`flex flex-col items-center justify-center ${(selectedRowIds && selectedRowIds.length > 0) || selectedRowIds?.includes(record.id) ? 'opacity-0' : 'group-hover/checkbox:opacity-0'} transition-opacity`}>
-                        {isSoftEvicted && evictionMode === 'timer' ? (
-                          <TimerTicker addedAt={addedAt} />
+                        {isSoftEvicted ? (
+                          evictionMode === 'timer' ? (
+                            <TimerTicker addedAt={addedAt} />
+                          ) : (
+                            <span className="text-danger" title="Row will be removed on click-away">⚠️</span>
+                          )
                         ) : (
                           <span className={showTimezones && record._timezone ? 'font-semibold text-[10px]' : ''}>
                             {showTimezones && record._timezone ? record._timezone : (virtualRow.index + 1)}
