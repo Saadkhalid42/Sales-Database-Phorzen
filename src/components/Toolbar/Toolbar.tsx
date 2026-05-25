@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore } from '../../store/useStore';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Slider from '@radix-ui/react-slider';
-import { Search, Undo2, Redo2, Settings, Check, Clock, ChevronRight, Palette, Palette as PaletteIcon, Sun, Moon, Menu, X } from 'lucide-react';
+import { Search, Undo2, Redo2, Settings, Check, Clock, ChevronRight, Palette, Palette as PaletteIcon, Sun, Moon, Menu, X, RefreshCw } from 'lucide-react';
 import { DatabaseDropdown } from './DatabaseDropdown';
 import { WorkspaceDropdown } from './WorkspaceDropdown';
 import { ViewDropdown } from './ViewDropdown';
@@ -37,6 +37,8 @@ export function Toolbar() {
   const futureStates = useStore(state => state.future);
   const undo = useStore(state => state.undo);
   const redo = useStore(state => state.redo);
+  const stagedEvictions = useStore(state => state.stagedEvictions);
+  const commitEviction = useStore(state => state.commitEviction);
   const updateView = useStore(state => state.updateView);
 
   const databases = useStore(state => state.databases);
@@ -143,6 +145,15 @@ export function Toolbar() {
             title="Redo (Cmd+Shift+Z)"
           >
             <Redo2 size={16} />
+          </button>
+          <button 
+            onClick={() => {
+              Object.keys(stagedEvictions).forEach(id => commitEviction(id));
+            }}
+            className={`flex items-center justify-center p-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-focus-ring ${Object.keys(stagedEvictions).length > 0 ? 'text-danger hover:bg-danger/10 bg-danger/5 animate-pulse' : 'text-text-muted hover:text-text-secondary hover:bg-surface-sunken'}`}
+            title="Refresh View"
+          >
+            <RefreshCw size={16} className={Object.keys(stagedEvictions).length > 0 ? "animate-spin-slow" : ""} />
           </button>
         </div>
       </div>
