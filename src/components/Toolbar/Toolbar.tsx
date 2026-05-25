@@ -247,7 +247,7 @@ export function Toolbar() {
         <SortPopover />
         <HideFieldsPopover />
         
-        <SettingsMenu />
+        {SettingsMenu()}
       </div>
 
       {timeWidgetEnabled && (
@@ -324,7 +324,7 @@ export function Toolbar() {
               
               <div className="flex flex-col gap-2">
                 <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">Settings</h4>
-                <SettingsMenu />
+                {SettingsMenu()}
               </div>
             </div>
           </div>
