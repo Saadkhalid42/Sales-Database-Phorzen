@@ -38,6 +38,36 @@
   --color-tint-lilac: var(--tint-lilac);
   --color-tint-mint: var(--tint-mint);
   --color-zebra: var(--zebra);
+  
+  --bg-default: var(--surface-raised);
+  --bg-alternate: color-mix(in srgb, var(--surface-raised) 98%, var(--text-primary));
+}
+
+/* Unified Alternate Row Color Mapping */
+.grid-row.is-alternate .frozen-cell,
+.grid-row.is-alternate .standard-cell,
+.grid-row.is-alternate .row-index-cell {
+    background-color: var(--bg-alternate) !important;
+}
+
+.grid-row.is-default .frozen-cell,
+.grid-row.is-default .standard-cell,
+.grid-row.is-default .row-index-cell {
+    background-color: var(--bg-default) !important;
+}
+
+/* Hover State Alignment */
+.grid-row:hover .frozen-cell,
+.grid-row:hover .standard-cell,
+.grid-row:hover .row-index-cell {
+    background-color: color-mix(in srgb, var(--surface-raised) 95%, var(--accent)) !important;
+}
+
+/* Selected State */
+.grid-row.is-selected .frozen-cell,
+.grid-row.is-selected .standard-cell,
+.grid-row.is-selected .row-index-cell {
+    background-color: color-mix(in srgb, var(--surface-raised) 85%, var(--accent)) !important;
 }
 
 body {

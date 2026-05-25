@@ -449,27 +449,24 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
               return (
                 <div
                   key={virtualRow.key}
-                  className="absolute top-0 left-0 w-full group transition-colors flex flex-nowrap"
+                  className={`absolute top-0 left-0 w-full group transition-colors flex flex-nowrap grid-row ${isAlt ? 'is-alternate' : 'is-default'} ${isCheckboxSelected ? 'is-selected' : ''}`}
                   style={{
                     height: `${virtualRow.size}px`,
                     top: `${virtualRow.start}px`,
-                    borderBottom: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`,
-                    backgroundColor: isCheckboxSelected ? `color-mix(in srgb, var(--accent) 10%, transparent)` : (isAlt ? `color-mix(in srgb, var(--accent) var(--zebra-opacity, 0%), transparent)` : 'transparent')
+                    borderBottom: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`
                   }}
                 >
                   {/* Row Index Cell */}
                   <div
-                    className={`absolute top-0 h-full w-10 flex items-center justify-center text-xs text-[rgba(var(--text-color),0.5)] transition-colors shrink-0`}
+                    className={`absolute top-0 h-full w-10 flex items-center justify-center text-xs text-[rgba(var(--text-color),0.5)] transition-colors shrink-0 row-index-cell`}
                     style={{
                       position: 'sticky',
                       left: 0,
                       top: 0,
                       zIndex: 40,
-                      backgroundColor: isCheckboxSelected ? `color-mix(in srgb, var(--surface-raised) 90%, var(--accent))` : 'var(--surface-raised)',
                       borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`,
                     }}
                   >
-                    {isAlt && <div className="absolute inset-0 bg-zebra pointer-events-none" />}
                     <div 
                       className="flex flex-col items-center justify-center w-full h-full relative group/checkbox cursor-pointer"
                       onClick={() => toggleRowSelection && toggleRowSelection(record.id)}
@@ -524,20 +521,19 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                         key={virtualCol.key}
                         ref={columnVirtualizer.measureElement}
                         data-index={virtualCol.index}
-                        className={`absolute top-0 h-full ${virtualCol.index === 0 ? 'group/first-cell' : ''} ${isActiveEditor ? 'overflow-visible' : 'overflow-hidden'} shrink-0`}
+                        className={`absolute top-0 h-full ${virtualCol.index === 0 ? 'group/first-cell' : ''} ${isActiveEditor ? 'overflow-visible' : 'overflow-hidden'} shrink-0 ${isFrozen ? 'frozen-cell' : 'standard-cell'}`}
                         style={{
                           left: 0,
                           top: 0,
                           width: `${col.width || 150}px`,
                           transform: isFrozen ? 'none' : `translateX(${virtualCol.start + 40}px)`,
                           position: isFrozen ? 'sticky' : 'absolute',
-                          ...(isFrozen ? { left: `${frozenOffset}px`, zIndex: baseZIndex, backgroundColor: isCheckboxSelected ? `color-mix(in srgb, var(--surface-raised) 90%, var(--accent))` : 'var(--surface-raised)', borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` } : { zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` }),
+                          ...(isFrozen ? { left: `${frozenOffset}px`, zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` } : { zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` }),
                           ...selectionStyle
                         }}
                         onMouseDown={() => handleMouseDown(record.id, col.key)}
                         onMouseEnter={() => handleMouseEnter(record.id, col.key)}
                       >
-                        {isFrozen && isAlt && <div className="absolute inset-0 bg-zebra pointer-events-none z-0" />}
                         {virtualCol.index === 0 && (
                           <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover/first-cell:opacity-100 transition-opacity z-10">
                             <button 
