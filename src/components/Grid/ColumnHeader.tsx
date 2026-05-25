@@ -1,6 +1,6 @@
 import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { ChevronDown, Type, AlignLeft, Hash, Calendar, CheckSquare, Star, Mail, Phone, Link2, Key, List, Users, Clock, File as FileIcon, Edit, Table, Search, PlusSquare, ArrowUpRight, Calculator, Hash as HashIcon, Fingerprint, CalendarDays, Edit3, Trash2, ArrowLeft, ArrowRight, Type as TypeIcon, Pin, Copy } from 'lucide-react';
+import { ChevronDown, Type, AlignLeft, Hash, Calendar, CheckSquare, Star, Mail, Phone, Link2, Key, List, Users, Clock, File as FileIcon, Edit, Table, Search, PlusSquare, ArrowUpRight, Calculator, Hash as HashIcon, Fingerprint, CalendarDays, Edit3, Trash2, ArrowLeft, ArrowRight, Type as TypeIcon, Pin, Copy, Bell } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import type { GridColumn } from '../../store/useStore';
 import { EditFieldDialog } from './EditFieldDialog';
@@ -41,6 +41,10 @@ export const ColumnHeader = React.memo(function ColumnHeader({ col }: ColumnHead
   const activeWorkspaceId = useStore(state => state.activeWorkspaceId);
   const activeViewId = useStore(state => state.activeViewId);
   const unfreezeColumn = useStore(state => state.unfreezeColumn);
+  
+  const notifiedFieldKeys = useStore(state => state.notifiedFieldKeys);
+  const toggleFieldNotification = useStore(state => state.toggleFieldNotification);
+  const isNotified = notifiedFieldKeys.includes(col.key);
 
   const activeDb = databases.find(db => db.id === activeDatabaseId);
   const activeWs = activeDb?.workspaces.find(ws => ws.id === activeWorkspaceId);
@@ -119,6 +123,34 @@ export const ColumnHeader = React.memo(function ColumnHeader({ col }: ColumnHead
 
           <DropdownMenu.Item onSelect={() => deleteColumn(col.key)} className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-xl text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-sm">
             <Trash2 size={14} /> Delete Field
+          </DropdownMenu.Item>
+
+          <DropdownMenu.Separator className="h-px bg-surface-sunken my-1" />
+
+          <DropdownMenu.Item 
+            onSelect={(e) => {
+              e.preventDefault(); // Prevent closing dropdown
+              if (!isNotified && 'Notification' in window && Notification.permission !== 'granted') {
+                 Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                       toggleFieldNotification(col.key, true);
+                    }
+                 });
+              } else {
+                 toggleFieldNotification(col.key, !isNotified);
+              }
+            }} 
+            className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-xl text-text-secondary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-sm"
+          >
+            <div className="flex items-center gap-2">
+              <Bell size={14} /> Notify on field update
+            </div>
+            <input 
+               type="checkbox" 
+               checked={isNotified}
+               readOnly
+               className="w-3.5 h-3.5 rounded border-border text-accent focus:ring-accent accent-accent cursor-pointer pointer-events-none" 
+            />
           </DropdownMenu.Item>
 
         </DropdownMenu.Content>

@@ -108,6 +108,9 @@ export interface AppState {
   };
   openDateIntercept: (sampleDate: string) => Promise<{ sourceFormat: string, displayFormat: string } | null>;
   closeDateIntercept: () => void;
+
+  notifiedFieldKeys: string[];
+  toggleFieldNotification: (colKey: string, enabled: boolean) => void;
   
   past: Array<{ databases: Database[] }>;
   future: Array<{ databases: Database[] }>;
@@ -287,6 +290,17 @@ export const useStore = create<AppState>()(
           state.dateInterceptModal.resolve(null);
         }
         return { dateInterceptModal: { isOpen: false, sampleDate: '', resolve: null } };
+      }),
+
+      notifiedFieldKeys: [],
+      toggleFieldNotification: (colKey, enabled) => set((state) => {
+        const keys = new Set(state.notifiedFieldKeys);
+        if (enabled) {
+          keys.add(colKey);
+        } else {
+          keys.delete(colKey);
+        }
+        return { notifiedFieldKeys: Array.from(keys) };
       }),
 
 

@@ -10,10 +10,14 @@ import { CardView } from './components/Grid/CardView';
 import { ExpandedRecordModal } from './components/Grid/ExpandedRecordModal';
 import { DateFormatInterceptModal } from './components/Shared/DateFormatInterceptModal';
 import { Database } from 'lucide-react';
+import { useRealtimeNotifications } from './hooks/useRealtimeNotifications';
 
 function App() {
   // Bind global keyboard shortcuts (Undo/Redo, Navigation, Selection Actions)
   useKeyboardShortcuts();
+  
+  // Bind realtime field notifications
+  useRealtimeNotifications();
 
   const theme = useStore((state) => state.theme);
   const isHydrated = useStore((state) => state.isHydrated);
