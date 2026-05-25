@@ -762,6 +762,21 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
           </div>
         </div>
       )}
+
+      {/* Floating Evict Button */}
+      <div 
+        className={`fixed bottom-8 left-1/2 -translate-x-1/2 transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] transform ${Object.keys(stagedEvictions).length > 0 ? 'translate-y-0 opacity-100 z-[9999] scale-100' : 'translate-y-16 opacity-0 pointer-events-none scale-95'}`}
+      >
+        <button
+          onClick={() => {
+            Object.keys(stagedEvictions).forEach(id => commitEviction(id));
+          }}
+          className="bg-danger text-white px-8 py-3 rounded-full font-semibold shadow-[0_8px_30px_rgba(var(--danger-color),0.4)] hover:shadow-[0_8px_40px_rgba(var(--danger-color),0.6)] hover:scale-105 active:scale-95 transition-all flex items-center gap-2"
+        >
+          <Trash2 size={18} />
+          Delete
+        </button>
+      </div>
     </div>
   );
 }
