@@ -38,7 +38,7 @@ export function NavigationStrip() {
             <ViewIcon 
               size={14} 
               style={{ color: view.iconColor || undefined }}
-              className={!view.iconColor ? (isActive ? 'text-white' : 'text-text-muted') : undefined} 
+              className={!view.iconColor ? 'text-text-muted' : undefined} 
             />
             <span className="whitespace-nowrap">{view.name}</span>
           </button>
