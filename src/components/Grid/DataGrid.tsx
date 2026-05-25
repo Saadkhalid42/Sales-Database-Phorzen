@@ -70,65 +70,6 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
   const commitEviction = useStore(state => state.commitEviction);
   const clearEviction = useStore(state => state.clearEviction);
 
-  // Eviction Timer & Click-Away Logic
-  useEffect(() => {
-    const timers: Record<string, NodeJS.Timeout> = {};
-
-    Object.entries(stagedEvictions).forEach(([id, data]) => {
-      if (data.mode === 'countdown') {
-        const remaining = 5000 - (Date.now() - data.addedAt);
-        if (remaining <= 0) {
-          commitEviction(id);
-        } else {
-          timers[id] = setTimeout(() => {
-            commitEviction(id);
-          }, remaining);
-        }
-      }
-    });
-
-    return () => {
-      Object.values(timers).forEach(clearTimeout);
-    };
-  }, [stagedEvictions, commitEviction]);
-
-  // Sync Eviction State with Grid Selection Focus
-  useEffect(() => {
-    Object.entries(stagedEvictions).forEach(([id, data]) => {
-      const isFocused = selectionRange?.startRowId === id;
-      if (data.mode === 'locked' && !isFocused) {
-        stageEviction(id, 'countdown'); // Start 5-second countdown
-      } else if (data.mode === 'countdown' && isFocused) {
-        stageEviction(id, 'locked'); // Kill timer, return to locked
-      }
-    });
-  }, [selectionRange, stagedEvictions, stageEviction]);
-
-  // Global Click-Away: Clear selection if clicking outside the grid
-  useEffect(() => {
-    const handleGlobalClick = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const isInsideGrid = target.closest('.grid-row') || target.closest('.column-header');
-      const isInsideMenu = target.closest('[role="menu"]') || target.closest('[role="dialog"]');
-      
-      if (!isInsideGrid && !isInsideMenu && selectionRange) {
-        setSelectionRange(null);
-      }
-    };
-    document.addEventListener('mousedown', handleGlobalClick);
-    return () => document.removeEventListener('mousedown', handleGlobalClick);
-  }, [selectionRange, setSelectionRange]);
-
-  const TimerTicker = ({ addedAt }: { addedAt: number }) => {
-    const [left, setLeft] = useState(Math.max(0, Math.ceil((5000 - (Date.now() - addedAt)) / 1000)));
-    useEffect(() => {
-      const interval = setInterval(() => {
-        setLeft(Math.max(0, Math.ceil((5000 - (Date.now() - addedAt)) / 1000)));
-      }, 200);
-      return () => clearInterval(interval);
-    }, [addedAt]);
-    return <span className="font-bold text-danger animate-pulse">{left}s</span>;
-  };
 
   const toggleRowSelection = useStore(state => state.toggleRowSelection);
   const clearRowSelection = useStore(state => state.clearRowSelection);
@@ -641,11 +582,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                       </div>
                       <span className={`flex flex-col items-center justify-center ${(selectedRowIds && selectedRowIds.length > 0) || selectedRowIds?.includes(record.id) ? 'opacity-0' : 'group-hover/checkbox:opacity-0'} transition-opacity`}>
                         {isSoftEvicted ? (
-                          evictionMode === 'timer' ? (
-                            <TimerTicker addedAt={addedAt} />
-                          ) : (
-                            <span className="text-danger" title="Row will be removed on click-away">⚠️</span>
-                          )
+                          <span className="text-danger" title="Row will be removed when you click Delete">⚠️</span>
                         ) : (
                           <span className={showTimezones && record._timezone ? 'font-semibold text-[10px]' : ''}>
                             {showTimezones && record._timezone ? record._timezone : (virtualRow.index + 1)}
