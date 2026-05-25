@@ -13,6 +13,7 @@ export function useProjectedData() {
   
   const prevPassingRef = useRef<Set<string>>(new Set());
   const pendingEvictionsRef = useRef<{ id: string, mode: 'click-away' | 'timer' }[]>([]);
+  const prevFilterHashRef = useRef('');
 
   const activeDb = databases.find(db => db.id === activeDatabaseId);
   const activeWs = activeDb?.workspaces.find(ws => ws.id === activeWorkspaceId);
@@ -27,6 +28,12 @@ export function useProjectedData() {
     let result: any[] = [];
     const currentlyPassing = new Set<string>();
     pendingEvictionsRef.current = [];
+
+    const currentFilterHash = JSON.stringify({ activeViewId, activeFilters, searchQuery, isFilterDisabled });
+    if (prevFilterHashRef.current !== currentFilterHash) {
+      prevPassingRef.current.clear();
+      prevFilterHashRef.current = currentFilterHash;
+    }
 
     // Evaluate each record manually to handle staged evictions
     for (const r of records) {
