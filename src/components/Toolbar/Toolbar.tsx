@@ -38,7 +38,7 @@ export function Toolbar() {
   const undo = useStore(state => state.undo);
   const redo = useStore(state => state.redo);
   const stagedEvictions = useStore(state => state.stagedEvictions);
-  const commitEviction = useStore(state => state.commitEviction);
+  const forceEvictAll = useStore(state => state.forceEvictAll);
   const updateView = useStore(state => state.updateView);
 
   const databases = useStore(state => state.databases);
@@ -148,7 +148,7 @@ export function Toolbar() {
           </button>
           <button 
             onClick={() => {
-              Object.keys(stagedEvictions).forEach(id => commitEviction(id));
+              forceEvictAll();
             }}
             className={`flex items-center justify-center p-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-focus-ring ${Object.keys(stagedEvictions).length > 0 ? 'text-danger hover:bg-danger/10 bg-danger/5 animate-pulse' : 'text-text-muted hover:text-text-secondary hover:bg-surface-sunken'}`}
             title="Refresh View"

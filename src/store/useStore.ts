@@ -133,6 +133,7 @@ export interface AppState {
   stageEviction: (recordId: string, mode: 'locked' | 'countdown' | 'evicting') => void;
   clearEviction: (recordId: string) => void;
   commitEviction: (recordId: string) => void;
+  forceEvictAll: () => void;
 
   // 3-Tier Data
   databases: Database[];
@@ -252,6 +253,7 @@ export const useStore = create<AppState>()(
         delete newEvictions[recordId];
         return { stagedEvictions: newEvictions };
       }),
+      forceEvictAll: () => set((state) => ({ stagedEvictions: {} })),
       commitEviction: (recordId) => {
         set((state) => {
           if (!state.stagedEvictions[recordId]) return state;
