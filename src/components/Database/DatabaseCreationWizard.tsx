@@ -361,9 +361,9 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
                             <Select.Content className="z-[70] bg-surface border border-border rounded-md shadow-xl overflow-hidden">
                               <Select.Viewport className="p-1">
                                 {FIELD_TYPES.map(ft => (
-                                  <Select.Item key={ft.value} value={ft.value} className="relative flex items-center px-6 py-1.5 text-xs text-text-primary rounded cursor-pointer data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
-                                    <Select.ItemIndicator className="absolute left-1"><Check size={12} /></Select.ItemIndicator>
+                                  <Select.Item key={ft.value} value={ft.value} className="flex items-center justify-between pl-3 pr-3 py-1.5 text-xs text-text-primary rounded cursor-pointer data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
                                     <Select.ItemText>{ft.label}</Select.ItemText>
+                                    <Select.ItemIndicator><Check size={12} /></Select.ItemIndicator>
                                   </Select.Item>
                                 ))}
                               </Select.Viewport>
@@ -372,20 +372,19 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
                         </Select.Root>
 
                         <div className="flex items-center gap-2 px-2">
-                          <Switch.Root 
+                          <span className="text-xs text-text-primary opacity-70 font-medium">
+                            Keep
+                          </span>
+                          <input 
+                            type="checkbox"
                             checked={!mapping.skip}
-                            onCheckedChange={(checked) => {
+                            onChange={(e) => {
                               const newM = [...mappings];
-                              newM[idx].skip = !checked;
+                              newM[idx].skip = !e.target.checked;
                               setMappings(newM);
                             }}
-                            className="w-8 h-4 rounded-full bg-divider data-[state=checked]:bg-accent relative outline-none transition-colors"
-                          >
-                            <Switch.Thumb className="block w-3 h-3 bg-white rounded-full transition-transform translate-x-0.5 data-[state=checked]:translate-x-4 shadow-sm" />
-                          </Switch.Root>
-                          <span className="text-xs text-text-primary opacity-70 w-10">
-                            {mapping.skip ? 'Skip' : 'Keep'}
-                          </span>
+                            className="w-3.5 h-3.5 rounded border-border text-accent focus:ring-accent accent-accent cursor-pointer"
+                          />
                         </div>
                       </div>
                     ))}
