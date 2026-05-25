@@ -149,7 +149,7 @@ export function Toolbar() {
                   <ChevronRight size={14} />
                 </DropdownMenu.SubTrigger>
                 <DropdownMenu.Portal>
-                  <DropdownMenu.SubContent className="w-64 border border-border shadow-md rounded-2xl p-4 z-[60] flex flex-col gap-6 bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=right]:slide-in-from-left-2" sideOffset={8}>
+                  <DropdownMenu.SubContent className="w-64 border border-border shadow-md rounded-2xl p-4 z-[210] flex flex-col gap-6 bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=right]:slide-in-from-left-2 mobile-bottom-sheet" sideOffset={8}>
                     
                     <div className="flex flex-col gap-3">
                       <label className="text-[11px] font-semibold text-text-muted uppercase tracking-wider">Row Height</label>
@@ -323,26 +323,8 @@ export function Toolbar() {
               <div className="w-full h-px bg-divider" />
               
               <div className="flex flex-col gap-2">
- 
-              <div className="flex flex-col gap-2">
                 <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">Settings</h4>
                 <SettingsMenu />
-              </div>
-              <div className="w-full h-px bg-divider" />
-               <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">Theme</h4>
-                {THEMES.map(t => (
-                  <button 
-                    key={t.id}
-                    onClick={() => { setTheme(t.id); setIsMobileMenuOpen(false); }} 
-                    className={`flex items-center justify-between w-full text-left px-3 py-3 rounded-xl transition-colors text-sm ${theme === t.id ? 'bg-accent-subtle text-accent font-semibold' : 'text-text-primary hover:bg-surface-sunken'}`}
-                  >
-                    <div className="flex items-center gap-2">
-                      {t.type === 'light' ? <Sun size={16} /> : <Moon size={16} />}
-                      {t.name}
-                    </div>
-                    {theme === t.id && <Check size={16} />}
-                  </button>
-                ))}
               </div>
             </div>
           </div>
