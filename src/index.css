@@ -40,7 +40,7 @@
   --color-zebra: var(--zebra);
   
   --bg-default: var(--surface-raised);
-  --bg-alternate: color-mix(in srgb, var(--surface-raised) 98%, var(--text-primary));
+  --bg-alternate: color-mix(in srgb, var(--text-primary) var(--zebra-opacity, 2%), var(--surface-raised));
 }
 
 /* Unified Alternate Row Color Mapping */
