@@ -139,9 +139,34 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
     }
   });
 
-  const handleCreateDatabase = () => {
+  const handleCreateDatabase = async () => {
     const activeMappings = mappings.filter(m => !m.skip);
     
+    // Check date intercepts first
+    const dateContexts = new Map<string, string>();
+    const dateDisplayFormats = new Map<string, string>();
+    const state = useStore.getState();
+    const { analyzeDateColumn, convertValue } = await import('../../utils/DataEngine');
+
+    for (const m of activeMappings) {
+      if (m.type === 'date') {
+         const rawValues = parsedData.map(row => row[m.originalKey]).filter(v => v !== null && v !== undefined && String(v).trim() !== '');
+         if (rawValues.length > 0) {
+            const sample = String(rawValues[0]);
+            const context = analyzeDateColumn(rawValues);
+            if (context === 'AMBIGUOUS' || !sample.includes('T')) {
+                const interceptResult = await state.openDateIntercept(sample);
+                if (!interceptResult) {
+                   // User cancelled the entire import
+                   return;
+                }
+                dateContexts.set(m.originalKey, interceptResult.sourceFormat);
+                dateDisplayFormats.set(m.originalKey, interceptResult.displayFormat);
+            }
+         }
+      }
+    }
+
     // Generate Columns
     const columns: GridColumn[] = activeMappings.map(m => {
       const col: GridColumn = {
@@ -153,6 +178,8 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
 
       if (m.type === 'single_select' || m.type === 'multiple_select') {
         col.typeOptions = [];
+      } else if (m.type === 'date' && dateDisplayFormats.has(m.originalKey)) {
+        col.typeOptions = { dateFormat: dateDisplayFormats.get(m.originalKey) };
       }
 
       return col;
@@ -168,17 +195,15 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
       
       activeMappings.forEach(m => {
         const newKey = originalToNewKey.get(m.originalKey)!;
-        let val = row[m.originalKey];
+        const rawVal = row[m.originalKey];
         
-        // Basic type coercion
-        if (m.type === 'number') val = Number(val);
-        else if (m.type === 'boolean') val = ['true', 'yes', '1'].includes(String(val).toLowerCase());
-        
-        cells[newKey] = val;
+        const dateCtx = dateContexts.get(m.originalKey) || 'MDY';
+        const { value } = convertValue(rawVal, m.type, dateCtx);
+        cells[newKey] = value;
 
         if (!_timezone && (m.name.toLowerCase() === 'lead number' || m.name.toLowerCase() === 'personal number')) {
-          if (val) {
-            const tz = getTimezoneFromPhone(String(val));
+          if (rawVal) {
+            const tz = getTimezoneFromPhone(String(rawVal));
             if (tz) _timezone = tz;
           }
         }

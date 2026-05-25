@@ -132,10 +132,40 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
     }
   }, [isOpen, column]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // If the type changed, we run the deep conversion action
     if (type !== column.type || JSON.stringify(typeOptions) !== JSON.stringify(column.typeOptions)) {
-      changeColumnType(column.key, type, typeOptions);
+      
+      let finalDateContext = undefined;
+      
+      if (type === 'date' && type !== column.type) {
+         // Check if dates are ambiguous
+         const state = useStore.getState();
+         const db = state.databases.find(d => d.id === state.activeDatabaseId);
+         if (db) {
+             const rawValues = db.records.map(r => r.cells[column.key]).filter(v => v !== null && v !== undefined && String(v).trim() !== '');
+             if (rawValues.length > 0) {
+                 // We will check the first valid value for the sample
+                 const sample = String(rawValues[0]);
+                 const { analyzeDateColumn } = await import('../../utils/DataEngine');
+                 const context = analyzeDateColumn(rawValues);
+                 
+                 // If ambiguous or just as a safety net for non-ISO (we can prompt if it's not a standard ISO string)
+                 if (context === 'AMBIGUOUS' || !sample.includes('T')) {
+                     const interceptResult = await state.openDateIntercept(sample);
+                     if (!interceptResult) {
+                         // User cancelled
+                         return;
+                     }
+                     finalDateContext = interceptResult.sourceFormat;
+                     // Update display format as well
+                     typeOptions.dateFormat = interceptResult.displayFormat;
+                 }
+             }
+         }
+      }
+
+      changeColumnType(column.key, type, typeOptions, finalDateContext);
     }
     
     // Always apply label updates if changed

@@ -100,6 +100,14 @@ export interface AppState {
   setSelectionRange: (range: { startRowId: string, startColKey: string, endRowId: string, endColKey: string } | null) => void;
   toastMessage: string | null;
   setToastMessage: (msg: string | null) => void;
+
+  dateInterceptModal: {
+    isOpen: boolean;
+    sampleDate: string;
+    resolve: ((result: { sourceFormat: string, displayFormat: string } | null) => void) | null;
+  };
+  openDateIntercept: (sampleDate: string) => Promise<{ sourceFormat: string, displayFormat: string } | null>;
+  closeDateIntercept: () => void;
   
   past: Array<{ databases: Database[] }>;
   future: Array<{ databases: Database[] }>;
@@ -125,8 +133,8 @@ export interface AppState {
 
   // Column CRUD (applies to active database)
   addColumn: (col: GridColumn, options?: { insertAfterKey?: string; insertBeforeKey?: string }) => void;
-      updateColumn: (key: string, updates: Partial<GridColumn>) => void;
-  changeColumnType: (colKey: string, newType: string, newTypeOptions?: any) => void;
+  updateColumn: (key: string, updates: Partial<GridColumn>) => void;
+  changeColumnType: (colKey: string, newType: string, newTypeOptions?: any, providedDateContext?: string) => void;
   deleteColumn: (key: string) => void;
   duplicateColumn: (colKey: string) => void;
 
@@ -261,6 +269,26 @@ export const useStore = create<AppState>()(
 
       toastMessage: null,
       setToastMessage: (msg) => set({ toastMessage: msg }),
+
+      dateInterceptModal: { isOpen: false, sampleDate: '', resolve: null },
+      openDateIntercept: (sampleDate: string) => {
+        return new Promise((resolve) => {
+          set({
+            dateInterceptModal: {
+              isOpen: true,
+              sampleDate,
+              resolve
+            }
+          });
+        });
+      },
+      closeDateIntercept: () => set((state) => {
+        if (state.dateInterceptModal.resolve) {
+          state.dateInterceptModal.resolve(null);
+        }
+        return { dateInterceptModal: { isOpen: false, sampleDate: '', resolve: null } };
+      }),
+
 
       past: [],
       future: [],
@@ -410,7 +438,7 @@ export const useStore = create<AppState>()(
       }),
       
   
-      changeColumnType: (colKey, newType, newTypeOptions) => {
+      changeColumnType: (colKey, newType, newTypeOptions, providedDateContext) => {
         get().takeSnapshot();
         set((state) => {
         if (!state.activeDatabaseId) return state;
@@ -448,8 +476,8 @@ export const useStore = create<AppState>()(
             newCols[colIndex] = { ...oldCol, type: newType, typeOptions: finalTypeOptions };
             
             // Pre-calculate date context if we are parsing dates
-            let dateContext = 'MDY';
-            if (newType === 'date') {
+            let dateContext = providedDateContext || 'MDY';
+            if (newType === 'date' && !providedDateContext) {
                 dateContext = analyzeDateColumn(db.records.map(r => r.cells[colKey]));
             }
             

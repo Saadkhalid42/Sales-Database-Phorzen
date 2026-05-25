@@ -8,6 +8,7 @@ import { DataGrid } from './components/Grid/DataGrid';
 import { CardView } from './components/Grid/CardView';
 
 import { ExpandedRecordModal } from './components/Grid/ExpandedRecordModal';
+import { DateFormatInterceptModal } from './components/Shared/DateFormatInterceptModal';
 import { Database } from 'lucide-react';
 
 function App() {
@@ -66,6 +67,7 @@ function App() {
       </main>
 
       <ExpandedRecordModal />
+      <DateFormatInterceptModal />
 
       {/* Global Toast */}
       {toastMessage && (

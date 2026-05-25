@@ -1,4 +1,6 @@
-export type DateFormatContext = 'MDY' | 'DMY' | 'YMD' | 'AMBIGUOUS';
+import { parse, isValid } from 'date-fns';
+
+export type DateFormatContext = 'MDY' | 'DMY' | 'YMD' | 'AMBIGUOUS' | string;
 
 export function parseNumber(raw: any): number | null {
   if (typeof raw === 'number') return raw;
@@ -89,6 +91,14 @@ export function analyzeDateColumn(rawValues: any[]): DateFormatContext {
 export function parseDate(raw: any, context: DateFormatContext = 'MDY'): string | null {
   if (!raw) return null;
   const s = String(raw).trim();
+
+  // If a custom specific mask is provided, try parsing with date-fns first!
+  if (context !== 'MDY' && context !== 'DMY' && context !== 'YMD' && context !== 'AMBIGUOUS') {
+     const parsedDate = parse(s, context, new Date());
+     if (isValid(parsedDate)) {
+         return parsedDate.toISOString();
+     }
+  }
   
   // If it has words, rely on JS native
   if (/[a-zA-Z]/.test(s)) {
