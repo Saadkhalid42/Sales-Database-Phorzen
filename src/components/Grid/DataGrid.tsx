@@ -132,7 +132,6 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
 
   // Task 3: Fix TanStack Virtualizer Desync
   useEffect(() => {
-    rowVirtualizer.scrollToOffset(0);
     rowVirtualizer.measure();
   }, [viewRecords.length, rowVirtualizer]);
 
