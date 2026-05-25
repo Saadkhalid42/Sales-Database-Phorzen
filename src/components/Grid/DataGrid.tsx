@@ -75,7 +75,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
     const timers: Record<string, NodeJS.Timeout> = {};
 
     Object.entries(stagedEvictions).forEach(([id, data]) => {
-      if (data.mode === 'timer') {
+      if (data.mode === 'countdown') {
         const remaining = 5000 - (Date.now() - data.addedAt);
         if (remaining <= 0) {
           commitEviction(id);
@@ -92,32 +92,28 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
     };
   }, [stagedEvictions, commitEviction]);
 
-  useEffect(() => {
-    // If the user clicked inside the grid, check if we need to interrupt a timer
-    if (selectionRange?.startRowId) {
-      const activeEviction = stagedEvictions[selectionRange.startRowId];
-      if (activeEviction && activeEviction.mode === 'timer') {
-        stageEviction(selectionRange.startRowId, 'click-away');
-      }
-    }
-  }, [selectionRange, stagedEvictions, stageEviction]);
-
-  // Robust Global Click-Away Eviction Trigger
+  // Focus Loss (Locked -> Countdown) and Return Focus (Countdown -> Locked)
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
       Object.entries(stagedEvictions).forEach(([id, data]) => {
-        if (data.mode === 'click-away') {
-          const rowEl = document.querySelector(`[data-row-id="${id}"]`);
-          if (!rowEl || !rowEl.contains(target)) {
-            commitEviction(id);
+        const rowEl = document.querySelector(`[data-row-id="${id}"]`);
+        const clickedInside = rowEl && rowEl.contains(target);
+        
+        if (data.mode === 'locked') {
+          if (!clickedInside) {
+            stageEviction(id, 'countdown'); // Reset timer and start countdown
+          }
+        } else if (data.mode === 'countdown') {
+          if (clickedInside) {
+            stageEviction(id, 'locked'); // Kill timer and lock focus
           }
         }
       });
     };
     document.addEventListener('mousedown', handleGlobalClick);
     return () => document.removeEventListener('mousedown', handleGlobalClick);
-  }, [stagedEvictions, commitEviction]);
+  }, [stagedEvictions, stageEviction]);
 
   const TimerTicker = ({ addedAt }: { addedAt: number }) => {
     const [left, setLeft] = useState(Math.max(0, Math.ceil((5000 - (Date.now() - addedAt)) / 1000)));

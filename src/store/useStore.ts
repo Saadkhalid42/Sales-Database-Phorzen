@@ -129,8 +129,8 @@ export interface AppState {
   undo: () => void;
   redo: () => void;
 
-  stagedEvictions: Record<string, { mode: 'click-away' | 'timer' | 'evicting', addedAt: number }>;
-  stageEviction: (recordId: string, mode: 'click-away' | 'timer' | 'evicting') => void;
+  stagedEvictions: Record<string, { mode: 'locked' | 'countdown' | 'evicting', addedAt: number }>;
+  stageEviction: (recordId: string, mode: 'locked' | 'countdown' | 'evicting') => void;
   clearEviction: (recordId: string) => void;
   commitEviction: (recordId: string) => void;
 

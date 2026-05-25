@@ -13,7 +13,7 @@ export function useProjectedData() {
   
   const clearEviction = useStore(state => state.clearEviction);
   const prevPassingRef = useRef<Set<string>>(new Set());
-  const pendingEvictionsRef = useRef<{ id: string, mode: 'click-away' | 'timer' }[]>([]);
+  const pendingEvictionsRef = useRef<{ id: string, mode: 'locked' | 'countdown' }[]>([]);
   const evictionsToClearRef = useRef<string[]>([]);
   const prevFilterHashRef = useRef('');
 
@@ -89,7 +89,7 @@ export function useProjectedData() {
         const wasPassing = prevPassingRef.current.has(r.id);
         
         if (wasPassing) {
-          const mode = expandedRecordId === r.id ? 'timer' : 'click-away';
+          const mode = 'locked';
           pendingEvictionsRef.current.push({ id: r.id, mode });
           result.push({ ...r, _isSoftEvicted: true, _evictionMode: mode });
         } else if (stagedEvictions[r.id]) {
