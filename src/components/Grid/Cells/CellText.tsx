@@ -79,7 +79,7 @@ export const CellText = React.memo(function CellText(props: CellProps) {
           setLocalValue(e.target.value);
           updateRecordCell(recordId, colKey, e.target.value);
         }}
-        className={`w-full bg-surface-sunken outline-none border border-border focus:ring-2 focus:ring-accent rounded-lg text-[13px] text-text-primary px-3 py-3 transition-all ${!isValidEmail ? 'text-red-500' : ''}`}
+        className={`w-full bg-surface-sunken outline-none border border-border focus:ring-2 focus:ring-accent rounded-lg text-[13px] text-text-primary px-3 py-3 min-h-[44px] transition-all ${!isValidEmail ? 'text-red-500' : ''}`}
         placeholder="Enter text..."
       />
     );

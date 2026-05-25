@@ -12,6 +12,7 @@ import { DateFormatInterceptModal } from './components/Shared/DateFormatIntercep
 import { ConfirmModal } from './components/Shared/ConfirmModal';
 import { Database } from 'lucide-react';
 import { useRealtimeNotifications } from './hooks/useRealtimeNotifications';
+import { useMediaQuery } from './hooks/useMediaQuery';
 
 function App() {
   // Bind global keyboard shortcuts (Undo/Redo, Navigation, Selection Actions)
@@ -35,7 +36,8 @@ function App() {
   const currentView = activeWs?.views.find(v => v.id === activeViewId);
   
   const projectedData = useProjectedData();
-  const viewType = currentView?.viewType || 'grid';
+  const isMobile = useMediaQuery('(max-width: 768px)');
+  const viewType = isMobile ? 'card' : (currentView?.viewType || 'grid');
 
   useEffect(() => {
     // Apply theme data attribute to document root

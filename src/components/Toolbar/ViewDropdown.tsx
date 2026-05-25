@@ -57,7 +57,7 @@ function SortableViewItem({ view, activeViewId, setActiveViewId, setDialogConfig
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content className="bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[60]" sideOffset={4} align="end" >
+            <DropdownMenu.Content className="mobile-bottom-sheet bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[60]" sideOffset={4} align="end" >
               <DropdownMenu.Item 
                 className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-sm"
                 onSelect={() => setDialogConfig({ isOpen: true, type: 'rename', targetId: view.id, targetName: view.name, iconName: view.iconName, iconColor: view.iconColor })}

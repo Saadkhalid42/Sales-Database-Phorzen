@@ -55,7 +55,7 @@ export const CellNumber = React.memo(function CellNumber(props: CellProps) {
     return (
       <input
         type={columnType === 'duration' ? 'text' : 'number'}
-        className="w-full bg-surface-sunken outline-none border border-border focus:ring-2 focus:ring-accent rounded-lg px-3 py-3 text-[13px] text-text-primary transition-all"
+        className="w-full bg-surface-sunken outline-none border border-border focus:ring-2 focus:ring-accent rounded-lg text-[13px] text-text-primary px-3 py-3 min-h-[44px] transition-all text-right tabular-nums"
         value={localValue}
         onChange={(e) => setLocalValue(e.target.value)}
         onBlur={onBlur}

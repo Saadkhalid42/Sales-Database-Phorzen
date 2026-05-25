@@ -323,9 +323,27 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
 
                 <div>
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-3">Schema Mapping</h3>
-                  <div className="flex flex-col gap-2 max-h-64 overflow-y-auto custom-scrollbar pr-2">
+                  <div className="flex flex-col gap-3 md:gap-2 max-h-[60vh] md:max-h-64 overflow-y-auto custom-scrollbar pr-2">
                     {mappings.map((mapping, idx) => (
-                      <div key={mapping.originalKey} className={`flex items-center gap-3 p-2 rounded-lg border transition-colors ${mapping.skip ? 'border-primary/10 opacity-50 bg-surface/50' : 'border-border bg-surface'}`}>
+                      <div key={mapping.originalKey} className={`flex flex-col md:flex-row md:items-center gap-3 p-4 md:p-2 rounded-xl md:rounded-lg border transition-colors ${mapping.skip ? 'border-primary/10 opacity-50 bg-surface/50' : 'border-border bg-surface'}`}>
+                        
+                        {/* Mobile Keep Header */}
+                        <div className="flex md:hidden items-center justify-end w-full">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-text-primary opacity-70 font-medium">Keep</span>
+                            <input 
+                              type="checkbox"
+                              checked={!mapping.skip}
+                              onChange={(e) => {
+                                const newM = [...mappings];
+                                newM[idx].skip = !e.target.checked;
+                                setMappings(newM);
+                              }}
+                              className="w-5 h-5 rounded border-border text-accent focus:ring-accent accent-accent cursor-pointer"
+                            />
+                          </div>
+                        </div>
+
                         <input 
                           type="text" 
                           value={mapping.name}
@@ -335,7 +353,7 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
                             setMappings(newM);
                           }}
                           disabled={mapping.skip}
-                          className="flex-1 px-2 py-1.5 rounded bg-transparent text-text-primary text-sm border-b border-transparent focus:border-primary focus:outline-none disabled:opacity-50"
+                          className="w-full md:flex-1 md:w-auto px-3 py-3 md:py-1.5 rounded-lg md:rounded bg-surface-sunken md:bg-transparent text-text-primary text-sm border md:border-b border-border md:border-transparent focus:border-primary focus:outline-none disabled:opacity-50 min-h-[44px] md:min-h-0"
                         />
                         
                         <Select.Root 
@@ -347,21 +365,21 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
                           }}
                           disabled={mapping.skip}
                         >
-                          <Select.Trigger className="w-48 relative flex items-center px-2 py-1.5 rounded border border-border bg-surface text-text-primary text-xs focus:outline-none disabled:opacity-50">
+                          <Select.Trigger className="w-full md:w-48 relative flex items-center px-3 py-3 md:py-1.5 rounded-lg md:rounded border border-border bg-surface text-text-primary text-sm md:text-xs focus:outline-none disabled:opacity-50 min-h-[44px] md:min-h-0">
                             <span className="block w-full overflow-hidden text-ellipsis whitespace-nowrap pr-8 text-left">
                               <Select.Value />
                             </span>
                             <Select.Icon asChild>
-                              <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
-                                <ChevronDown size={14} className="opacity-50" />
+                              <div className="absolute right-3 md:right-2 top-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-none">
+                                <ChevronDown size={16} className="opacity-50" />
                               </div>
                             </Select.Icon>
                           </Select.Trigger>
                           <Select.Portal>
-                            <Select.Content className="z-[70] bg-surface border border-border rounded-md shadow-xl overflow-hidden">
+                            <Select.Content className="z-[70] bg-surface border border-border rounded-md shadow-xl overflow-hidden mobile-bottom-sheet">
                               <Select.Viewport className="p-1">
                                 {FIELD_TYPES.map(ft => (
-                                  <Select.Item key={ft.value} value={ft.value} className="flex items-center justify-between pl-3 pr-3 py-1.5 text-xs text-text-primary rounded cursor-pointer data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
+                                  <Select.Item key={ft.value} value={ft.value} className="flex items-center justify-between pl-3 pr-3 py-2 md:py-1.5 text-sm md:text-xs text-text-primary rounded cursor-pointer data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none min-h-[44px] md:min-h-0">
                                     <Select.ItemText>{ft.label}</Select.ItemText>
                                     <Select.ItemIndicator><Check size={12} /></Select.ItemIndicator>
                                   </Select.Item>
@@ -371,7 +389,8 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
                           </Select.Portal>
                         </Select.Root>
 
-                        <div className="flex items-center gap-2 px-2">
+                        {/* Desktop Keep Checkbox */}
+                        <div className="hidden md:flex items-center gap-2 px-2">
                           <span className="text-xs text-text-primary opacity-70 font-medium">
                             Keep
                           </span>

@@ -23,34 +23,58 @@ export function RecordCard({ record, visibleColumns }: RecordCardProps) {
     return String(val);
   };
 
+  const statusColumns = secondaryColumns.filter(c => c.type === 'singleSelect' || c.type === 'multiSelect');
+  const previewColumns = secondaryColumns.filter(c => c.type !== 'singleSelect' && c.type !== 'multiSelect').slice(0, 4);
+
   return (
     <div 
       onClick={() => openExpandedRecord(record.id)}
-      className="bg-surface-raised border border-border rounded-[24px] shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col gap-5 relative overflow-hidden group p-6 hover:-translate-y-0.5"
+      className="bg-surface-raised border border-border rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col relative overflow-hidden group p-4 hover:-translate-y-0.5 w-full"
     >
-      {/* Subtle hover overlay for interactability cue */}
       <div className="absolute inset-0 bg-accent-subtle opacity-0 group-hover:opacity-40 transition-opacity pointer-events-none z-0" />
       
-      <div className="relative z-10 flex flex-col gap-5 w-full">
-        {/* Title / Primary Field */}
-        <div className="flex flex-col mb-1">
-          <span className="text-[10px] uppercase font-bold text-text-muted tracking-wider mb-1">
-            {primaryColumn.label}
-          </span>
-          <h3 className="text-lg font-semibold text-text-primary leading-tight truncate">
-            {formatValue(primaryValue)}
-          </h3>
+      <div className="relative z-10 flex flex-col w-full">
+        {/* Header Row */}
+        <div className="flex justify-between items-start mb-3 gap-3">
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-[10px] uppercase font-bold text-text-muted tracking-wider mb-0.5 truncate">
+              {primaryColumn.label}
+            </span>
+            <h3 className="text-base font-semibold text-text-primary leading-snug break-words">
+              {formatValue(primaryValue)}
+            </h3>
+          </div>
+          
+          {/* Status Pills */}
+          {statusColumns.length > 0 && (
+            <div className="flex flex-wrap justify-end gap-1 shrink-0 max-w-[40%]">
+              {statusColumns.map(col => {
+                const val = record.cells[col.key];
+                if (!val || val === '') return null;
+                const vals = Array.isArray(val) ? val : [val];
+                return vals.map((v: string) => {
+                  const opt = col.typeOptions?.options?.find((o: any) => o.value === v);
+                  const colorClass = opt?.color || 'bg-accent/10 text-accent';
+                  return (
+                    <span key={`${col.key}-${v}`} className={`text-[10px] px-1.5 py-0.5 rounded-md font-medium truncate max-w-[80px] ${colorClass}`}>
+                      {opt?.label || v}
+                    </span>
+                  );
+                });
+              })}
+            </div>
+          )}
         </div>
 
-        {/* Secondary Fields */}
-        {secondaryColumns.length > 0 && (
-          <div className="flex flex-col gap-3">
-            {secondaryColumns.map(col => (
-              <div key={col.key} className="flex flex-col">
-                <span className="text-[10px] uppercase font-bold text-text-muted tracking-wider mb-0.5 truncate">
+        {/* Body Preview */}
+        {previewColumns.length > 0 && (
+          <div className="flex flex-col gap-2 border-t border-divider pt-3">
+            {previewColumns.map(col => (
+              <div key={col.key} className="flex justify-between items-center gap-3">
+                <span className="text-[11px] font-medium text-text-muted truncate min-w-[30%]">
                   {col.label}
                 </span>
-                <span className="text-sm font-medium text-text-primary truncate">
+                <span className="text-sm font-medium text-text-primary truncate text-right">
                   {formatValue(record.cells[col.key])}
                 </span>
               </div>

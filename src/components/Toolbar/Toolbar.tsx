@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore } from '../../store/useStore';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Slider from '@radix-ui/react-slider';
-import { Search, Undo2, Redo2, Settings, Check, Clock, ChevronRight, Palette, Palette as PaletteIcon, Sun, Moon } from 'lucide-react';
+import { Search, Undo2, Redo2, Settings, Check, Clock, ChevronRight, Palette, Palette as PaletteIcon, Sun, Moon, Menu, X } from 'lucide-react';
 import { DatabaseDropdown } from './DatabaseDropdown';
 import { WorkspaceDropdown } from './WorkspaceDropdown';
 import { ViewDropdown } from './ViewDropdown';
@@ -19,6 +19,8 @@ const THEMES = [
 ];
 
 export function Toolbar() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+
   const theme = useStore(state => state.theme);
   const setTheme = useStore(state => state.setTheme);
   
@@ -75,10 +77,17 @@ export function Toolbar() {
   };
 
   return (
-    <div className="flex items-center justify-between w-full h-[var(--header-h)] px-4 border-b border-divider bg-surface/95  sticky top-0 z-50 shrink-0">
+    <div className="flex items-center justify-between w-full h-[var(--header-h)] px-4 border-b border-divider bg-surface/95  sticky top-0 z-50 shrink-0 gap-2">
       
-      {/* Left Group */}
-      <div className="flex items-center gap-2">
+      {/* Mobile Hamburger Trigger */}
+      <div className="flex md:hidden items-center">
+        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -ml-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-sunken transition-colors outline-none">
+          <Menu size={20} />
+        </button>
+      </div>
+
+      {/* Left Group (Desktop) */}
+      <div className="hidden md:flex items-center gap-2">
         <DatabaseDropdown />
         <WorkspaceDropdown />
         <ViewDropdown />
@@ -97,7 +106,7 @@ export function Toolbar() {
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
-            <DropdownMenu.Content className="w-56 border border-border shadow-md rounded-2xl p-2 z-50 mt-1 bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2">
+            <DropdownMenu.Content className="w-56 border border-border shadow-md rounded-2xl p-2 z-[200] mt-1 bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 mobile-bottom-sheet">
               
               {/* Show Time Zone Toggle */}
               <DropdownMenu.CheckboxItem 
@@ -244,9 +253,9 @@ export function Toolbar() {
       )}
 
       {/* Right Group */}
-      <div className="flex items-center gap-3 ml-auto">
+      <div className="flex items-center gap-2 ml-auto">
         {/* Global Search */}
-        <div className="relative group w-64">
+        <div className="relative group w-40 md:w-64">
           <input
             type="text"
             placeholder="Search"
@@ -256,10 +265,10 @@ export function Toolbar() {
           />
         </div>
 
-        <div className="w-px h-6 bg-divider" />
+        <div className="w-px h-6 bg-divider hidden md:block" />
 
         {/* Undo/Redo */}
-        <div className="flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-1">
           <button 
             onClick={() => undo()}
             disabled={pastStates?.length === 0}
@@ -278,6 +287,57 @@ export function Toolbar() {
           </button>
         </div>
       </div>
+
+      {/* Mobile Slide-out Drawer */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[200] flex md:hidden animate-in fade-in">
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+          <div className="relative w-[85%] max-w-sm h-full bg-surface-raised shadow-2xl flex flex-col animate-in slide-in-from-left">
+            <div className="p-4 border-b border-divider flex items-center justify-between bg-surface sticky top-0 z-10">
+              <span className="font-bold text-text-primary text-lg">Menu</span>
+              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2 rounded-full hover:bg-surface-sunken text-text-secondary outline-none">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-5 bg-canvas">
+              <div className="flex flex-col gap-2">
+                <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">Navigation</h4>
+                <DatabaseDropdown />
+                <WorkspaceDropdown />
+                <ViewDropdown />
+              </div>
+
+              <div className="w-full h-px bg-divider" />
+
+              <div className="flex flex-col gap-2">
+                <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">View Configuration</h4>
+                <FilterPopover />
+                <SortPopover />
+                <HideFieldsPopover />
+              </div>
+              
+              <div className="w-full h-px bg-divider" />
+              
+              <div className="flex flex-col gap-2">
+                <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">Theme</h4>
+                {THEMES.map(t => (
+                  <button 
+                    key={t.id}
+                    onClick={() => { setTheme(t.id); setIsMobileMenuOpen(false); }} 
+                    className={`flex items-center justify-between w-full text-left px-3 py-3 rounded-xl transition-colors text-sm ${theme === t.id ? 'bg-accent-subtle text-accent font-semibold' : 'text-text-primary hover:bg-surface-sunken'}`}
+                  >
+                    <div className="flex items-center gap-2">
+                      {t.type === 'light' ? <Sun size={16} /> : <Moon size={16} />}
+                      {t.name}
+                    </div>
+                    {theme === t.id && <Check size={16} />}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

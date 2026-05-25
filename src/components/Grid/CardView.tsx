@@ -46,8 +46,8 @@ export function CardView({ records }: { records: GridRecord[] }) {
   }
 
   return (
-    <div className="flex-1 h-full overflow-y-auto custom-scrollbar p-6 bg-canvas">
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
+    <div className="flex-1 h-full overflow-y-auto custom-scrollbar p-4 md:p-6 bg-canvas w-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8 max-w-7xl mx-auto w-full">
         {records.map(record => (
           <RecordCard 
             key={record.id} 

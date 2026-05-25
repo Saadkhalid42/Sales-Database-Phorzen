@@ -55,10 +55,10 @@ export function ExpandedRecordModal() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-black/40  z-50 animate-in fade-in" />
         <Dialog.Content 
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl max-h-[85vh] h-[85vh] bg-surface-raised rounded-[24px] shadow-lg flex flex-col z-[100] overflow-hidden outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+          className="fixed inset-0 md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full h-full md:max-w-5xl md:max-h-[85vh] md:h-[85vh] bg-surface-raised md:rounded-[24px] shadow-lg flex flex-col z-[100] overflow-hidden outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-10 py-8 shrink-0 pb-6 border-b border-divider">
+          <div className="flex items-center justify-between px-6 md:px-10 py-6 md:py-8 shrink-0 pb-4 md:pb-6 border-b border-divider bg-surface-raised sticky top-0 z-20">
             <Dialog.Title className="text-4xl font-bold text-text-primary truncate pr-4 tracking-tight">
               {headerTitle}
             </Dialog.Title>
@@ -73,9 +73,9 @@ export function ExpandedRecordModal() {
           </div>
 
           {/* Body: Split Layout */}
-          <div className="flex-1 grid grid-cols-3 h-full overflow-hidden">
+          <div className="flex-1 overflow-y-auto md:overflow-hidden md:grid md:grid-cols-3 h-full">
             {/* Left Side (Form) */}
-            <div className="col-span-2 overflow-y-auto custom-scrollbar p-8 space-y-5 relative">
+            <div className="md:col-span-2 md:overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-6 md:space-y-5 relative">
               {visibleCols.map(col => {
                 const value = record.cells[col.key];
 
@@ -140,7 +140,7 @@ export function ExpandedRecordModal() {
             </div>
 
             {/* Right Side (Changelog) */}
-            <div className="col-span-1 bg-surface-sunken border-l border-divider overflow-y-auto custom-scrollbar p-6 flex flex-col">
+            <div className="md:col-span-1 bg-surface-sunken md:border-l border-t md:border-t-0 border-divider md:overflow-y-auto custom-scrollbar p-6 flex flex-col">
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-6 flex items-center gap-2">
                 <Activity size={16} className="text-accent" />
                 Activity Log
