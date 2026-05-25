@@ -238,27 +238,78 @@ export const useStore = create<AppState>()(
       },
       isHydrated: false,
       hydrateStore: async () => {
+        // Attempt to fetch LocalStorage device state FIRST
+        let deviceState: any = null;
+        try {
+          const snapshot = localStorage.getItem('antigravity_device_state_snapshot');
+          if (snapshot) {
+            deviceState = JSON.parse(snapshot);
+          }
+        } catch (e) {
+          console.error("Failed to parse device state snapshot", e);
+        }
+
         const storedDatabases = await loadDatabases();
         const dbs = (storedDatabases && storedDatabases.length > 0) ? storedDatabases : initialDatabases;
         
-        let targetDb = dbs.find(db => db.name === 'Sales Database');
-        if (!targetDb && dbs.length > 0) {
-          targetDb = dbs[0];
+        // Deep merge device state configurations over the databases
+        if (deviceState && deviceState.databaseConfigs) {
+          deviceState.databaseConfigs.forEach((configDb: any) => {
+            const realDb = dbs.find((d: any) => d.id === configDb.id);
+            if (realDb) {
+              // Merge columns
+              if (configDb.columns) {
+                configDb.columns.forEach((configCol: any) => {
+                  const realCol = realDb.columns.find((c: any) => c.key === configCol.key);
+                  if (realCol) {
+                    realCol.width = configCol.width;
+                    if (configCol.typeOptions) realCol.typeOptions = configCol.typeOptions;
+                  }
+                });
+              }
+              // Merge workspaces and views
+              if (configDb.workspaces) {
+                configDb.workspaces.forEach((configWs: any) => {
+                  const realWs = realDb.workspaces.find((w: any) => w.id === configWs.id);
+                  if (realWs && configWs.views) {
+                    configWs.views.forEach((configView: any) => {
+                      const realView = realWs.views.find((v: any) => v.id === configView.id);
+                      if (realView) {
+                        Object.assign(realView, configView);
+                      }
+                    });
+                  }
+                });
+              }
+            }
+          });
         }
 
+        let targetDb = dbs.find(db => db.id === deviceState?.activeDatabaseId);
+        if (!targetDb) targetDb = dbs.find(db => db.name === 'Sales Database');
+        if (!targetDb && dbs.length > 0) targetDb = dbs[0];
+
         const activeDbId = targetDb ? targetDb.id : 'db1';
-        const activeWsId = targetDb?.workspaces[0]?.id || 'ws1';
-        const activeVId = targetDb?.workspaces[0]?.views[0]?.id || 'v1';
+        let activeWsId = targetDb?.workspaces.find(ws => ws.id === deviceState?.activeWorkspaceId)?.id;
+        if (!activeWsId) activeWsId = targetDb?.workspaces[0]?.id || 'ws1';
+        
+        const activeWs = targetDb?.workspaces.find(ws => ws.id === activeWsId);
+        let activeVId = activeWs?.views.find(v => v.id === deviceState?.activeViewId)?.id;
+        if (!activeVId) activeVId = activeWs?.views[0]?.id || 'v1';
 
         set({ 
           databases: dbs, 
           isHydrated: true,
           activeDatabaseId: activeDbId,
           activeWorkspaceId: activeWsId,
-          activeViewId: activeVId
+          activeViewId: activeVId,
+          ...(deviceState?.theme && { theme: deviceState.theme }),
+          ...(deviceState?.altColoringEnabled !== undefined && { altColoringEnabled: deviceState.altColoringEnabled }),
+          ...(deviceState?.timeWidgetEnabled !== undefined && { timeWidgetEnabled: deviceState.timeWidgetEnabled }),
+          ...(deviceState?.rowHeight && { rowHeight: deviceState.rowHeight }),
+          ...(deviceState?.notifiedFieldKeys && { notifiedFieldKeys: deviceState.notifiedFieldKeys }),
         });
       },
-
       theme: 'theme-default-light',
       setTheme: (theme) => set({ theme }),
 
@@ -992,10 +1043,69 @@ export const useStore = create<AppState>()(
 
 let saveTimeout: NodeJS.Timeout;
 useStore.subscribe((state, prevState) => {
-  if (state.isHydrated && state.databases !== prevState.databases) {
+  if (!state.isHydrated) return;
+
+  // 1. Debounced IndexedDB Save for records
+  if (state.databases !== prevState.databases) {
     clearTimeout(saveTimeout);
     saveTimeout = setTimeout(() => {
       saveDatabases(state.databases);
     }, 500);
   }
+});
+
+let configSaveTimeout: NodeJS.Timeout;
+useStore.subscribe((state) => {
+  if (!state.isHydrated) return;
+
+  clearTimeout(configSaveTimeout);
+  configSaveTimeout = setTimeout(() => {
+    try {
+      const {
+        theme,
+        altColoringEnabled,
+        timeWidgetEnabled,
+        rowHeight,
+        activeDatabaseId,
+        activeWorkspaceId,
+        activeViewId,
+        notifiedFieldKeys,
+        databases
+      } = state;
+
+      // Deep clone structural definitions without records
+      const databaseConfigs = databases.map(db => ({
+        id: db.id,
+        name: db.name,
+        columns: db.columns.map(c => ({
+          key: c.key,
+          width: c.width,
+          typeOptions: c.typeOptions
+        })),
+        workspaces: db.workspaces.map(ws => ({
+          id: ws.id,
+          name: ws.name,
+          iconName: ws.iconName,
+          iconColor: ws.iconColor,
+          views: ws.views // Views hold all the filters, sorts, hiddenFields configs
+        }))
+      }));
+
+      const snapshot = {
+        theme,
+        altColoringEnabled,
+        timeWidgetEnabled,
+        rowHeight,
+        activeDatabaseId,
+        activeWorkspaceId,
+        activeViewId,
+        notifiedFieldKeys,
+        databaseConfigs
+      };
+
+      localStorage.setItem('antigravity_device_state_snapshot', JSON.stringify(snapshot));
+    } catch (e) {
+      console.error("State Serialization Engine Error:", e);
+    }
+  }, 500);
 });
