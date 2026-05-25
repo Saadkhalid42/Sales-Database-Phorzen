@@ -76,33 +76,12 @@ export function Toolbar() {
     document.documentElement.style.setProperty('--zebra-opacity', `${vals[0]}%`);
   };
 
-  return (
-    <div className="flex items-center justify-between w-full h-[var(--header-h)] px-4 border-b border-divider bg-surface/95  sticky top-0 z-50 shrink-0 gap-2">
-      
-      {/* Mobile Hamburger Trigger */}
-      <div className="flex md:hidden items-center">
-        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -ml-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-sunken transition-colors outline-none">
-          <Menu size={20} />
-        </button>
-      </div>
 
-      {/* Left Group (Desktop) */}
-      <div className="hidden md:flex items-center gap-2">
-        <DatabaseDropdown />
-        <WorkspaceDropdown />
-        <ViewDropdown />
-        
-        <div className="w-px h-6 bg-divider mx-1" />
-        
-        <FilterPopover />
-        <SortPopover />
-        <HideFieldsPopover />
-        
-        {/* Settings Menu */}
+  const SettingsMenu = () => (
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className="flex items-center justify-center p-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-sunken data-[state=open]:text-text-primary data-[state=open]:bg-surface-sunken transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring">
-              <Settings size={18} />
+            <button className="flex items-center md:justify-center p-2 px-3 md:px-2 rounded-xl md:rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-sunken data-[state=open]:text-text-primary data-[state=open]:bg-surface-sunken transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring w-full md:w-auto">
+              <><Settings size={18} /> <span className="md:hidden ml-2 font-medium">Settings</span></>
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
@@ -244,6 +223,31 @@ export function Toolbar() {
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
+  );
+
+  return (
+    <div className="flex items-center justify-between w-full h-[var(--header-h)] px-4 border-b border-divider bg-surface/95  sticky top-0 z-50 shrink-0 gap-2">
+      
+      {/* Mobile Hamburger Trigger */}
+      <div className="flex md:hidden items-center">
+        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -ml-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-sunken transition-colors outline-none">
+          <Menu size={20} />
+        </button>
+      </div>
+
+      {/* Left Group (Desktop) */}
+      <div className="hidden md:flex items-center gap-2">
+        <DatabaseDropdown />
+        <WorkspaceDropdown />
+        <ViewDropdown />
+        
+        <div className="w-px h-6 bg-divider mx-1" />
+        
+        <FilterPopover />
+        <SortPopover />
+        <HideFieldsPopover />
+        
+        <SettingsMenu />
       </div>
 
       {timeWidgetEnabled && (
@@ -319,7 +323,13 @@ export function Toolbar() {
               <div className="w-full h-px bg-divider" />
               
               <div className="flex flex-col gap-2">
-                <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">Theme</h4>
+ 
+              <div className="flex flex-col gap-2">
+                <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">Settings</h4>
+                <SettingsMenu />
+              </div>
+              <div className="w-full h-px bg-divider" />
+               <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">Theme</h4>
                 {THEMES.map(t => (
                   <button 
                     key={t.id}
