@@ -100,17 +100,24 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
         stageEviction(selectionRange.startRowId, 'click-away');
       }
     }
+  }, [selectionRange, stagedEvictions, stageEviction]);
 
-    // Process click-away evictions
-    Object.entries(stagedEvictions).forEach(([id, data]) => {
-      if (data.mode === 'click-away') {
-        // If selection is null (clicked outside grid) or on a different row
-        if (!selectionRange || selectionRange.startRowId !== id) {
-          commitEviction(id);
+  // Robust Global Click-Away Eviction Trigger
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      Object.entries(stagedEvictions).forEach(([id, data]) => {
+        if (data.mode === 'click-away') {
+          const rowEl = document.querySelector(`[data-row-id="${id}"]`);
+          if (!rowEl || !rowEl.contains(target)) {
+            commitEviction(id);
+          }
         }
-      }
-    });
-  }, [selectionRange, stagedEvictions, commitEviction, stageEviction]);
+      });
+    };
+    document.addEventListener('mousedown', handleGlobalClick);
+    return () => document.removeEventListener('mousedown', handleGlobalClick);
+  }, [stagedEvictions, commitEviction]);
 
   const TimerTicker = ({ addedAt }: { addedAt: number }) => {
     const [left, setLeft] = useState(Math.max(0, Math.ceil((5000 - (Date.now() - addedAt)) / 1000)));
@@ -598,6 +605,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
               return (
                 <div
                   key={virtualRow.key}
+                  data-row-id={record.id}
                   className={`absolute top-0 left-0 w-full group transition-snappy flex flex-nowrap grid-row will-change-transform ${isSoftEvicted ? 'bg-danger/10 is-invalidated-row border-b-danger/30 z-30' : (isAlt ? 'is-alternate' : 'is-default')} ${isCheckboxSelected ? 'is-selected' : ''}`}
                   style={{
                     height: `${virtualRow.size}px`,

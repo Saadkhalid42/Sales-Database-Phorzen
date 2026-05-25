@@ -11,8 +11,10 @@ export function useProjectedData() {
   const stageEviction = useStore(state => state.stageEviction);
   const expandedRecordId = useStore(state => state.expandedRecordId);
   
+  const clearEviction = useStore(state => state.clearEviction);
   const prevPassingRef = useRef<Set<string>>(new Set());
   const pendingEvictionsRef = useRef<{ id: string, mode: 'click-away' | 'timer' }[]>([]);
+  const evictionsToClearRef = useRef<string[]>([]);
   const prevFilterHashRef = useRef('');
 
   const activeDb = databases.find(db => db.id === activeDatabaseId);
@@ -79,6 +81,9 @@ export function useProjectedData() {
       if (passes) {
         currentlyPassing.add(r.id);
         result.push(r);
+        if (stagedEvictions[r.id]) {
+          evictionsToClearRef.current.push(r.id);
+        }
       } else {
         // If it failed but it was passing in the PREVIOUS frame, soft evict it
         const wasPassing = prevPassingRef.current.has(r.id);
@@ -133,7 +138,12 @@ export function useProjectedData() {
       });
       pendingEvictionsRef.current = [];
     }
-  }, [projectedData, stageEviction, stagedEvictions]);
+    
+    if (evictionsToClearRef.current.length > 0) {
+      evictionsToClearRef.current.forEach(id => clearEviction(id));
+      evictionsToClearRef.current = [];
+    }
+  }, [projectedData, stageEviction, stagedEvictions, clearEviction]);
 
   return projectedData;
 }
