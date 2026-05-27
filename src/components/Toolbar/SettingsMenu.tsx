@@ -11,7 +11,7 @@ const THEMES = [
   { id: 'oled-black', name: 'OLED Black', type: 'dark' },
 ];
 
-export function SettingsMenu() {
+export function SettingsMenu({ asInlineMobile }: { asInlineMobile?: boolean }) {
   const currentViewId = useStore(state => state.activeViewId);
   const currentView = useStore(state => state.databases.find(d => d.id === state.activeDatabaseId)?.workspaces.find(w => w.id === state.activeWorkspaceId)?.views.find(v => v.id === currentViewId));
   const updateView = useStore(state => state.updateView);
@@ -58,6 +58,140 @@ export function SettingsMenu() {
   const handleZebraOpacityChange = (vals: number[]) => {
     document.documentElement.style.setProperty('--zebra-opacity', `${vals[0]}%`);
   };
+
+  const renderInlineContent = () => (
+    <div className="flex flex-col gap-2 w-full p-2">
+      <label className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-2xl text-text-primary hover:bg-accent-subtle hover:text-accent transition-colors">
+        <div className="flex items-center gap-2">
+          <Clock size={16} />
+          <span className="text-sm">Time Zone Badge</span>
+        </div>
+        <input 
+          type="checkbox"
+          checked={currentView?.showTimezones || false}
+          onChange={(e) => {
+            const v = e.target.checked;
+            if (currentView) {
+              updateView(currentView.id, { showTimezones: v });
+              if (v) calculateMissingTimezones();
+            }
+          }}
+          className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+        />
+      </label>
+
+      <label className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-2xl text-text-primary hover:bg-accent-subtle hover:text-accent transition-colors">
+        <div className="flex items-center gap-2">
+          <PaletteIcon size={16} />
+          <span className="text-sm">Alternate Coloring</span>
+        </div>
+        <input 
+          type="checkbox"
+          checked={altColoringEnabled}
+          onChange={(e) => setAltColoringEnabled(e.target.checked)}
+          className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+        />
+      </label>
+
+      <label className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-2xl text-text-primary hover:bg-accent-subtle hover:text-accent transition-colors">
+        <div className="flex items-center gap-2">
+          <Clock size={16} />
+          <span className="text-sm">Time Widget</span>
+        </div>
+        <input 
+          type="checkbox"
+          checked={timeWidgetEnabled}
+          onChange={(e) => setTimeWidgetEnabled?.(e.target.checked)}
+          className="w-4 h-4 rounded border-border text-accent focus:ring-accent"
+        />
+      </label>
+
+      <div className="h-px bg-divider my-2 mx-2" />
+
+      <div className="px-3">
+        <div className="flex flex-col gap-4 mt-2">
+          <div className="flex flex-col gap-3">
+            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Row Height</label>
+            <Slider.Root 
+              className="relative flex items-center w-full h-5 touch-none" 
+              value={[localRowHeight]} 
+              onValueChange={handleRowHeightChange}
+              onValueCommit={handleRowHeightCommit}
+              max={60} min={24} step={1}
+            >
+              <Slider.Track className="bg-surface-sunken relative grow rounded-full h-2">
+                <Slider.Range className="absolute bg-accent rounded-full h-full" />
+              </Slider.Track>
+              <Slider.Thumb className="block w-4 h-4 bg-surface-raised border border-border shadow-sm rounded-full hover:scale-110 focus:outline-none transition-transform cursor-grab active:cursor-grabbing" />
+            </Slider.Root>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Grid Line Opacity</label>
+            <Slider.Root 
+              className="relative flex items-center w-full h-5 touch-none" 
+              defaultValue={[10]} 
+              onValueChange={handleBorderOpacityChange}
+              max={100} min={0} step={1}
+            >
+              <Slider.Track className="bg-surface-sunken relative grow rounded-full h-2">
+                <Slider.Range className="absolute bg-accent rounded-full h-full" />
+              </Slider.Track>
+              <Slider.Thumb className="block w-4 h-4 bg-surface-raised border border-border shadow-sm rounded-full hover:scale-110 focus:outline-none transition-transform cursor-grab active:cursor-grabbing" />
+            </Slider.Root>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider">Zebra Opacity</label>
+            <Slider.Root 
+              className="relative flex items-center w-full h-5 touch-none" 
+              defaultValue={[2]} 
+              onValueChange={handleZebraOpacityChange}
+              max={20} min={0} step={1}
+            >
+              <Slider.Track className="bg-surface-sunken relative grow rounded-full h-2">
+                <Slider.Range className="absolute bg-accent rounded-full h-full" />
+              </Slider.Track>
+              <Slider.Thumb className="block w-4 h-4 bg-surface-raised border border-border shadow-sm rounded-full hover:scale-110 focus:outline-none transition-transform cursor-grab active:cursor-grabbing" />
+            </Slider.Root>
+          </div>
+
+          <div className="flex flex-col gap-2 mt-2">
+            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-1">Theme</label>
+            {THEMES.map(t => (
+              <div 
+                key={t.id}
+                onClick={() => setTheme(t.id)} 
+                className={`flex items-center justify-between cursor-pointer px-3 py-2 rounded-2xl transition-colors text-sm ${theme === t.id ? 'bg-accent-subtle text-accent' : 'text-text-primary hover:bg-accent-subtle hover:text-accent'}`}
+              >
+                <div className="flex items-center gap-2">
+                  {t.type === 'light' ? <Sun size={16} /> : <Moon size={16} />}
+                  {t.name}
+                </div>
+                {theme === t.id && <Check size={16} />}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="h-px bg-divider my-2 mx-2" />
+
+      <button 
+        onClick={async () => {
+          await supabase.auth.signOut();
+        }}
+        className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-danger hover:bg-danger/10 transition-colors w-full text-left"
+      >
+        <LogOut size={16} />
+        <span className="text-sm font-medium">Log Out</span>
+      </button>
+    </div>
+  );
+
+  if (asInlineMobile) {
+    return renderInlineContent();
+  }
 
   return (
     <DropdownMenu.Root open={open} onOpenChange={setOpen}>

@@ -177,7 +177,7 @@ export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
         const original = originalPermissions[userId] || {};
         
         let changed = false;
-        for (const key of ['can_edit_cells', 'can_delete_rows', 'can_create_views', 'can_change_field_types']) {
+        for (const key of ['can_edit_cells', 'can_delete_rows', 'can_create_views', 'can_change_field_types', 'can_create_workspaces', 'can_filter', 'can_sort']) {
           if (!!current[key] !== !!original[key]) changed = true;
         }
         
@@ -187,7 +187,10 @@ export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
             edit_cells: !!current.can_edit_cells,
             delete_rows: !!current.can_delete_rows,
             create_views: !!current.can_create_views,
-            change_field_types: !!current.can_change_field_types
+            change_field_types: !!current.can_change_field_types,
+            create_workspaces: !!current.can_create_workspaces,
+            allow_filter: !!current.can_filter,
+            allow_sort: !!current.can_sort
           });
             
           if (error) throw error;
@@ -338,6 +341,9 @@ export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
                         <th className="px-4 py-3 font-medium text-text-secondary border-b border-border/50 text-center">Delete Rows</th>
                         <th className="px-4 py-3 font-medium text-text-secondary border-b border-border/50 text-center">Create Views</th>
                         <th className="px-4 py-3 font-medium text-text-secondary border-b border-border/50 text-center">Change Types</th>
+                        <th className="px-4 py-3 font-medium text-text-secondary border-b border-border/50 text-center">Create Workspaces</th>
+                        <th className="px-4 py-3 font-medium text-text-secondary border-b border-border/50 text-center">Filter</th>
+                        <th className="px-4 py-3 font-medium text-text-secondary border-b border-border/50 text-center">Sort</th>
                         <th className="px-4 py-3 font-medium text-text-secondary border-b border-border/50 text-center">Actions</th>
                       </tr>
                     </thead>
@@ -355,7 +361,7 @@ export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
                               {u.role.toUpperCase()}
                             </span>
                           </td>
-                          {['can_edit_cells', 'can_delete_rows', 'can_create_views', 'can_change_field_types'].map(perm => (
+                          {['can_edit_cells', 'can_delete_rows', 'can_create_views', 'can_change_field_types', 'can_create_workspaces', 'can_filter', 'can_sort'].map(perm => (
                             <td key={perm} className="px-4 py-3 text-center">
                               <button 
                                 onClick={() => togglePermission(u.id, perm)}

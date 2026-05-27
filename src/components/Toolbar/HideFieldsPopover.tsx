@@ -48,7 +48,7 @@ function SortableFieldItem({ col, isHidden, toggleVisibility }: SortableFieldIte
   );
 }
 
-export function HideFieldsPopover() {
+export function HideFieldsPopover({ asInlineMobile }: { asInlineMobile?: boolean }) {
   const databases = useStore(state => state.databases);
   const activeDatabaseId = useStore(state => state.activeDatabaseId);
   const activeWorkspaceId = useStore(state => state.activeWorkspaceId);
@@ -114,6 +114,62 @@ export function HideFieldsPopover() {
 
   const isActive = hiddenFields.length > 0;
 
+  const renderContent = () => (
+    <div className="flex flex-col gap-2 max-h-[400px]">
+      <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-border bg-surface mb-2">
+        <Search size={14} className="text-text-muted" />
+        <input 
+          type="text" 
+          placeholder="Find a field..." 
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="flex-1 bg-transparent text-xs text-text-primary focus:outline-none"
+        />
+      </div>
+
+      <div className="flex items-center gap-2 mb-2">
+        <button 
+          onClick={() => {
+            if (activeViewId) updateView(activeViewId, { hiddenFields: columns.map(c => c.key) });
+          }}
+          className="flex-1 px-2 py-1.5 bg-surface-sunken hover:bg-surface-sunken text-text-secondary hover:text-primary rounded text-[10px] font-semibold uppercase tracking-wider transition-colors"
+        >
+          Hide All
+        </button>
+        <button 
+          onClick={() => {
+            if (activeViewId) updateView(activeViewId, { hiddenFields: [] });
+          }}
+          className="flex-1 px-2 py-1.5 bg-surface-sunken hover:bg-surface-sunken text-text-secondary hover:text-primary rounded text-[10px] font-semibold uppercase tracking-wider transition-colors"
+        >
+          Show All
+        </button>
+      </div>
+
+      <div className="overflow-y-auto custom-scrollbar flex-1 -mx-1 px-1 flex flex-col gap-1">
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={filteredCols.map(c => c.key)} strategy={verticalListSortingStrategy}>
+            {filteredCols.map((col) => (
+              <SortableFieldItem 
+                key={col.key} 
+                col={col} 
+                isHidden={hiddenFields.includes(col.key)}
+                toggleVisibility={toggleVisibility}
+              />
+            ))}
+          </SortableContext>
+        </DndContext>
+        {filteredCols.length === 0 && (
+          <div className="text-xs text-text-primary opacity-50 py-4 text-center">No fields found.</div>
+        )}
+      </div>
+    </div>
+  );
+
+  if (asInlineMobile) {
+    return renderContent();
+  }
+
   return (
     <Popover.Root>
       <Popover.Trigger asChild>
@@ -135,53 +191,7 @@ export function HideFieldsPopover() {
           align="start"
           sideOffset={4}
         >
-          <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-border bg-surface mb-2">
-            <Search size={14} className="text-text-muted" />
-            <input 
-              type="text" 
-              placeholder="Find a field..." 
-              value={searchQuery}
-              onChange={e => setSearchQuery(e.target.value)}
-              className="flex-1 bg-transparent text-xs text-text-primary focus:outline-none"
-            />
-          </div>
-
-          <div className="flex items-center gap-2 mb-2">
-            <button 
-              onClick={() => {
-                if (activeViewId) updateView(activeViewId, { hiddenFields: columns.map(c => c.key) });
-              }}
-              className="flex-1 px-2 py-1.5 bg-surface-sunken hover:bg-surface-sunken text-text-secondary hover:text-primary rounded text-[10px] font-semibold uppercase tracking-wider transition-colors"
-            >
-              Hide All
-            </button>
-            <button 
-              onClick={() => {
-                if (activeViewId) updateView(activeViewId, { hiddenFields: [] });
-              }}
-              className="flex-1 px-2 py-1.5 bg-surface-sunken hover:bg-surface-sunken text-text-secondary hover:text-primary rounded text-[10px] font-semibold uppercase tracking-wider transition-colors"
-            >
-              Show All
-            </button>
-          </div>
-
-          <div className="overflow-y-auto custom-scrollbar flex-1 -mx-1 px-1 flex flex-col gap-1">
-            <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-              <SortableContext items={filteredCols.map(c => c.key)} strategy={verticalListSortingStrategy}>
-                {filteredCols.map((col) => (
-                  <SortableFieldItem 
-                    key={col.key} 
-                    col={col} 
-                    isHidden={hiddenFields.includes(col.key)}
-                    toggleVisibility={toggleVisibility}
-                  />
-                ))}
-              </SortableContext>
-            </DndContext>
-            {filteredCols.length === 0 && (
-              <div className="text-xs text-text-primary opacity-50 py-4 text-center">No fields found.</div>
-            )}
-          </div>
+          {renderContent()}
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>

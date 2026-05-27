@@ -1,12 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
-import { X, Clock, Activity, ChevronRight, ChevronDown } from 'lucide-react';
+import { X, Clock, Activity, ChevronRight, ChevronDown, Search } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { GridCell } from './GridCell';
 import { format } from 'date-fns';
 
 export function ExpandedRecordModal() {
   const [showHiddenFields, setShowHiddenFields] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const fieldRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+
   const expandedRecordId = useStore(state => state.expandedRecordId);
   const closeExpandedRecord = useStore(state => state.closeExpandedRecord);
   const updateRecordCell = useStore(state => state.updateRecordCell);
@@ -45,10 +48,22 @@ export function ExpandedRecordModal() {
     return null;
   }
 
-  // Task 2: Dynamic Modal Header (first column's value)
   const primaryField = columns[0];
   const primaryValue = primaryField ? record.cells[primaryField.key] : null;
   const headerTitle = primaryValue ? String(primaryValue) : 'Unnamed Record';
+
+  const scrollToField = (key: string, isHidden: boolean) => {
+    if (isHidden && !showHiddenFields) {
+      setShowHiddenFields(true);
+      setTimeout(() => {
+        const el = fieldRefs.current.get(key);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } else {
+      const el = fieldRefs.current.get(key);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  };
 
   return (
     <Dialog.Root open={!!expandedRecordId} onOpenChange={(open) => !open && closeExpandedRecord()}>
@@ -58,18 +73,51 @@ export function ExpandedRecordModal() {
           className="fixed inset-0 md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 w-full h-full md:max-w-5xl md:max-h-[85vh] md:h-[85vh] bg-surface-raised md:rounded-[24px] shadow-lg flex flex-col z-[100] overflow-hidden outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-6 md:px-10 py-6 md:py-8 shrink-0 pb-4 md:pb-6 border-b border-divider bg-surface-raised sticky top-0 z-20">
-            <Dialog.Title className="text-4xl font-bold text-text-primary truncate pr-4 tracking-tight">
-              {headerTitle}
-            </Dialog.Title>
-            <Dialog.Description className="sr-only">
-              Expanded record details and changelog
-            </Dialog.Description>
-            <Dialog.Close asChild>
-              <button className="p-2 rounded-lg hover:bg-surface-sunken text-text-primary opacity-70 hover:opacity-100 transition-colors shrink-0 outline-none focus:ring-2 focus:ring-accent">
-                <X size={24} />
-              </button>
-            </Dialog.Close>
+          <div className="flex flex-col px-6 md:px-10 py-6 md:py-6 shrink-0 border-b border-divider bg-surface-raised sticky top-0 z-20 shadow-sm gap-4">
+            <div className="flex items-center justify-between">
+              <Dialog.Title className="text-3xl md:text-4xl font-bold text-text-primary truncate pr-4 tracking-tight">
+                {headerTitle}
+              </Dialog.Title>
+              <Dialog.Description className="sr-only">
+                Expanded record details and changelog
+              </Dialog.Description>
+              <Dialog.Close asChild>
+                <button className="p-2 rounded-lg hover:bg-surface-sunken text-text-primary opacity-70 hover:opacity-100 transition-colors shrink-0 outline-none focus:ring-2 focus:ring-accent">
+                  <X size={24} />
+                </button>
+              </Dialog.Close>
+            </div>
+
+            {/* Search and Navigation Pills */}
+            <div className="flex flex-col gap-3">
+              <div className="relative">
+                <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+                <input 
+                  type="text" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search fields..."
+                  className="w-full bg-surface-sunken border border-border rounded-lg pr-4 py-2 text-sm text-text-primary focus:ring-2 focus:ring-accent outline-none transition-all"
+                  style={{ paddingLeft: '36px' }}
+                />
+              </div>
+              <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2 px-1 pt-1 -mx-1">
+                {orderedCols
+                  .filter(c => c.label.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map(col => {
+                    const isHidden = hiddenFieldKeys.includes(col.key);
+                    return (
+                      <button
+                        key={col.key}
+                        onClick={() => scrollToField(col.key, isHidden)}
+                        className="shrink-0 whitespace-nowrap px-3 py-1.5 rounded-full bg-surface border border-border shadow-sm text-xs font-medium text-text-secondary hover:text-text-primary hover:border-accent/50 hover:shadow transition-all focus:outline-none focus:ring-2 focus:ring-accent"
+                      >
+                        {col.label}
+                      </button>
+                    );
+                })}
+              </div>
+            </div>
           </div>
 
           {/* Body: Split Layout */}
@@ -80,7 +128,7 @@ export function ExpandedRecordModal() {
                 const value = record.cells[col.key];
 
                 return (
-                  <div key={col.key} className="flex flex-col gap-2">
+                  <div key={col.key} className="flex flex-col gap-2 scroll-mt-[200px]" ref={(el) => { if (el) fieldRefs.current.set(col.key, el); }}>
                     <label className="text-xs uppercase font-bold text-text-muted tracking-widest pl-1">
                       {col.label}
                     </label>
@@ -115,7 +163,7 @@ export function ExpandedRecordModal() {
                         const value = record.cells[col.key];
 
                         return (
-                          <div key={col.key} className="flex flex-col gap-2 opacity-80">
+                          <div key={col.key} className="flex flex-col gap-2 opacity-80 scroll-mt-[200px]" ref={(el) => { if (el) fieldRefs.current.set(col.key, el); }}>
                             <label className="text-xs uppercase font-bold text-text-muted tracking-widest pl-1">
                               {col.label}
                             </label>

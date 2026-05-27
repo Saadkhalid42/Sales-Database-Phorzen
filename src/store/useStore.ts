@@ -58,6 +58,7 @@ export interface View {
   viewType?: 'grid' | 'card';
   showTimezones?: boolean;
   frozenField?: string | null;
+  ownerId?: string;
 }
 
 export interface Workspace {
@@ -66,6 +67,7 @@ export interface Workspace {
   iconName?: string;
   iconColor?: string;
   views: View[];
+  ownerId?: string;
 }
 
 export interface Database {
@@ -86,6 +88,9 @@ export interface CurrentUser {
     can_delete_rows: boolean;
     can_create_views: boolean;
     can_change_field_types: boolean;
+    can_create_workspaces?: boolean;
+    can_filter?: boolean;
+    can_sort?: boolean;
   };
 }
 
@@ -1053,16 +1058,24 @@ export const useStore = create<AppState>()(
       }),
 
       // WORKSPACE MUTATIONS
-      addWorkspace: (ws) => set((state) => {
-        if (!state.activeDatabaseId) return state;
-        return {
-          databases: state.databases.map(db => {
-            if (db.id !== state.activeDatabaseId) return db;
-            return { ...db, workspaces: [...db.workspaces, { ...ws, views: [] }] };
-          }),
-          activeWorkspaceId: ws.id
-        };
-      }),
+      addWorkspace: (ws) => {
+        const currentUser = get().currentUser;
+        if (currentUser && currentUser.role?.toLowerCase() !== 'admin' && !currentUser.permissions?.can_create_workspaces) {
+          get().setToastMessage("Permission denied: You cannot create workspaces.");
+          return;
+        }
+
+        set((state) => {
+          if (!state.activeDatabaseId) return state;
+          return {
+            databases: state.databases.map(db => {
+              if (db.id !== state.activeDatabaseId) return db;
+              return { ...db, workspaces: [...db.workspaces, { ...ws, views: [], ownerId: currentUser?.id }] };
+            }),
+            activeWorkspaceId: ws.id
+          };
+        });
+      },
       updateWorkspace: (id, name, iconName, iconColor) => set((state) => {
         if (!state.activeDatabaseId) return state;
         return {
@@ -1106,7 +1119,7 @@ export const useStore = create<AppState>()(
               ...db,
               workspaces: db.workspaces.map(ws => {
                 if (ws.id !== state.activeWorkspaceId) return ws;
-                return { ...ws, views: [...ws.views, { ...view, filters: [], sorts: [], hiddenFields: [], columnOrder: [], viewType: view.viewType || 'grid', frozenField: null }] };
+                return { ...ws, views: [...ws.views, { ...view, filters: [], sorts: [], hiddenFields: [], columnOrder: [], viewType: view.viewType || 'grid', frozenField: null, ownerId: currentUser?.id }] };
               })
             };
           }),
@@ -1147,36 +1160,45 @@ export const useStore = create<AppState>()(
           activeViewId: state.activeViewId === id ? null : state.activeViewId
         };
       }),
-      duplicateView: (viewId) => set((state) => {
-        if (!state.activeDatabaseId || !state.activeWorkspaceId) return state;
-        
-        let newViewId: string | null = null;
-        
-        const newState = {
-          databases: state.databases.map(db => {
-            if (db.id !== state.activeDatabaseId) return db;
-            return {
-              ...db,
-              workspaces: db.workspaces.map(ws => {
-                if (ws.id !== state.activeWorkspaceId) return ws;
-                const originalView = ws.views.find(v => v.id === viewId);
-                if (!originalView) return ws;
-                
-                newViewId = `view_${Math.random().toString(36).substring(2, 9)}`;
-                const newView = {
-                  ...JSON.parse(JSON.stringify(originalView)),
-                  id: newViewId,
-                  name: `${originalView.name} Copy`
-                };
-                
-                return { ...ws, views: [...ws.views, newView] };
-              })
-            };
-          })
-        };
-        
-        return newViewId ? { ...newState, activeViewId: newViewId } : newState;
-      }),
+      duplicateView: (viewId) => {
+        const currentUser = get().currentUser;
+        if (currentUser && currentUser.role?.toLowerCase() !== 'admin' && !currentUser.permissions?.can_create_views) {
+          get().setToastMessage("Permission denied: You cannot create views.");
+          return;
+        }
+
+        set((state) => {
+          if (!state.activeDatabaseId || !state.activeWorkspaceId) return state;
+          
+          let newViewId: string | null = null;
+          
+          const newState = {
+            databases: state.databases.map(db => {
+              if (db.id !== state.activeDatabaseId) return db;
+              return {
+                ...db,
+                workspaces: db.workspaces.map(ws => {
+                  if (ws.id !== state.activeWorkspaceId) return ws;
+                  const originalView = ws.views.find(v => v.id === viewId);
+                  if (!originalView) return ws;
+                  
+                  newViewId = `view_${Math.random().toString(36).substring(2, 9)}`;
+                  const newView = {
+                    ...JSON.parse(JSON.stringify(originalView)),
+                    id: newViewId,
+                    name: `${originalView.name} Copy`,
+                    ownerId: currentUser?.id
+                  };
+                  
+                  return { ...ws, views: [...ws.views, newView] };
+                })
+              };
+            })
+          };
+          
+          return newViewId ? { ...newState, activeViewId: newViewId } : newState;
+        });
+      },
       reorderViews: (activeId, overId) => set((state) => {
         if (!state.activeDatabaseId || !state.activeWorkspaceId) return state;
         return {

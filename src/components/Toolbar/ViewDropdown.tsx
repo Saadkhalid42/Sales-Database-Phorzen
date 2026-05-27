@@ -21,7 +21,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 
-function SortableViewItem({ view, activeViewId, setActiveViewId, setDialogConfig, duplicateView }: any) {
+function SortableViewItem({ view, activeViewId, setActiveViewId, setDialogConfig, duplicateView, asInlineMobile, currentUser }: any) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: view.id });
 
   const style = {
@@ -38,18 +38,31 @@ function SortableViewItem({ view, activeViewId, setActiveViewId, setDialogConfig
       <div {...attributes} {...listeners} className="cursor-grab p-2 opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity">
         <GripVertical size={14} />
       </div>
-      <DropdownMenu.Item
-        className="flex-1 flex items-center justify-between cursor-pointer py-2 text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none rounded-2xl px-1"
-        onSelect={() => setActiveViewId(view.id)}
-      >
-        <span className="flex items-center gap-2 truncate">
-          <VIcon size={16} color={view.iconColor || 'currentColor'} className="flex-shrink-0"/>
-          <span className="truncate">{view.name}</span>
-        </span>
-        {activeViewId === view.id && <Check size={16} className="text-primary flex-shrink-0 mr-2" />}
-      </DropdownMenu.Item>
+      {asInlineMobile ? (
+        <button
+          className="flex-1 flex items-center justify-between cursor-pointer py-2 text-text-primary hover:bg-accent-subtle hover:text-accent outline-none rounded-2xl px-1 w-full"
+          onClick={() => setActiveViewId(view.id)}
+        >
+          <span className="flex items-center gap-2 truncate">
+            <VIcon size={16} color={view.iconColor || 'currentColor'} className="flex-shrink-0"/>
+            <span className="truncate">{view.name}</span>
+          </span>
+          {activeViewId === view.id && <Check size={16} className="text-primary flex-shrink-0 mr-2" />}
+        </button>
+      ) : (
+        <DropdownMenu.Item
+          className="flex-1 flex items-center justify-between cursor-pointer py-2 text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none rounded-2xl px-1"
+          onSelect={() => setActiveViewId(view.id)}
+        >
+          <span className="flex items-center gap-2 truncate">
+            <VIcon size={16} color={view.iconColor || 'currentColor'} className="flex-shrink-0"/>
+            <span className="truncate">{view.name}</span>
+          </span>
+          {activeViewId === view.id && <Check size={16} className="text-primary flex-shrink-0 mr-2" />}
+        </DropdownMenu.Item>
+      )}
       
-      <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+      {(currentUser?.role?.toLowerCase() === 'admin' || view.ownerId === currentUser?.id) && <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
             <button className="p-1 rounded hover:bg-divider text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-accent">
@@ -79,12 +92,12 @@ function SortableViewItem({ view, activeViewId, setActiveViewId, setDialogConfig
             </DropdownMenu.Content>
           </DropdownMenu.Portal>
         </DropdownMenu.Root>
-      </div>
+      </div>}
     </div>
   );
 }
 
-export function ViewDropdown() {
+export function ViewDropdown({ asInlineMobile }: { asInlineMobile?: boolean }) {
   const databases = useStore(state => state.databases);
   const activeDatabaseId = useStore(state => state.activeDatabaseId);
   const activeWsId = useStore(state => state.activeWorkspaceId);
@@ -96,11 +109,21 @@ export function ViewDropdown() {
   const addView = useStore(state => state.addView);
   const reorderViews = useStore(state => state.reorderViews);
 
+  const currentUser = useStore(state => state.currentUser);
+
   const activeDb = databases.find(db => db.id === activeDatabaseId);
   const activeWs = activeDb?.workspaces.find(ws => ws.id === activeWsId);
-  const workspaceViews = activeWs?.views || [];
-  const activeView = workspaceViews.find(v => v.id === activeViewId);
+  const allWorkspaceViews = activeWs?.views || [];
+  
+  const workspaceViews = allWorkspaceViews.filter(v => {
+    if (currentUser?.role?.toLowerCase() === 'admin') return true;
+    return !v.ownerId || v.ownerId === currentUser?.id;
+  });
+  
+  const activeView = workspaceViews.find(v => v.id === activeViewId) || workspaceViews[0];
   const ActiveIcon = activeView?.iconName && ICONS[activeView.iconName] ? ICONS[activeView.iconName] : LayoutGrid;
+  
+  const canAddView = currentUser?.role?.toLowerCase() === 'admin' || !!currentUser?.permissions?.can_create_views;
 
   const [dialogConfig, setDialogConfig] = useState<{
     isOpen: boolean;
@@ -139,6 +162,64 @@ export function ViewDropdown() {
   });
   const openDelete = (view: any) => setDialogConfig({ isOpen: true, type: 'delete', targetId: view.id, targetName: view.name });
 
+  const renderInlineList = () => (
+    <div className="flex flex-col w-full">
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={workspaceViews.map(v => v.id)} strategy={verticalListSortingStrategy}>
+          {workspaceViews.map(view => (
+            <SortableViewItem 
+              key={view.id} 
+              view={view} 
+              activeViewId={activeViewId} 
+              setActiveViewId={setActiveViewId} 
+              setDialogConfig={setDialogConfig} 
+              duplicateView={duplicateView} 
+              asInlineMobile={true}
+              currentUser={currentUser}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+      
+      {canAddView && (
+        <>
+          <div className="h-px bg-divider my-1" />
+          
+          <button 
+            className="flex w-full items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-accent font-medium hover:bg-accent-subtle hover:text-accent outline-none"
+            onClick={openAdd}
+            disabled={!activeWsId}
+          >
+            <Plus size={16} /> Add View
+          </button>
+        </>
+      )}
+    </div>
+  );
+
+  if (asInlineMobile) {
+    return (
+      <>
+        {renderInlineList()}
+        <ActionDialog
+          isOpen={dialogConfig.isOpen}
+          onOpenChange={(open) => setDialogConfig(prev => ({ ...prev, isOpen: open }))}
+          title={dialogConfig.type === 'add' ? 'Add View' : dialogConfig.type === 'rename' ? 'Rename View' : 'Delete View'}
+          description={dialogConfig.type === 'delete' ? `Are you sure you want to delete "${dialogConfig.targetName}"?` : undefined}
+          defaultValue={dialogConfig.type === 'rename' ? dialogConfig.targetName : ''}
+          requiresInput={dialogConfig.type !== 'delete'}
+          isDestructive={dialogConfig.type === 'delete'}
+          requiresIconColor={dialogConfig.type === 'add' || dialogConfig.type === 'rename'}
+          showViewTypeSelector={dialogConfig.type === 'add'}
+          defaultIcon={dialogConfig.iconName || 'LayoutGrid'}
+          defaultColor={dialogConfig.iconColor || '#10b981'}
+          confirmText={dialogConfig.type === 'add' ? 'Create' : dialogConfig.type === 'rename' ? 'Rename' : 'Delete'}
+          onConfirm={handleConfirm}
+        />
+      </>
+    );
+  }
+
   return (
     <>
       <DropdownMenu.Root>
@@ -171,20 +252,26 @@ export function ViewDropdown() {
                     setActiveViewId={setActiveViewId} 
                     setDialogConfig={setDialogConfig} 
                     duplicateView={duplicateView} 
+                    asInlineMobile={false}
+                    currentUser={currentUser}
                   />
                 ))}
               </SortableContext>
             </DndContext>
             
-            <DropdownMenu.Separator className="h-px bg-divider my-1" />
-            
-            <DropdownMenu.Item 
-              className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-accent font-medium data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none"
-              onSelect={openAdd}
-              disabled={!activeWsId}
-            >
-              <Plus size={16} /> Add View
-            </DropdownMenu.Item>
+            {canAddView && (
+              <>
+                <DropdownMenu.Separator className="h-px bg-divider my-1" />
+                
+                <DropdownMenu.Item 
+                  className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-accent font-medium data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none"
+                  onSelect={openAdd}
+                  disabled={!activeWsId}
+                >
+                  <Plus size={16} /> Add View
+                </DropdownMenu.Item>
+              </>
+            )}
 
           </DropdownMenu.Content>
         </DropdownMenu.Portal>

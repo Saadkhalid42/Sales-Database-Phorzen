@@ -189,29 +189,34 @@ export function Toolbar() {
                 <X size={20} />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-5 bg-canvas">
-              <div className="flex flex-col gap-2">
-                <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">Navigation</h4>
-                <DatabaseDropdown />
-                <WorkspaceDropdown />
-                <ViewDropdown />
-              </div>
-
-              <div className="w-full h-px bg-divider" />
-
-              <div className="flex flex-col gap-2">
-                <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">View Configuration</h4>
-                <FilterPopover />
-                <SortPopover />
-                <HideFieldsPopover />
-              </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3 bg-canvas">
+              <MobileAccordionSection title="Database" defaultOpen={true}>
+                <DatabaseDropdown asInlineMobile={true} />
+              </MobileAccordionSection>
               
-              <div className="w-full h-px bg-divider" />
+              <MobileAccordionSection title="Workspace">
+                <WorkspaceDropdown asInlineMobile={true} />
+              </MobileAccordionSection>
+
+              <MobileAccordionSection title="Views">
+                <ViewDropdown asInlineMobile={true} />
+              </MobileAccordionSection>
+
+              <MobileAccordionSection title="Filter">
+                <FilterPopover asInlineMobile={true} />
+              </MobileAccordionSection>
               
-              <div className="flex flex-col gap-2">
-                <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider pl-1 mb-1">Settings</h4>
-                <SettingsMenu />
-              </div>
+              <MobileAccordionSection title="Sort">
+                <SortPopover asInlineMobile={true} />
+              </MobileAccordionSection>
+
+              <MobileAccordionSection title="Hide">
+                <HideFieldsPopover asInlineMobile={true} />
+              </MobileAccordionSection>
+              
+              <MobileAccordionSection title="Settings">
+                <SettingsMenu asInlineMobile={true} />
+              </MobileAccordionSection>
             </div>
           </div>
         </div>
@@ -219,6 +224,26 @@ export function Toolbar() {
       
       {isAdminModalOpen && (
         <AdminPanelModal onClose={() => setIsAdminModalOpen(false)} />
+      )}
+    </div>
+  );
+}
+
+function MobileAccordionSection({ title, children, defaultOpen = false }: { title: string, children: React.ReactNode, defaultOpen?: boolean }) {
+  const [isOpen, setIsOpen] = React.useState(defaultOpen);
+  return (
+    <div className="flex flex-col">
+      <button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center justify-between w-full text-left py-2 px-1 outline-none group rounded hover:bg-surface-sunken transition-colors"
+      >
+        <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider group-hover:text-text-primary transition-colors">{title}</h4>
+        <ChevronRight size={14} className={`text-text-muted transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} />
+      </button>
+      {isOpen && (
+        <div className="flex flex-col gap-2 pt-2 animate-in slide-in-from-top-1 fade-in duration-200">
+          {children}
+        </div>
       )}
     </div>
   );

@@ -24,13 +24,16 @@ const getOperatorsForType = (type: string) => {
   return OPERATORS.default;
 };
 
-export function FilterPopover() {
+export function FilterPopover({ asInlineMobile }: { asInlineMobile?: boolean }) {
   const databases = useStore(state => state.databases);
   const activeDatabaseId = useStore(state => state.activeDatabaseId);
   const activeWorkspaceId = useStore(state => state.activeWorkspaceId);
   const activeViewId = useStore(state => state.activeViewId);
   const updateView = useStore(state => state.updateView);
   const toggleFilters = useStore(state => state.toggleFilters);
+  const currentUser = useStore(state => state.currentUser);
+  
+  const canFilter = currentUser?.role?.toLowerCase() === 'admin' || !!currentUser?.permissions?.can_filter;
 
   const activeDb = databases.find(db => db.id === activeDatabaseId);
   const columns = activeDb?.columns || [];
@@ -73,29 +76,9 @@ export function FilterPopover() {
 
   const isActive = activeFilters.length > 0;
 
-  return (
-    <Popover.Root>
-      <Popover.Trigger asChild>
-        <button 
-          className={`px-3 py-1.5 rounded-2xl border text-sm flex items-center gap-1.5 transition-colors ${
-            isActive 
-              ? 'bg-accent/10 text-accent border-accent/30 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30' 
-              : 'hover:bg-[rgba(var(--text-color),0.08)] border-transparent hover:border-[rgba(var(--text-color),0.15)] text-text-primary'
-          }`}
-        >
-          <Filter size={14} />
-          Filter {isActive && <span className="ml-1 bg-accent text-white text-[10px] px-1.5 rounded-full">{activeFilters.length}</span>}
-        </button>
-      </Popover.Trigger>
-      <Popover.Portal>
-        <Popover.Content 
-          className="w-[600px] border border-border shadow-xl rounded-[24px] p-3 z-50 mt-1 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
-          
-          align="start"
-          sideOffset={4}
-        >
-          <div className="flex flex-col gap-3">
-            <h4 className="text-xs font-semibold text-text-primary opacity-70 uppercase tracking-wider">Active Filters</h4>
+  const renderContent = () => (
+    <div className="flex flex-col gap-3">
+      <h4 className="text-xs font-semibold text-text-primary opacity-70 uppercase tracking-wider">Active Filters</h4>
             
             {activeFilters.length === 0 ? (
               <div className="text-sm text-text-primary opacity-50 py-2">No filters applied</div>
@@ -113,8 +96,9 @@ export function FilterPopover() {
                         <Select.Root 
                           value={currentView?.filterJoinOperator || 'and'} 
                           onValueChange={(v) => updateView(activeViewId!, { filterJoinOperator: v as 'and' | 'or' })}
+                          disabled={!canFilter}
                         >
-                          <Select.Trigger className="w-16 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs font-semibold focus:outline-none shrink-0">
+                          <Select.Trigger className="w-16 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs font-semibold focus:outline-none shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
                             <Select.Value />
                             <Select.Icon><ChevronDown size={14} className="opacity-50" /></Select.Icon>
                           </Select.Trigger>
@@ -145,8 +129,8 @@ export function FilterPopover() {
                         columns={columns}
                       />
 
-                      <Select.Root value={filter.operator} onValueChange={(v) => updateFilter(idx, 'operator', v)}>
-                        <Select.Trigger className="w-28 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary">
+                      <Select.Root value={filter.operator} onValueChange={(v) => updateFilter(idx, 'operator', v)} disabled={!canFilter}>
+                        <Select.Trigger className="w-28 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed">
                           <Select.Value />
                           <Select.Icon><ChevronDown size={14} className="opacity-50" /></Select.Icon>
                         </Select.Trigger>
@@ -167,8 +151,8 @@ export function FilterPopover() {
                       <div className="flex-1">
                         {!noValueNeeded && (
                           col?.type === 'single_select' || col?.type === 'multiple_select' ? (
-                            <Select.Root value={filter.value} onValueChange={(v) => updateFilter(idx, 'value', v)}>
-                              <Select.Trigger className="w-full flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary">
+                            <Select.Root value={filter.value} onValueChange={(v) => updateFilter(idx, 'value', v)} disabled={!canFilter}>
+                              <Select.Trigger className="w-full flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Select.Value placeholder="Select option..." />
                                 <Select.Icon><ChevronDown size={14} className="opacity-50" /></Select.Icon>
                               </Select.Trigger>
@@ -189,8 +173,8 @@ export function FilterPopover() {
                               </Select.Portal>
                             </Select.Root>
                           ) : col?.type === 'boolean' ? (
-                            <Select.Root value={filter.value === true ? 'true' : 'false'} onValueChange={(v) => updateFilter(idx, 'value', v === 'true')}>
-                              <Select.Trigger className="w-full flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary">
+                            <Select.Root value={filter.value === true ? 'true' : 'false'} onValueChange={(v) => updateFilter(idx, 'value', v === 'true')} disabled={!canFilter}>
+                              <Select.Trigger className="w-full flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Select.Value placeholder="Select boolean..." />
                                 <Select.Icon><ChevronDown size={14} className="opacity-50" /></Select.Icon>
                               </Select.Trigger>
@@ -215,30 +199,35 @@ export function FilterPopover() {
                               value={filter.value}
                               onChange={(e) => updateFilter(idx, 'value', e.target.value)}
                               placeholder="Value..."
-                              className="w-full px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary"
+                              disabled={!canFilter}
+                              className="w-full px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                           )
                         )}
                       </div>
 
-                      <button 
-                        onClick={() => removeFilter(idx)}
-                        className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-2xl transition-colors focus:outline-none"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+                      {canFilter && (
+                        <button 
+                          onClick={() => removeFilter(idx)}
+                          className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-2xl transition-colors focus:outline-none"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
                   );
                 })}
               </div>
             )}
 
-            <button 
-              onClick={addFilter}
-              className="flex items-center gap-1.5 text-xs font-medium text-text-primary hover:bg-[rgba(var(--text-color),0.05)] px-2 py-1.5 rounded-2xl self-start transition-colors mt-1"
-            >
-              <Plus size={14} /> Add Filter
-            </button>
+            {canFilter && (
+              <button 
+                onClick={addFilter}
+                className="flex items-center gap-1.5 text-xs font-medium text-text-primary hover:bg-[rgba(var(--text-color),0.05)] px-2 py-1.5 rounded-2xl self-start transition-colors mt-1"
+              >
+                <Plus size={14} /> Add Filter
+              </button>
+            )}
             
             {activeFilters.length > 0 && (
               <>
@@ -249,16 +238,44 @@ export function FilterPopover() {
                     <input 
                       type="checkbox"
                       checked={currentView?.isFilterDisabled || false}
+                      disabled={!canFilter}
                       onChange={(e) => {
                         if (activeViewId) toggleFilters(activeViewId, e.target.checked);
                       }}
-                      className="w-3.5 h-3.5 rounded-sm border-border text-accent focus:ring-accent cursor-pointer"
+                      className="w-3.5 h-3.5 rounded-sm border-border text-accent focus:ring-accent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </label>
                 </div>
               </>
             )}
-          </div>
+    </div>
+  );
+
+  if (asInlineMobile) {
+    return renderContent();
+  }
+
+  return (
+    <Popover.Root>
+      <Popover.Trigger asChild>
+        <button 
+          className={`px-3 py-1.5 rounded-2xl border text-sm flex items-center gap-1.5 transition-colors ${
+            isActive 
+              ? 'bg-accent/10 text-accent border-accent/30 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30' 
+              : 'hover:bg-[rgba(var(--text-color),0.08)] border-transparent hover:border-[rgba(var(--text-color),0.15)] text-text-primary'
+          }`}
+        >
+          <Filter size={14} />
+          Filter {isActive && <span className="ml-1 bg-accent text-white text-[10px] px-1.5 rounded-full">{activeFilters.length}</span>}
+        </button>
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content 
+          className="w-[600px] border border-border shadow-xl rounded-[24px] p-3 z-50 mt-1 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95"
+          align="start"
+          sideOffset={4}
+        >
+          {renderContent()}
         </Popover.Content>
       </Popover.Portal>
     </Popover.Root>
