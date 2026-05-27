@@ -7,12 +7,14 @@ interface SearchableColumnSelectorProps {
   onValueChange: (val: string) => void;
   columns: any[];
   className?: string;
+  disabled?: boolean;
 }
 
 export function SearchableColumnSelector({ 
   value, 
   onValueChange, 
   columns,
+  disabled,
   className = "w-1/3 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary transition-colors"
 }: SearchableColumnSelectorProps) {
   const [open, setOpen] = React.useState(false);
@@ -29,7 +31,7 @@ export function SearchableColumnSelector({
   return (
     <Popover.Root open={open} onOpenChange={setOpen}>
       <Popover.Trigger asChild>
-        <button className={className}>
+        <button className={className} disabled={disabled}>
           <span className="truncate">{selectedCol ? selectedCol.label : 'Select...'}</span>
           <ChevronDown size={14} className="opacity-50 flex-shrink-0" />
         </button>
