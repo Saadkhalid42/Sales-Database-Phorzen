@@ -6,6 +6,7 @@ import { FileQuestion, Plus } from 'lucide-react';
 
 export function CardView({ records }: { records: GridRecord[] }) {
   const addRecord = useStore(state => state.addRecord);
+  const openExpandedRecord = useStore(state => state.openExpandedRecord);
   const databases = useStore(state => state.databases);
   const activeDatabaseId = useStore(state => state.activeDatabaseId);
   const activeWorkspaceId = useStore(state => state.activeWorkspaceId);
@@ -63,6 +64,7 @@ export function CardView({ records }: { records: GridRecord[] }) {
           onClick={() => {
             const newRecordId = 'rec_' + Math.random().toString(36).substring(2, 9);
             addRecord({ id: newRecordId, cells: {} });
+            openExpandedRecord(newRecordId);
           }}
           className="flex flex-col min-h-[160px] border-2 border-dashed border-divider bg-surface-raised/50 hover:bg-surface-raised rounded-2xl cursor-pointer items-center justify-center text-text-muted hover:text-text-primary transition-all duration-200 group"
         >

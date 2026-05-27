@@ -170,3 +170,12 @@ body {
   animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
   animation-duration: 180ms !important;
 }
+
+@keyframes livePulse {
+  0% { background-color: rgba(16, 185, 129, 0.4); }
+  100% { background-color: transparent; }
+}
+
+.remote-cell-flash {
+  animation: livePulse 1s ease-out;
+}

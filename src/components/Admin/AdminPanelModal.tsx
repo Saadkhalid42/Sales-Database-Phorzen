@@ -52,8 +52,8 @@ export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
       if (uRes.data) {
         // Sort admin to the top always
         const sorted = [...uRes.data].sort((a, b) => {
-          if (a.role === 'admin' && b.role !== 'admin') return -1;
-          if (b.role === 'admin' && a.role !== 'admin') return 1;
+          if (a.role?.toLowerCase() === 'admin' && b.role?.toLowerCase() !== 'admin') return -1;
+          if (b.role?.toLowerCase() === 'admin' && a.role?.toLowerCase() !== 'admin') return 1;
           return 0;
         });
         setUsers(sorted);
@@ -351,7 +351,7 @@ export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
                             <div className="text-xs text-text-secondary">{u.email}</div>
                           </td>
                           <td className="px-4 py-3">
-                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${u.role === 'admin' ? 'bg-accent/20 text-accent' : 'bg-surface-raised text-text-secondary border border-border/50'}`}>
+                            <span className={`px-2 py-0.5 rounded text-xs font-medium ${u.role?.toLowerCase() === 'admin' ? 'bg-accent/20 text-accent' : 'bg-surface-raised text-text-secondary border border-border/50'}`}>
                               {u.role.toUpperCase()}
                             </span>
                           </td>
@@ -381,9 +381,9 @@ export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
                               </button>
                               <button 
                                 onClick={() => setDeletingUserId(u.id)}
-                                disabled={u.role === 'admin'}
-                                className="p-1.5 text-text-muted hover:text-danger hover:bg-danger/10 rounded transition-colors disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-muted"
-                                title={u.role === 'admin' ? "Cannot delete admin" : "Delete User"}
+                                disabled={u.role?.toLowerCase() === 'admin'}
+                                className="p-1.5 text-text-muted hover:text-danger hover:bg-danger/10 rounded transition-colors focus:outline-none disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-text-muted"
+                                title={u.role?.toLowerCase() === 'admin' ? "Cannot delete admin" : "Delete User"}
                               >
                                 <Trash2 size={16} />
                               </button>

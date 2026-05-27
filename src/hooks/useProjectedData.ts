@@ -8,6 +8,7 @@ export function useProjectedData() {
   const activeViewId = useStore(state => state.activeViewId);
   const searchQuery = useStore(state => state.searchQuery);
   const stagedEvictions = useStore(state => state.stagedEvictions);
+  const remoteMutations = useStore(state => state.remoteMutations);
   const stageEviction = useStore(state => state.stageEviction);
   const expandedRecordId = useStore(state => state.expandedRecordId);
   
@@ -89,7 +90,8 @@ export function useProjectedData() {
         const wasPassing = prevPassingRef.current.has(r.id);
         
         if (wasPassing) {
-          const mode = 'locked';
+          const isRemotelyMutated = Object.keys(remoteMutations).some(key => key.startsWith(r.id + '_'));
+          const mode = isRemotelyMutated ? 'countdown' : 'locked';
           pendingEvictionsRef.current.push({ id: r.id, mode });
           result.push({ ...r, _isSoftEvicted: true, _evictionMode: mode });
         } else if (stagedEvictions[r.id]) {
@@ -126,7 +128,7 @@ export function useProjectedData() {
     // Update the cache for the next render
     prevPassingRef.current = currentlyPassing;
     return result as any;
-  }, [records, activeViewId, searchQuery, activeFilters, activeSorts, isFilterDisabled, stagedEvictions, expandedRecordId]);
+  }, [records, activeViewId, searchQuery, activeFilters, activeSorts, isFilterDisabled, stagedEvictions, expandedRecordId, remoteMutations]);
 
   // Safely trigger state updates for pending evictions outside of the render cycle
   useEffect(() => {

@@ -153,6 +153,12 @@ export interface AppState {
   commitEviction: (recordId: string) => void;
   forceEvictAll: () => void;
 
+  remoteMutations: Record<string, number>;
+  activeRealtimeChannel: any;
+  initRealtime: (workspaceId: string | null) => void;
+  syncFromCloud: () => Promise<void>;
+  isSyncing: boolean;
+
   // 3-Tier Data
   databases: Database[];
   activeDatabaseId: string | null;
@@ -233,9 +239,22 @@ const initialDatabases: Database[] = [
   }
 ];
 
+const CLIENT_ID = Math.random().toString(36).substring(2, 15);
+
 export const useStore = create<AppState>()(
   temporal(
     (set, get) => ({
+      isSyncing: false,
+      syncFromCloud: async () => {
+        set({ isSyncing: true });
+        const data = await loadDatabases();
+        if (data && data.length > 0) {
+          set({ databases: data });
+        }
+        set({ isSyncing: false });
+      },
+      remoteMutations: {},
+      activeRealtimeChannel: null,
       currentUser: null,
       setCurrentUser: (user) => set({ currentUser: user }),
       selectedRowIds: [],
@@ -251,7 +270,7 @@ export const useStore = create<AppState>()(
       clearRowSelection: () => set({ selectedRowIds: [] }),
       deleteRecords: (recordIds) => {
         const currentUser = get().currentUser;
-        if (currentUser && currentUser.role !== 'admin' && !currentUser.permissions?.can_delete_rows) {
+        if (currentUser && currentUser.role?.toLowerCase() !== 'admin' && !currentUser.permissions?.can_delete_rows) {
           get().setToastMessage("Permission denied: You cannot delete rows.");
           return;
         }
@@ -482,8 +501,69 @@ export const useStore = create<AppState>()(
       activeViewId: 'v1',
 
       setActiveDatabaseId: (id) => set({ activeDatabaseId: id }),
-      setActiveWorkspaceId: (id) => set({ activeWorkspaceId: id }),
+      setActiveWorkspaceId: (id) => {
+        set({ activeWorkspaceId: id });
+        get().initRealtime(id);
+      },
       setActiveViewId: (id) => set({ activeViewId: id }),
+
+      initRealtime: (workspaceId) => {
+        const state = get();
+        if (state.activeRealtimeChannel) {
+          state.activeRealtimeChannel.unsubscribe();
+        }
+
+        if (!workspaceId) {
+          set({ activeRealtimeChannel: null });
+          return;
+        }
+
+        const channel = supabase.channel(`workspace:${workspaceId}`);
+        channel.on('broadcast', { event: 'cell_mutation' }, (payload) => {
+          const { row_id, field_id, new_value, client_id } = payload.payload;
+          
+          if (client_id === CLIENT_ID) return; // Skip our own broadcast
+
+          set((s) => {
+            if (!s.activeDatabaseId) return s;
+            const dbIndex = s.databases.findIndex(d => d.id === s.activeDatabaseId);
+            if (dbIndex === -1) return s;
+
+            const newDatabases = [...s.databases];
+            const newDb = { ...newDatabases[dbIndex] };
+            const rIndex = newDb.records.findIndex(r => r.id === row_id);
+            
+            if (rIndex > -1) {
+              const newRecords = [...newDb.records];
+              const record = { ...newRecords[rIndex], cells: { ...newRecords[rIndex].cells } };
+              record.cells[field_id] = new_value;
+              newRecords[rIndex] = record;
+              newDb.records = newRecords;
+              newDatabases[dbIndex] = newDb;
+
+              const mutationKey = `${row_id}_${field_id}`;
+              
+              // Clean up the pulse effect after 1s
+              setTimeout(() => {
+                set((innerState) => {
+                  const newMutations = { ...innerState.remoteMutations };
+                  delete newMutations[mutationKey];
+                  return { remoteMutations: newMutations };
+                });
+              }, 1000);
+
+              return { 
+                databases: newDatabases,
+                remoteMutations: { ...s.remoteMutations, [mutationKey]: Date.now() }
+              };
+            }
+            return s;
+          });
+        });
+
+        channel.subscribe();
+        set({ activeRealtimeChannel: channel });
+      },
 
       // DATABASE MUTATIONS
       addDatabase: (db) => set((state) => ({ 
@@ -597,7 +677,7 @@ export const useStore = create<AppState>()(
   
       changeColumnType: (colKey, newType, newTypeOptions, providedDateContext) => {
         const currentUser = get().currentUser;
-        if (currentUser && currentUser.role !== 'admin' && !currentUser.permissions?.can_change_field_types) {
+        if (currentUser && currentUser.role?.toLowerCase() !== 'admin' && !currentUser.permissions?.can_change_field_types) {
           get().setToastMessage("Permission denied: You cannot change field types.");
           return;
         }
@@ -766,7 +846,7 @@ export const useStore = create<AppState>()(
       }),
       deleteRecord: (id) => {
         const currentUser = get().currentUser;
-        if (currentUser && currentUser.role !== 'admin' && !currentUser.permissions?.can_delete_rows) {
+        if (currentUser && currentUser.role?.toLowerCase() !== 'admin' && !currentUser.permissions?.can_delete_rows) {
           get().setToastMessage("Permission denied: You cannot delete rows.");
           return;
         }
@@ -788,7 +868,7 @@ export const useStore = create<AppState>()(
       }); },
       updateRecordCell: (recordId, colKey, value) => {
         const currentUser = get().currentUser;
-        if (currentUser && currentUser.role !== 'admin' && !currentUser.permissions?.can_edit_cells) {
+        if (currentUser && currentUser.role?.toLowerCase() !== 'admin' && !currentUser.permissions?.can_edit_cells) {
           get().setToastMessage("Permission denied: You cannot edit cells.");
           return;
         }
@@ -829,44 +909,60 @@ export const useStore = create<AppState>()(
           let parsedValue = value;
           let isFlagged = false;
           if (col) {
-            const res = convertValue(value, col.type, 'MDY');
-            parsedValue = res.value;
-            isFlagged = res.isFlagged;
+              const dateContext = col.type === 'date' || col.type === 'created_on' 
+                  ? analyzeDateColumn(newDb.records.map(r => r.cells[colKey]))
+                  : 'MDY';
+              const result = convertValue(value, col.type, dateContext as any);
+              parsedValue = result.value;
+              isFlagged = result.isFlagged;
+          }
+
+          record.cells[colKey] = parsedValue;
+          
+          // Handle flagged invalid data
+          if (isFlagged) {
+              record._flagged = { ...(record._flagged || {}), [colKey]: true };
+              record.cells[`_raw_${colKey}`] = value;
+          } else {
+              if (record._flagged) {
+                  const newFlagged = { ...record._flagged };
+                  delete newFlagged[colKey];
+                  record._flagged = newFlagged;
+              }
+              delete record.cells[`_raw_${colKey}`];
           }
           
-          if (oldVal !== parsedValue) {
-            record.cells[colKey] = parsedValue;
-            
-            // Handle flagged invalid data
-            if (isFlagged) {
-                record._flagged = { ...(record._flagged || {}), [colKey]: true };
-                record.cells[`_raw_${colKey}`] = value;
-            } else {
-                if (record._flagged) {
-                    const newFlagged = { ...record._flagged };
-                    delete newFlagged[colKey];
-                    record._flagged = newFlagged;
-                }
-                delete record.cells[`_raw_${colKey}`];
-            }
-            
-            if (col && (col.type === 'phone_number' || col.label.toLowerCase() === 'lead number' || col.label.toLowerCase() === 'personal number' || col.label.toLowerCase() === 'phone')) {
-               record._timezone = getTimezoneFromPhone(String(parsedValue || '')) || null;
-            }
-            
-            const newLog: ChangelogEntry = {
-              id: Math.random().toString(36).substring(2, 9),
-              timestamp: new Date().toISOString(),
-              fieldName: colName,
-              oldValue: String(oldVal || ''),
-              newValue: String(parsedValue || '')
-            };
-            
-            record.changelog = record.changelog ? [newLog, ...record.changelog] : [newLog];
-            
-            newRecords[rIndex] = record;
-            newDb.records = newRecords;
-            newDatabases[dbIndex] = newDb;
+          if (col && (col.type === 'phone_number' || col.label.toLowerCase() === 'lead number' || col.label.toLowerCase() === 'personal number' || col.label.toLowerCase() === 'phone')) {
+             record._timezone = getTimezoneFromPhone(String(parsedValue || '')) || null;
+          }
+          
+          const newLog: ChangelogEntry = {
+            id: Math.random().toString(36).substring(2, 9),
+            timestamp: new Date().toISOString(),
+            fieldName: colName,
+            oldValue: String(oldVal || ''),
+            newValue: String(parsedValue || '')
+          };
+          
+          record.changelog = record.changelog ? [newLog, ...record.changelog] : [newLog];
+          
+          newRecords[rIndex] = record;
+          newDb.records = newRecords;
+          newDatabases[dbIndex] = newDb;
+
+          // Broadcast mutation to active realtime channel
+          const currentChannel = get().activeRealtimeChannel;
+          if (currentChannel) {
+             currentChannel.send({
+               type: 'broadcast',
+               event: 'cell_mutation',
+               payload: {
+                 row_id: recordId,
+                 field_id: colKey,
+                 new_value: parsedValue,
+                 client_id: CLIENT_ID
+               }
+             });
           }
         }
         return { databases: newDatabases };
@@ -990,7 +1086,7 @@ export const useStore = create<AppState>()(
       // VIEW MUTATIONS
       addView: (view) => {
         const currentUser = get().currentUser;
-        if (currentUser && currentUser.role !== 'admin' && !currentUser.permissions?.can_create_views) {
+        if (currentUser && currentUser.role?.toLowerCase() !== 'admin' && !currentUser.permissions?.can_create_views) {
           get().setToastMessage("Permission denied: You cannot create views.");
           return;
         }

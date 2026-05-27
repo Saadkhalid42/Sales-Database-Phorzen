@@ -6,6 +6,7 @@ import { CellSelect } from './Cells/CellSelect';
 import { CellNumber } from './Cells/CellNumber';
 import { CellRating } from './Cells/CellRating';
 import { CellReadOnly } from './Cells/CellReadOnly';
+import { useStore } from '../../store/useStore';
 
 interface GridCellProps {
   recordId: string;
@@ -24,6 +25,7 @@ interface GridCellProps {
 
 export function GridCell({ recordId, colKey, columnType, columnTypeOptions, initialValue, isSelected, isActiveEditor, isMultiSelect, isDragging, checkIsMultiSelectLocked, updateRecordCell, isModalMode }: GridCellProps) {
   const [isEditing, setIsEditing] = useState(false);
+  const isRemoteMutated = useStore(state => !!state.remoteMutations[`${recordId}_${colKey}`]);
 
   // If a cell stops being the active editor, exit edit mode.
   useEffect(() => {
@@ -91,28 +93,42 @@ export function GridCell({ recordId, colKey, columnType, columnTypeOptions, init
   };
 
   // Dispatcher Router
+  let content = null;
   switch (columnType) {
     case 'boolean':
-      return <CellBoolean {...sharedProps} />;
+      content = <CellBoolean {...sharedProps} />;
+      break;
     case 'date':
-      return <CellDate {...sharedProps} />;
+      content = <CellDate {...sharedProps} />;
+      break;
     case 'single_select':
     case 'multiple_select':
-      return <CellSelect {...sharedProps} />;
+      content = <CellSelect {...sharedProps} />;
+      break;
     case 'number':
     case 'duration':
-      return <CellNumber {...sharedProps} />;
+      content = <CellNumber {...sharedProps} />;
+      break;
     case 'rating':
-      return <CellRating {...sharedProps} />;
+      content = <CellRating {...sharedProps} />;
+      break;
     case 'single_line_text':
     case 'email':
     case 'url':
     case 'phone_number':
     case 'long_text':
-      return <CellText {...sharedProps} />;
+      content = <CellText {...sharedProps} />;
+      break;
     case 'created_on':
     case 'file':
     default:
-      return <CellReadOnly {...sharedProps} />;
+      content = <CellReadOnly {...sharedProps} />;
+      break;
   }
+  
+  return (
+    <div className={`w-full h-full ${isRemoteMutated ? 'remote-cell-flash' : ''}`}>
+      {content}
+    </div>
+  );
 }

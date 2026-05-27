@@ -43,6 +43,8 @@ export function Toolbar() {
   const redo = useStore(state => state.redo);
   const stagedEvictions = useStore(state => state.stagedEvictions);
   const forceEvictAll = useStore(state => state.forceEvictAll);
+  const syncFromCloud = useStore(state => state.syncFromCloud);
+  const isSyncing = useStore(state => state.isSyncing);
   const updateView = useStore(state => state.updateView);
 
   const databases = useStore(state => state.databases);
@@ -153,14 +155,15 @@ export function Toolbar() {
           <button 
             onClick={() => {
               forceEvictAll();
+              syncFromCloud();
             }}
             className={`flex items-center justify-center p-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-focus-ring ${Object.keys(stagedEvictions).length > 0 ? 'text-danger hover:bg-danger/10 bg-danger/5 animate-pulse' : 'text-text-muted hover:text-text-secondary hover:bg-surface-sunken'}`}
-            title="Refresh View"
+            title="Refresh Database & View"
           >
-            <RefreshCw size={16} className={Object.keys(stagedEvictions).length > 0 ? "animate-spin-slow" : ""} />
+            <RefreshCw size={16} className={isSyncing || Object.keys(stagedEvictions).length > 0 ? "animate-spin" : ""} />
           </button>
           
-          {currentUser?.role === 'admin' && (
+          {currentUser?.role?.toLowerCase() === 'admin' && (
             <button 
               onClick={() => setIsAdminModalOpen(true)}
               className="flex items-center justify-center p-2 rounded-full text-accent hover:bg-accent/10 transition-all focus:outline-none focus:ring-2 focus:ring-focus-ring ml-1 relative group"

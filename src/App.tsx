@@ -32,6 +32,7 @@ function App() {
   const activeDatabaseId = useStore(state => state.activeDatabaseId);
   const activeWorkspaceId = useStore(state => state.activeWorkspaceId);
   const activeViewId = useStore(state => state.activeViewId);
+  const initRealtime = useStore(state => state.initRealtime);
   
   const activeDb = databases.find(db => db.id === activeDatabaseId);
   const activeWs = activeDb?.workspaces.find(ws => ws.id === activeWorkspaceId);
@@ -49,6 +50,12 @@ function App() {
     // Apply theme data attribute to document root
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    if (activeWorkspaceId) {
+      initRealtime(activeWorkspaceId);
+    }
+  }, [activeWorkspaceId, initRealtime]);
 
   useEffect(() => {
     hydrateStore();
