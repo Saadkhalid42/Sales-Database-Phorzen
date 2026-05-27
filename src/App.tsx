@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from './lib/supabase';
 import { useStore } from './store/useStore';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useProjectedData } from './hooks/useProjectedData';
@@ -13,6 +14,7 @@ import { ConfirmModal } from './components/Shared/ConfirmModal';
 import { Database } from 'lucide-react';
 import { useRealtimeNotifications } from './hooks/useRealtimeNotifications';
 import { useMediaQuery } from './hooks/useMediaQuery';
+import { LoginScreen } from './components/Auth/LoginScreen';
 
 function App() {
   // Bind global keyboard shortcuts (Undo/Redo, Navigation, Selection Actions)
@@ -35,6 +37,10 @@ function App() {
   const activeWs = activeDb?.workspaces.find(ws => ws.id === activeWorkspaceId);
   const currentView = activeWs?.views.find(v => v.id === activeViewId);
   
+  const currentUser = useStore(state => state.currentUser);
+  const setCurrentUser = useStore(state => state.setCurrentUser);
+  const [authChecking, setAuthChecking] = useState(true);
+
   const projectedData = useProjectedData();
   const isMobile = useMediaQuery('(max-width: 768px)');
   const viewType = isMobile ? 'card' : (currentView?.viewType || 'grid');
@@ -46,7 +52,54 @@ function App() {
 
   useEffect(() => {
     hydrateStore();
+    
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && !currentUser) {
+        fetchProfile(session.user.id);
+      } else if (!session) {
+        setAuthChecking(false);
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session && !currentUser) {
+        fetchProfile(session.user.id);
+      } else if (!session) {
+        setCurrentUser(null);
+        setAuthChecking(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const [profileRes, permsRes] = await Promise.all([
+        supabase.from('user_management').select('*').eq('id', userId).single(),
+        supabase.from('user_permissions').select('*').eq('user_id', userId).single()
+      ]);
+
+      if (profileRes.data && permsRes.data) {
+        setCurrentUser({
+          id: userId,
+          name: profileRes.data.name,
+          email: profileRes.data.email,
+          role: profileRes.data.role,
+          permissions: {
+            can_edit_cells: permsRes.data.can_edit_cells,
+            can_delete_rows: permsRes.data.can_delete_rows,
+            can_create_views: permsRes.data.can_create_views,
+            can_change_field_types: permsRes.data.can_change_field_types,
+          }
+        });
+      }
+    } finally {
+      setAuthChecking(false);
+    }
+  };
 
   if (!isHydrated) {
     return (
@@ -58,6 +111,27 @@ function App() {
           </div>
           <h2 className="text-xl font-semibold tracking-tight text-text-primary">Loading Workspace...</h2>
         </div>
+      </div>
+    );
+  }
+
+  if (authChecking) {
+    return (
+      <div className="min-h-screen h-screen flex items-center justify-center bg-surface text-text-primary">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-accent"></div>
+      </div>
+    );
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen h-screen flex flex-col transition-colors duration-300 overflow-hidden">
+        <LoginScreen />
+        {toastMessage && (
+          <div className="fixed bottom-6 right-6 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-xl text-sm font-medium animate-in fade-in slide-in-from-bottom-4 z-[999]">
+            {toastMessage}
+          </div>
+        )}
       </div>
     );
   }

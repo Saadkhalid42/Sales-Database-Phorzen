@@ -8,14 +8,21 @@ const sourceOptions = [
   { label: 'DD/MM/YYYY (e.g. 31/12/2026)', value: 'dd/MM/yyyy' },
   { label: 'YYYY-MM-DD (e.g. 2026-12-31)', value: 'yyyy-MM-dd' },
   { label: 'YYYY/MM/DD (e.g. 2026/12/31)', value: 'yyyy/MM/dd' },
-  { label: 'DD.MM.YYYY (e.g. 31.12.2026)', value: 'dd.MM.yyyy' }
+  { label: 'DD.MM.YYYY (e.g. 31.12.2026)', value: 'dd.MM.yyyy' },
+  { label: 'MM/DD/YYYY HH:MM AM/PM (e.g. 12/31/2026 10:30 PM)', value: 'MM/dd/yyyy h:mm a' },
+  { label: 'DD/MM/YYYY HH:MM AM/PM (e.g. 31/12/2026 10:30 PM)', value: 'dd/MM/yyyy h:mm a' },
+  { label: 'YYYY-MM-DD HH:MM (e.g. 2026-12-31 22:30)', value: 'yyyy-MM-dd HH:mm' },
+  { label: 'YYYY/MM/DD HH:MM (e.g. 2026/12/31 22:30)', value: 'yyyy/MM/dd HH:mm' },
 ];
 
 const displayOptions = [
   { label: 'Standard (Jan 1, 2026)', value: 'MMM d, yyyy' },
   { label: 'Numeric (01/01/2026)', value: 'MM/dd/yyyy' },
   { label: 'ISO (2026-01-01)', value: 'yyyy-MM-dd' },
-  { label: 'European (01.01.2026)', value: 'dd.MM.yyyy' }
+  { label: 'European (01.01.2026)', value: 'dd.MM.yyyy' },
+  { label: 'Standard + Time (Jan 1, 2026 10:30 PM)', value: 'MMM d, yyyy h:mm a' },
+  { label: 'Numeric + Time (01/01/2026 10:30 PM)', value: 'MM/dd/yyyy h:mm a' },
+  { label: 'ISO + Time (2026-01-01 22:30)', value: 'yyyy-MM-dd HH:mm' },
 ];
 
 export const DateFormatInterceptModal = () => {

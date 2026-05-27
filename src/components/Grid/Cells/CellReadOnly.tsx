@@ -31,7 +31,11 @@ export const CellReadOnly = React.memo(function CellReadOnly(props: CellProps) {
 
     if (columnType === 'created_on' || columnType === 'last_modified') {
       try {
-        return new Date(initialValue).toLocaleString();
+        if (!initialValue) return '';
+        const d = new Date(initialValue);
+        return props.columnTypeOptions?.showTime 
+          ? d.toLocaleString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' })
+          : d.toLocaleDateString();
       } catch {
         return String(initialValue);
       }

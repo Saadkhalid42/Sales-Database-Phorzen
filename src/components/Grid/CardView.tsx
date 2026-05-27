@@ -54,6 +54,7 @@ export function CardView({ records }: { records: GridRecord[] }) {
             key={record.id} 
             record={record} 
             visibleColumns={visibleColumns} 
+            showTimezones={currentView?.showTimezones}
           />
         ))}
 

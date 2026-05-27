@@ -1,7 +1,8 @@
 import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Slider from '@radix-ui/react-slider';
-import { Settings, Clock, Check, Palette as PaletteIcon, ChevronRight, Palette, Sun, Moon } from 'lucide-react';
+import { Settings, Clock, Check, Palette as PaletteIcon, ChevronRight, Palette, Sun, Moon, LogOut } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 import { useStore } from '../../store/useStore';
 const THEMES = [
   { id: 'clinical-light', name: 'Clinical Light', type: 'light' },
@@ -196,6 +197,20 @@ export function SettingsMenu() {
               </DropdownMenu.SubContent>
             </DropdownMenu.Portal>
           </DropdownMenu.Sub>
+
+          <DropdownMenu.Separator className="h-px bg-divider my-1" />
+
+          <DropdownMenu.Item 
+            onSelect={async () => {
+              await supabase.auth.signOut();
+            }}
+            className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-full text-danger data-[highlighted]:bg-danger/10 outline-none text-[13px] font-medium"
+          >
+            <div className="flex items-center gap-2 flex-1">
+              <LogOut size={14} />
+              <span>Log Out</span>
+            </div>
+          </DropdownMenu.Item>
 
         </DropdownMenu.Content>
       </DropdownMenu.Portal>

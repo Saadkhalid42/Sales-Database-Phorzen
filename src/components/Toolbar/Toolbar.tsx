@@ -11,6 +11,8 @@ import { SettingsMenu } from './SettingsMenu';
 import { FilterPopover } from './FilterPopover';
 import { HideFieldsPopover } from './HideFieldsPopover';
 import { GlobalTimezoneClock } from './GlobalTimezoneClock';
+import { AdminPanelModal } from '../Admin/AdminPanelModal';
+import { ShieldAlert } from 'lucide-react';
 
 const THEMES = [
   { id: 'clinical-light', name: 'Clinical Light', type: 'light' },
@@ -21,8 +23,10 @@ const THEMES = [
 
 export function Toolbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [isAdminModalOpen, setIsAdminModalOpen] = React.useState(false);
 
   const theme = useStore(state => state.theme);
+  const currentUser = useStore(state => state.currentUser);
   const setTheme = useStore(state => state.setTheme);
   
   const rowHeight = useStore(state => state.rowHeight);
@@ -129,7 +133,7 @@ export function Toolbar() {
         <div className="w-px h-6 bg-divider hidden md:block" />
 
         {/* Undo/Redo */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="flex items-center gap-1">
           <button 
             onClick={() => undo()}
             disabled={pastStates?.length === 0}
@@ -155,6 +159,19 @@ export function Toolbar() {
           >
             <RefreshCw size={16} className={Object.keys(stagedEvictions).length > 0 ? "animate-spin-slow" : ""} />
           </button>
+          
+          {currentUser?.role === 'admin' && (
+            <button 
+              onClick={() => setIsAdminModalOpen(true)}
+              className="flex items-center justify-center p-2 rounded-full text-accent hover:bg-accent/10 transition-all focus:outline-none focus:ring-2 focus:ring-focus-ring ml-1 relative group"
+              title="Admin Logs"
+            >
+              <ShieldAlert size={16} />
+              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-raised border border-border/50 text-text-primary text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-xl">
+                Admin Logs
+              </div>
+            </button>
+          )}
         </div>
       </div>
 
@@ -195,6 +212,10 @@ export function Toolbar() {
             </div>
           </div>
         </div>
+      )}
+      
+      {isAdminModalOpen && (
+        <AdminPanelModal onClose={() => setIsAdminModalOpen(false)} />
       )}
     </div>
   );

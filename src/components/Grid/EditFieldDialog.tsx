@@ -144,7 +144,7 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
       
       let finalDateContext = undefined;
       
-      if (type === 'date' && type !== column.type) {
+      if ((type === 'date' || type === 'created_on') && type !== column.type) {
          // Check if dates are ambiguous
          const state = useStore.getState();
          const db = state.databases.find(d => d.id === state.activeDatabaseId);
@@ -413,6 +413,20 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
                       </Select.Content>
                     </Select.Portal>
                   </Select.Root>
+                </div>
+              )}
+
+              {type === 'created_on' && (
+                <div className="flex flex-col gap-4 mt-2">
+                  <label className="flex items-center gap-2 text-sm text-text-primary cursor-pointer">
+                    <input 
+                      type="checkbox" 
+                      checked={!!typeOptions.showTime} 
+                      onChange={e => updateTypeOption('showTime', e.target.checked)}
+                      className="rounded border-border text-primary focus:ring-primary w-4 h-4"
+                    />
+                    Show Time
+                  </label>
                 </div>
               )}
             </div>

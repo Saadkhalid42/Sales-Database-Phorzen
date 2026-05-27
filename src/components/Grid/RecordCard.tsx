@@ -5,9 +5,10 @@ import type { GridRecord, GridColumn } from '../../store/useStore';
 interface RecordCardProps {
   record: GridRecord;
   visibleColumns: GridColumn[];
+  showTimezones?: boolean;
 }
 
-export function RecordCard({ record, visibleColumns }: RecordCardProps) {
+export function RecordCard({ record, visibleColumns, showTimezones }: RecordCardProps) {
   const openExpandedRecord = useStore(state => state.openExpandedRecord);
 
   if (visibleColumns.length === 0) return null;
@@ -36,10 +37,17 @@ export function RecordCard({ record, visibleColumns }: RecordCardProps) {
       <div className="relative z-10 flex flex-col w-full">
         {/* Header Row */}
         <div className="flex justify-between items-start mb-3 gap-3">
-          <div className="flex flex-col min-w-0 flex-1">
-            <span className="text-[10px] uppercase font-bold text-text-muted tracking-wider mb-0.5 truncate">
-              {primaryColumn.label}
-            </span>
+          <div className="flex flex-col min-w-0 flex-1 relative">
+            <div className="flex items-center justify-between gap-2 mb-0.5">
+              <span className="text-[10px] uppercase font-bold text-text-muted tracking-wider truncate">
+                {primaryColumn.label}
+              </span>
+              {showTimezones && record._timezone && (
+                <span className="shrink-0 text-[10px] font-semibold bg-accent-subtle text-accent px-1.5 py-0.5 rounded-md truncate max-w-[80px]">
+                  {record._timezone}
+                </span>
+              )}
+            </div>
             <h3 className="text-base font-semibold text-text-primary leading-snug break-words">
               {formatValue(primaryValue)}
             </h3>

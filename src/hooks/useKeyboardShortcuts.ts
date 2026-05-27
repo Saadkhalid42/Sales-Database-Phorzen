@@ -76,16 +76,50 @@ export function useKeyboardShortcuts() {
 
       // Copy (Cmd + C)
       if (isCmdOrCtrl && e.key.toLowerCase() === 'c') {
-        // e.preventDefault(); // allow native copy to proceed just in case, but we explicitly write to clipboard
-        
-        // Find the value
         const activeDb = state.databases.find(db => db.id === state.activeDatabaseId);
         if (!activeDb) return;
-        const record = activeDb.records.find(r => r.id === recordId);
-        if (!record) return;
         
-        const val = record.cells[colKey];
-        const textToCopy = Array.isArray(val) ? val.join(', ') : String(val || '');
+        const activeWs = activeDb.workspaces.find(w => w.id === state.activeWorkspaceId);
+        const currentView = activeWs?.views.find(v => v.id === state.activeViewId);
+        const colOrder = currentView?.columnOrder || activeDb.columns.map(c => c.key);
+        const hiddenFields = currentView?.hiddenFields || [];
+        const visibleCols = colOrder.filter(c => !hiddenFields.includes(c));
+
+        // Attempt to find projected records by querying DOM row order as a heuristic
+        const rowNodes = Array.from(document.querySelectorAll('[data-row-id]'));
+        const visualRowIds = rowNodes.length > 0 
+          ? rowNodes.map(node => node.getAttribute('data-row-id')!)
+          : activeDb.records.map(r => r.id);
+
+        const startColIdx = visibleCols.indexOf(sel.startColKey);
+        const endColIdx = visibleCols.indexOf(sel.endColKey);
+        const minCol = Math.min(startColIdx, endColIdx);
+        const maxCol = Math.max(startColIdx, endColIdx);
+
+        const startRowIdx = visualRowIds.indexOf(sel.startRowId);
+        const endRowIdx = visualRowIds.indexOf(sel.endRowId);
+        const minRow = Math.min(startRowIdx, endRowIdx);
+        const maxRow = Math.max(startRowIdx, endRowIdx);
+
+        const lines: string[] = [];
+        if (minRow !== -1 && maxRow !== -1 && minCol !== -1 && maxCol !== -1) {
+          for (let r = minRow; r <= maxRow; r++) {
+            const rowId = visualRowIds[r];
+            const record = activeDb.records.find(rec => rec.id === rowId);
+            if (!record) continue;
+
+            const rowCells: string[] = [];
+            for (let c = minCol; c <= maxCol; c++) {
+              const colKey = visibleCols[c];
+              const rawVal = record.cells[colKey];
+              const textVal = Array.isArray(rawVal) ? rawVal.join(', ') : String(rawVal || '');
+              rowCells.push(textVal);
+            }
+            lines.push(rowCells.join('\t'));
+          }
+        }
+
+        const textToCopy = lines.join('\n');
         
         try {
           await navigator.clipboard.writeText(textToCopy);
@@ -110,23 +144,53 @@ export function useKeyboardShortcuts() {
 
           const activeDb = state.databases.find(db => db.id === state.activeDatabaseId);
           if (!activeDb) return;
-          const col = activeDb.columns.find(c => c.key === colKey);
-          if (!col) return;
 
-          let finalVal: any = text;
+          const activeWs = activeDb.workspaces.find(w => w.id === state.activeWorkspaceId);
+          const currentView = activeWs?.views.find(v => v.id === state.activeViewId);
+          const colOrder = currentView?.columnOrder || activeDb.columns.map(c => c.key);
+          const hiddenFields = currentView?.hiddenFields || [];
+          const visibleCols = colOrder.filter(c => !hiddenFields.includes(c));
 
-          // Validation
-          if (col.type === 'number') {
-            const num = Number(text);
-            if (isNaN(num)) return; // Reject invalid number
-            finalVal = num;
-          } else if (col.type === 'date') {
-            const date = new Date(text);
-            if (isNaN(date.getTime())) return; // Reject invalid date
-            finalVal = date.toISOString();
+          // Find visual rows from DOM if possible, fallback to db records
+          const rowNodes = Array.from(document.querySelectorAll('[data-row-id]'));
+          const visualRowIds = rowNodes.length > 0 
+            ? rowNodes.map(node => node.getAttribute('data-row-id')!)
+            : activeDb.records.map(r => r.id);
+
+          const startColIndex = visibleCols.indexOf(colKey);
+          if (startColIndex === -1) return;
+          
+          const startRowIndex = visualRowIds.indexOf(recordId);
+          if (startRowIndex === -1) return;
+
+          const lines = text.split(/\r?\n/);
+          if (lines[lines.length - 1] === '') lines.pop(); // Remove trailing empty line
+
+          for (let rIdx = 0; rIdx < lines.length; rIdx++) {
+            const targetRecordId = visualRowIds[startRowIndex + rIdx];
+            if (!targetRecordId) break;
+            
+            const cellValues = lines[rIdx].split('\t');
+            for (let cIdx = 0; cIdx < cellValues.length; cIdx++) {
+              const targetColKey = visibleCols[startColIndex + cIdx];
+              if (!targetColKey) break;
+              
+              const col = activeDb.columns.find(c => c.key === targetColKey);
+              if (!col) continue;
+
+              let finalVal: any = cellValues[cIdx];
+
+              if (col.type === 'number') {
+                const num = Number(finalVal);
+                if (!isNaN(num)) finalVal = num;
+              } else if (col.type === 'date') {
+                const date = new Date(finalVal);
+                if (!isNaN(date.getTime())) finalVal = date.toISOString();
+              }
+
+              state.updateRecordCell(targetRecordId, targetColKey, finalVal);
+            }
           }
-
-          state.updateRecordCell(recordId, colKey, finalVal);
         } catch (err) {
           console.error('Failed to read clipboard', err);
         }

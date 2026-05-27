@@ -1,6 +1,8 @@
 import { create } from 'zustand';
+import { supabase } from '../lib/supabase';
 import { analyzeDateColumn, extractSelectOptions, convertValue } from '../utils/DataEngine';
 import { temporal } from 'zundo';
+import Papa from 'papaparse';
 import { loadDatabases, saveDatabases } from '../lib/storage';
 import { getTimezoneFromPhone } from '../lib/timezones';
 
@@ -74,7 +76,23 @@ export interface Database {
   workspaces: Workspace[];
 }
 
+export interface CurrentUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'user';
+  permissions: {
+    can_edit_cells: boolean;
+    can_delete_rows: boolean;
+    can_create_views: boolean;
+    can_change_field_types: boolean;
+  };
+}
+
 export interface AppState {
+  currentUser: CurrentUser | null;
+  setCurrentUser: (user: CurrentUser | null) => void;
+
   selectedRowIds: string[];
   toggleRowSelection: (recordId: string) => void;
   selectAllRows: (recordIds: string[]) => void;
@@ -218,6 +236,8 @@ const initialDatabases: Database[] = [
 export const useStore = create<AppState>()(
   temporal(
     (set, get) => ({
+      currentUser: null,
+      setCurrentUser: (user) => set({ currentUser: user }),
       selectedRowIds: [],
       toggleRowSelection: (recordId) => set((state) => {
         const isSelected = state.selectedRowIds.includes(recordId);
@@ -230,7 +250,19 @@ export const useStore = create<AppState>()(
       selectAllRows: (recordIds) => set({ selectedRowIds: recordIds }),
       clearRowSelection: () => set({ selectedRowIds: [] }),
       deleteRecords: (recordIds) => {
+        const currentUser = get().currentUser;
+        if (currentUser && currentUser.role !== 'admin' && !currentUser.permissions?.can_delete_rows) {
+          get().setToastMessage("Permission denied: You cannot delete rows.");
+          return;
+        }
         get().takeSnapshot();
+        
+        supabase.from('activity_logs').insert({
+          user_name: currentUser?.name || 'Unknown',
+          action_description: `Deleted ${recordIds.length} rows`,
+          table_id: get().activeDatabaseId
+        }).then(({ error }) => { if (error) console.error(error); });
+
         set((state) => {
           const dbIndex = state.databases.findIndex(db => db.id === state.activeDatabaseId);
           if (dbIndex === -1) return state;
@@ -564,7 +596,18 @@ export const useStore = create<AppState>()(
       
   
       changeColumnType: (colKey, newType, newTypeOptions, providedDateContext) => {
+        const currentUser = get().currentUser;
+        if (currentUser && currentUser.role !== 'admin' && !currentUser.permissions?.can_change_field_types) {
+          get().setToastMessage("Permission denied: You cannot change field types.");
+          return;
+        }
         get().takeSnapshot();
+        
+        supabase.from('activity_logs').insert({
+          user_name: currentUser?.name || 'Unknown',
+          action_description: `Changed column type for ${colKey} to ${newType}`,
+          table_id: get().activeDatabaseId
+        }).then(({ error }) => { if (error) console.error(error); });
         set((state) => {
         if (!state.activeDatabaseId) return state;
         return {
@@ -602,7 +645,7 @@ export const useStore = create<AppState>()(
             
             // Pre-calculate date context if we are parsing dates
             let dateContext = providedDateContext || 'MDY';
-            if (newType === 'date' && !providedDateContext) {
+            if ((newType === 'date' || newType === 'created_on') && !providedDateContext) {
                 dateContext = analyzeDateColumn(db.records.map(r => r.cells[colKey]));
             }
             
@@ -705,12 +748,35 @@ export const useStore = create<AppState>()(
               }
             }
 
-            return { ...db, records: [...db.records, { ...record, _timezone }] };
+            // Auto-fill created_on fields
+            const newRecord = { ...record, cells: { ...record.cells } };
+            const createdOnCols = db.columns.filter(c => c.type === 'created_on');
+            if (createdOnCols.length > 0) {
+              const now = new Date().toISOString();
+              createdOnCols.forEach(col => {
+                if (!newRecord.cells[col.key]) {
+                  newRecord.cells[col.key] = now;
+                }
+              });
+            }
+
+            return { ...db, records: [...db.records, { ...newRecord, _timezone }] };
           })
         };
       }),
       deleteRecord: (id) => {
+        const currentUser = get().currentUser;
+        if (currentUser && currentUser.role !== 'admin' && !currentUser.permissions?.can_delete_rows) {
+          get().setToastMessage("Permission denied: You cannot delete rows.");
+          return;
+        }
         get().takeSnapshot();
+        
+        supabase.from('activity_logs').insert({
+          user_name: currentUser?.name || 'Unknown',
+          action_description: `Deleted row ${id}`,
+          table_id: get().activeDatabaseId
+        }).then(({ error }) => { if (error) console.error(error); });
         set((state) => {
         if (!state.activeDatabaseId) return state;
         return {
@@ -721,6 +787,12 @@ export const useStore = create<AppState>()(
         };
       }); },
       updateRecordCell: (recordId, colKey, value) => {
+        const currentUser = get().currentUser;
+        if (currentUser && currentUser.role !== 'admin' && !currentUser.permissions?.can_edit_cells) {
+          get().setToastMessage("Permission denied: You cannot edit cells.");
+          return;
+        }
+
         const state = get();
         const db = state.databases.find(d => d.id === state.activeDatabaseId);
         if (db) {
@@ -731,18 +803,28 @@ export const useStore = create<AppState>()(
         }
         
         get().takeSnapshot(); // Re-enabled safely
+        
+        supabase.from('activity_logs').insert({
+          user_name: currentUser?.name || 'Unknown',
+          action_description: `${currentUser?.name || 'Unknown'} changed cell in row ${recordId}, column ${colKey} from '${db?.records.find(r => r.id === recordId)?.cells[colKey]}' to '${value}'`,
+          table_id: get().activeDatabaseId
+        }).then(({ error }) => { if (error) console.error(error); });
         set((state) => {
         if (!state.activeDatabaseId) return state;
-        const dbs = [...state.databases];
-        const dbIndex = dbs.findIndex(d => d.id === state.activeDatabaseId);
+        const dbIndex = state.databases.findIndex(d => d.id === state.activeDatabaseId);
         if (dbIndex === -1) return state;
 
-        const db = dbs[dbIndex];
-        const rIndex = db.records.findIndex(r => r.id === recordId);
+        const newDatabases = [...state.databases];
+        const newDb = { ...newDatabases[dbIndex] };
+        
+        const rIndex = newDb.records.findIndex(r => r.id === recordId);
         if (rIndex > -1) {
-          const col = db.columns.find(c => c.key === colKey);
+          const newRecords = [...newDb.records];
+          const record = { ...newRecords[rIndex], cells: { ...newRecords[rIndex].cells } };
+          
+          const col = newDb.columns.find(c => c.key === colKey);
           const colName = col ? col.label : colKey;
-          const oldVal = db.records[rIndex].cells[colKey];
+          const oldVal = record.cells[colKey];
           
           let parsedValue = value;
           let isFlagged = false;
@@ -753,21 +835,23 @@ export const useStore = create<AppState>()(
           }
           
           if (oldVal !== parsedValue) {
-            db.records[rIndex].cells[colKey] = parsedValue;
+            record.cells[colKey] = parsedValue;
             
             // Handle flagged invalid data
             if (isFlagged) {
-                db.records[rIndex]._flagged = { ...(db.records[rIndex]._flagged || {}), [colKey]: true };
-                db.records[rIndex].cells[`_raw_${colKey}`] = value;
+                record._flagged = { ...(record._flagged || {}), [colKey]: true };
+                record.cells[`_raw_${colKey}`] = value;
             } else {
-                if (db.records[rIndex]._flagged) {
-                    delete db.records[rIndex]._flagged![colKey];
+                if (record._flagged) {
+                    const newFlagged = { ...record._flagged };
+                    delete newFlagged[colKey];
+                    record._flagged = newFlagged;
                 }
-                delete db.records[rIndex].cells[`_raw_${colKey}`];
+                delete record.cells[`_raw_${colKey}`];
             }
             
             if (col && (col.type === 'phone_number' || col.label.toLowerCase() === 'lead number' || col.label.toLowerCase() === 'personal number' || col.label.toLowerCase() === 'phone')) {
-               db.records[rIndex]._timezone = getTimezoneFromPhone(String(parsedValue || '')) || null;
+               record._timezone = getTimezoneFromPhone(String(parsedValue || '')) || null;
             }
             
             const newLog: ChangelogEntry = {
@@ -778,13 +862,14 @@ export const useStore = create<AppState>()(
               newValue: String(parsedValue || '')
             };
             
-            if (!db.records[rIndex].changelog) {
-              db.records[rIndex].changelog = [];
-            }
-            db.records[rIndex].changelog!.unshift(newLog);
+            record.changelog = record.changelog ? [newLog, ...record.changelog] : [newLog];
+            
+            newRecords[rIndex] = record;
+            newDb.records = newRecords;
+            newDatabases[dbIndex] = newDb;
           }
         }
-        return { databases: dbs };
+        return { databases: newDatabases };
       }); },
       updateRecordCells: (updates) => {
         get().takeSnapshot();
@@ -903,7 +988,20 @@ export const useStore = create<AppState>()(
       }),
 
       // VIEW MUTATIONS
-      addView: (view) => set((state) => {
+      addView: (view) => {
+        const currentUser = get().currentUser;
+        if (currentUser && currentUser.role !== 'admin' && !currentUser.permissions?.can_create_views) {
+          get().setToastMessage("Permission denied: You cannot create views.");
+          return;
+        }
+
+        supabase.from('activity_logs').insert({
+          user_name: currentUser?.name || 'Unknown',
+          action_description: `Created view ${view.name}`,
+          table_id: get().activeDatabaseId
+        }).then(({ error }) => { if (error) console.error(error); });
+
+        set((state) => {
         if (!state.activeDatabaseId || !state.activeWorkspaceId) return state;
         return {
           databases: state.databases.map(db => {
@@ -918,7 +1016,8 @@ export const useStore = create<AppState>()(
           }),
           activeViewId: view.id
         };
-      }),
+      });
+      },
       updateView: (id, updates) => {
         get().takeSnapshot();
         set((state) => {

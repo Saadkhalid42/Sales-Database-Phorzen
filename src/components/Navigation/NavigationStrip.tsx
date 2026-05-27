@@ -24,7 +24,7 @@ export function NavigationStrip() {
   }
 
   return (
-    <div className="border-b border-divider flex items-center px-4 h-[var(--tabs-h)] bg-surface shrink-0 overflow-x-auto no-scrollbar gap-1 relative">
+    <div className="border-b border-divider flex items-center px-4 h-[52px] md:h-[var(--tabs-h)] py-2 md:py-0 bg-surface shrink-0 overflow-x-auto no-scrollbar gap-2 relative">
       
       
 
@@ -36,7 +36,7 @@ export function NavigationStrip() {
             key={view.id}
             data-view-id={view.id}
             onClick={() => setActiveViewId(view.id)}
-            className={`flex items-center gap-1.5 px-3 h-7 rounded-full text-[13px] font-medium transition-all duration-200 focus:outline-none ${
+            className={`flex items-center gap-1.5 px-4 h-8 md:px-3 md:h-7 rounded-full text-[14px] md:text-[13px] font-medium transition-all duration-200 focus:outline-none ${
               isActive 
                 ? 'bg-accent text-white shadow-[0_0_12px_2px_color-mix(in_srgb,var(--accent)_50%,transparent)]' 
                 : 'bg-surface-raised text-text-secondary border border-border hover:bg-surface-sunken hover:text-text-primary'

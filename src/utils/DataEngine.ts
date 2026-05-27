@@ -175,7 +175,9 @@ export function convertValue(raw: any, targetType: string, dateContext: DateForm
           return { value: bool, isFlagged: bool === null };
       }
           
-      case 'date': {
+      case 'date':
+      case 'created_on':
+      case 'last_modified': {
           const dateStr = parseDate(raw, dateContext);
           return { value: dateStr, isFlagged: dateStr === null };
       }
