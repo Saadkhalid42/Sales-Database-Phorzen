@@ -93,7 +93,7 @@ export function SettingsMenu({ asInlineMobile, projectedData, triggerNode, onOpe
         ? record.tabs_history 
         : [{ name: 'Master', data: record.cells }];
 
-      return tabs.map(tab => {
+      return tabs.map((tab: any) => {
         const row: Record<string, any> = {};
         row['Tab Name'] = tab.name || 'Original';
         
