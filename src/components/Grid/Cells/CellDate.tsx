@@ -30,9 +30,7 @@ export const CellDate = React.memo(function CellDate(props: CellProps) {
   };
 
   const handleDoubleClick = () => {
-    if (isActiveEditor) {
-      setIsOpen(true);
-    }
+    setIsOpen(true);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -53,7 +51,7 @@ export const CellDate = React.memo(function CellDate(props: CellProps) {
           className={`w-full h-full flex items-center px-3 py-3 text-[13px] text-text-primary overflow-hidden select-none outline-none cursor-pointer transition-all ${
             isActiveEditor && !isModalMode ? 'ring-inset ring-2 ring-accent z-20 bg-surface/50' : ''
           } ${
-            isModalMode ? 'bg-surface-sunken border border-border rounded-lg focus:ring-2 focus:ring-accent hover:border-slate-400' : ''
+            isModalMode ? 'bg-surface-sunken border border-border rounded-lg   hover:border-slate-400' : ''
           }`}
           onDoubleClick={!isModalMode ? handleDoubleClick : undefined}
           onClick={isModalMode ? () => setIsOpen(true) : undefined}

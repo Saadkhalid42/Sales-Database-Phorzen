@@ -56,7 +56,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
   }, [visibleColumns, frozenField]);
 
   const rowHeightSetting = useStore(state => state.rowHeight);
-  const altColoringEnabled = useStore(state => state.altColoringEnabled);
+
   const updateRecordCell = useStore(state => state.updateRecordCell);
   const updateRecordCells = useStore(state => state.updateRecordCells);
   const searchQuery = useStore(state => state.searchQuery);
@@ -421,7 +421,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
           style={{ height: `${rowVirtualizer.getTotalSize() + 40 + 40}px`, width: `${columnVirtualizer.getTotalSize() + 40}px` }}
         >
           {/* Sticky Header */}
-          <div className="sticky top-0 z-40 h-10 shadow-sm" style={{ backgroundColor: 'var(--surface-raised)', borderBottom: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` }}>
+          <div className="sticky top-0 z-40 h-10 shadow-sm" style={{ backgroundColor: 'var(--surface-raised)', /* borderBottom removed from header wrapper */ }}>
             <div className="absolute top-0 left-0 w-full h-full flex flex-nowrap">
               {/* Sticky Row Index Header */}
               <div 
@@ -431,7 +431,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                   top: 0,
                   left: 0,
                   backgroundColor: 'var(--surface-raised)',
-                  borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`,
+                  borderRight: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`, borderBottom: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`,
                   zIndex: 50
                 }}
               >
@@ -451,10 +451,10 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                     style={{
                       left: 0,
                       top: 0,
-                      width: `${col.width || 150}px`,
-                      transform: isFrozen ? 'none' : `translateX(${virtualCol.start + 40}px)`,
+                      width: `${Math.round(col.width || 150)}px`,
+                      transform: isFrozen ? 'none' : `translateX(${Math.round(virtualCol.start) + 40}px)`,
                       position: isFrozen ? 'sticky' : 'absolute',
-                      ...(isFrozen ? { left: `${frozenOffset}px`, zIndex: 50, backgroundColor: 'var(--surface-raised)', borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` } : { zIndex: 40, borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`, backgroundColor: 'var(--surface-raised)' }),
+                      ...(isFrozen ? { left: `${frozenOffset}px`, zIndex: 50, backgroundColor: 'var(--surface-raised)', borderRight: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`, borderBottom: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)` } : { zIndex: 40, borderRight: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`, borderBottom: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`, backgroundColor: 'var(--surface-raised)' }),
                     }}
                   >
                     <ColumnHeader col={col} index={virtualCol.index} />
@@ -475,9 +475,9 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                     key="synthetic-add-row"
                     className="absolute top-0 left-0 w-full flex flex-nowrap transition-snappy will-change-transform group"
                     style={{
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${virtualRow.start}px)`,
-                      borderBottom: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`
+                      height: `${Math.round(virtualRow.size)}px`,
+                      transform: `translateY(${Math.round(virtualRow.start)}px)`,
+                      /* borderBottom removed from row */
                     }}
                   >
                     {/* Empty index cell */}
@@ -487,7 +487,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                         position: 'sticky',
                         left: 0,
                         zIndex: 40,
-                        borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`,
+                        borderRight: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`, borderBottom: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`,
                       }}
                     />
                     
@@ -504,10 +504,10 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                           style={{
                             left: 0,
                             top: 0,
-                            width: `${col.width || 150}px`,
-                            transform: isFrozen ? 'none' : `translateX(${virtualCol.start + 40}px)`,
+                            width: `${Math.round(col.width || 150)}px`,
+                            transform: isFrozen ? 'none' : `translateX(${Math.round(virtualCol.start) + 40}px)`,
                             position: isFrozen ? 'sticky' : 'absolute',
-                            ...(isFrozen ? { left: '40px', zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` } : { zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` }),
+                            ...(isFrozen ? { left: '40px', zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`, borderBottom: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)` } : { zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`, borderBottom: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)` }),
                             backgroundColor: 'transparent'
                           }}
                         >
@@ -520,7 +520,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                                   handleAddRow();
                                 }
                               }}
-                              className="w-full h-full flex items-center px-4 text-text-muted hover:text-accent hover:bg-accent-subtle/50 transition-colors focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent font-medium text-[13px] bg-surface"
+                              className="w-full h-full flex items-center px-4 text-text-muted hover:text-accent hover:bg-accent-subtle/50 transition-colors focus:outline-none    font-medium text-[13px] bg-surface"
                             >
                               + Add row
                             </button>
@@ -535,7 +535,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
               }
 
               const record = viewRecords[virtualRow.index];
-              const isAlt = altColoringEnabled && virtualRow.index % 2 !== 0;
+              const isAlt = virtualRow.index % 2 !== 0;
               const isRowActive = selectionRange?.startRowId === record.id;
               const isCheckboxSelected = selectedRowIds?.includes(record.id);
               
@@ -549,11 +549,12 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                   data-row-id={record.id}
                   className={`absolute top-0 left-0 w-full group transition-snappy flex flex-nowrap grid-row will-change-transform ${isSoftEvicted ? 'bg-danger/10 is-invalidated-row border-b-danger/30 z-30' : (isAlt ? 'is-alternate' : 'is-default')} ${isCheckboxSelected ? 'is-selected' : ''}`}
                   style={{
-                    height: `${virtualRow.size}px`,
-                    top: `${virtualRow.start}px`,
+                    height: `${Math.round(virtualRow.size)}px`,
+                    top: `${Math.round(virtualRow.start)}px`,
                     opacity: evictionMode === 'evicting' ? 0 : 1,
                     overflow: evictionMode === 'evicting' ? 'hidden' : 'visible',
-                    borderBottom: evictionMode === 'evicting' ? 'none' : (isSoftEvicted ? '1px solid rgba(var(--danger-color), 0.3)' : `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`)
+                    zIndex: isRowActive ? 100 : 1,
+                    /* borderBottom removed from row, moved to cells */
                   }}
                 >
 
@@ -565,7 +566,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                       left: 0,
                       top: 0,
                       zIndex: 40,
-                      borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)`,
+                      borderRight: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`, borderBottom: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`,
                     }}
                   >
                     <div 
@@ -577,7 +578,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                           type="checkbox" 
                           checked={selectedRowIds?.includes(record.id) || false}
                           onChange={() => {}}
-                          className="w-4 h-4 rounded border-border text-accent focus:ring-accent cursor-pointer pointer-events-none"
+                          className="w-4 h-4 rounded border-border text-accent  cursor-pointer pointer-events-none"
                         />
                       </div>
                       <span className={`flex flex-col items-center justify-center ${(selectedRowIds && selectedRowIds.length > 0) || selectedRowIds?.includes(record.id) ? 'opacity-0' : 'group-hover/checkbox:opacity-0'} transition-opacity`}>
@@ -607,17 +608,9 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                                      
                     const isActiveEditor = selectionRange?.startRowId === record.id && selectionRange?.startColKey === col.key;
                     
-                    let selectionStyle = {};
                     if (isSelected) {
                       baseZIndex = isFrozen ? 40 : (isMultiSelect ? 5 : 10);
-                      if (isMultiSelect) {
-                        selectionStyle = {
-                          backgroundColor: isFrozen ? 'color-mix(in srgb, var(--surface-raised) 90%, rgb(var(--primary-color)))' : 'rgba(var(--primary-color), 0.08)'
-                        };
-                      }
                     }
-                    
-                    
                     
                     return (
                       <div
@@ -628,11 +621,10 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                         style={{
                           left: 0,
                           top: 0,
-                          width: `${col.width || 150}px`,
-                          transform: isFrozen ? 'none' : `translateX(${virtualCol.start + 40}px)`,
+                          width: `${Math.round(col.width || 150)}px`,
+                          transform: isFrozen ? 'none' : `translateX(${Math.round(virtualCol.start) + 40}px)`,
                           position: isFrozen ? 'sticky' : 'absolute',
-                          ...(isFrozen ? { left: `${frozenOffset}px`, zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` } : { zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--divider) var(--grid-line-opacity, 100%), transparent)` }),
-                          ...selectionStyle
+                          ...(isFrozen ? { left: `${frozenOffset}px`, zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`, borderBottom: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)` } : { zIndex: baseZIndex, borderRight: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)`, borderBottom: `1px solid color-mix(in srgb, var(--grid-line-color, #000000) var(--grid-line-opacity, 10%), transparent)` })
                         }}
                         onMouseDown={() => handleMouseDown(record.id, col.key)}
                         onMouseEnter={() => handleMouseEnter(record.id, col.key)}
@@ -647,7 +639,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                             </button>
                           </div>
                         )}
-                        <GridCell
+                                                <GridCell
                           recordId={record.id}
                           colKey={col.key}
                           columnType={col.type}
@@ -660,31 +652,16 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
                           checkIsMultiSelectLocked={() => checkIsMultiSelectLocked(virtualRow.index, virtualCol.index)}
                           updateRecordCell={updateRecordCell}
                         />
+                        {isSelected && isMultiSelect && selIndices && (
+                          <div className={`absolute inset-0 pointer-events-none z-10 bg-accent/10 ${virtualRow.index === selIndices.minRow ? 'border-t-2 border-t-accent' : ''} ${virtualRow.index === selIndices.maxRow ? 'border-b-2 border-b-accent' : ''} ${virtualCol.index === selIndices.minCol ? 'border-l-2 border-l-accent' : ''} ${virtualCol.index === selIndices.maxCol ? 'border-r-2 border-r-accent' : ''}`} />
+                        )}
                       </div>
                     );
                   })}
                 </div>
               );
             })}
-            {/* Floating Selection Box Overlay */}
-            {selIndices && (selIndices.minCol !== selIndices.maxCol || selIndices.minRow !== selIndices.maxRow) && (
-              <div className="absolute pointer-events-none ring-inset ring-2 ring-accent bg-accent/10 z-10"
-                style={{
-                  top: `${(rowVirtualizer.getVirtualItems().find(v => v.index === selIndices.minRow)?.start || 0)}px`,
-                  left: `${(columnVirtualizer.getVirtualItems().find(v => v.index === selIndices.minCol)?.start || 0) + 40}px`,
-                  width: `${
-                    (columnVirtualizer.getVirtualItems().find(v => v.index === selIndices.maxCol)?.start || 0) +
-                    (columnVirtualizer.getVirtualItems().find(v => v.index === selIndices.maxCol)?.size || 0) -
-                    (columnVirtualizer.getVirtualItems().find(v => v.index === selIndices.minCol)?.start || 0)
-                  }px`,
-                  height: `${
-                    (rowVirtualizer.getVirtualItems().find(v => v.index === selIndices.maxRow)?.start || 0) +
-                    (rowVirtualizer.getVirtualItems().find(v => v.index === selIndices.maxRow)?.size || 0) -
-                    (rowVirtualizer.getVirtualItems().find(v => v.index === selIndices.minRow)?.start || 0) - 1
-                  }px`
-                }}
-              />
-            )}
+            {/* Selection box is drawn on a per-cell basis */}
           </div>
         </div>
       </div>

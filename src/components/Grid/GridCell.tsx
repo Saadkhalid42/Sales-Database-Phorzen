@@ -43,9 +43,7 @@ export function GridCell({ recordId, colKey, columnType, columnTypeOptions, init
 
   const handleDoubleClick = () => {
     if (isMultiSelect || isDragging || (checkIsMultiSelectLocked && checkIsMultiSelectLocked())) return;
-    if (isActiveEditor) {
-      setIsEditing(true);
-    }
+    setIsEditing(true);
   };
 
   const handleKeyDownWrapper = (e: React.KeyboardEvent, currentValue: any, setLocalValue: (v: any) => void) => {
@@ -89,7 +87,8 @@ export function GridCell({ recordId, colKey, columnType, columnTypeOptions, init
     commitEdit,
     handleDoubleClick,
     handleKeyDownWrapper,
-    isModalMode
+    isModalMode,
+    isMultiSelect
   };
 
   // Dispatcher Router
@@ -119,6 +118,15 @@ export function GridCell({ recordId, colKey, columnType, columnTypeOptions, init
     case 'long_text':
       content = <CellText {...sharedProps} />;
       break;
+    case 'append_only_log': {
+      let displayValue = '';
+      if (Array.isArray(initialValue) && initialValue.length > 0) {
+        const latest = initialValue[initialValue.length - 1];
+        displayValue = latest?.value ?? '';
+      }
+      content = <CellReadOnly {...sharedProps} initialValue={displayValue} />;
+      break;
+    }
     case 'created_on':
     case 'file':
     default:

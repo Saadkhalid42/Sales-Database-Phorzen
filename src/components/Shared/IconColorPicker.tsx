@@ -73,7 +73,7 @@ export function IconColorPicker({ icon, color, onChange }: IconColorPickerProps)
       <Popover.Trigger asChild>
         <button 
           type="button"
-          className="flex items-center justify-center w-10 h-10 rounded-md border border-primary/30 hover:bg-surface-sunken focus:outline-none focus:ring-2 focus:ring-accent transition-colors"
+          className="flex items-center justify-center w-10 h-10 rounded-md border border-primary/30 hover:bg-surface-sunken focus:outline-none   transition-colors"
           style={{ color: color }}
         >
           <ActiveIcon size={20} />

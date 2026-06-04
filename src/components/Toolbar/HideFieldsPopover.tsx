@@ -36,13 +36,13 @@ function SortableFieldItem({ col, isHidden, toggleVisibility }: SortableFieldIte
         >
           <GripVertical size={14} />
         </button>
-        <span className="text-sm text-text-primary truncate max-w-[140px]">{col.label}</span>
+        <span className="text-[13px] text-text-primary truncate max-w-[140px]">{col.label}</span>
       </div>
       <input 
         type="checkbox" 
         checked={!isHidden}
         onChange={(e) => toggleVisibility(col.key, !e.target.checked)}
-        className="w-4 h-4 rounded border-border text-accent focus:ring-accent cursor-pointer transition-colors"
+        className="w-4 h-4 rounded border-border text-accent  cursor-pointer transition-colors"
       />
     </div>
   );
@@ -174,10 +174,10 @@ export function HideFieldsPopover({ asInlineMobile }: { asInlineMobile?: boolean
     <Popover.Root>
       <Popover.Trigger asChild>
         <button 
-          className={`px-3 py-1.5 rounded-2xl border text-sm flex items-center gap-1.5 transition-colors ${
+          className={`flex items-center gap-1.5 transition-all focus:outline-none px-2 py-1 rounded-md ${
             isActive 
-              ? 'bg-accent/10 text-accent border-accent/30 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30' 
-              : 'hover:bg-[rgba(var(--text-color),0.08)] border-transparent hover:border-[rgba(var(--text-color),0.15)] text-text-primary'
+              ? 'text-accent font-semibold' 
+              : 'text-text-secondary hover:text-text-primary'
           }`}
         >
           <EyeOff size={14} />
@@ -186,7 +186,7 @@ export function HideFieldsPopover({ asInlineMobile }: { asInlineMobile?: boolean
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content 
-          className="w-64 border border-border shadow-xl rounded-[24px] p-3 z-[60] mt-1 bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 flex flex-col gap-2 max-h-[400px]"
+          className="w-64 border border-border shadow-xl rounded-lg overflow-hidden p-3 z-[60] mt-1 bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 flex flex-col gap-2 max-h-[400px]"
           
           align="start"
           sideOffset={4}

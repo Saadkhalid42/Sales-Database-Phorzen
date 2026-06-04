@@ -33,6 +33,7 @@
   --shadow-md:0 16px 40px rgba(60,50,120,.06);
   --shadow-lg:0 32px 64px rgba(60,50,120,.10);
   --focus-ring:rgba(115,103,240,.38); --zebra:rgba(60,50,120,.025); --scrim:rgba(20,18,40,.35);
+  --pill-text-active: #FFFFFF; --pill-text-inactive: #000000;
 }
 
 :root[data-theme="clinical-light"]{
@@ -48,21 +49,23 @@
   --shadow-md:0 16px 40px rgba(20,22,40,.06);
   --shadow-lg:0 32px 64px rgba(20,22,40,.10);
   --focus-ring:rgba(109,93,230,.35); --zebra:rgba(20,22,40,.022); --scrim:rgba(15,16,30,.32);
+  --pill-text-active: #FFFFFF; --pill-text-inactive: #000000;
 }
 
 :root[data-theme="warm-light"]{
-  --canvas:#F9F7F4; --surface:#FFFFFF; --surface-raised:#FFFFFF; --surface-sunken:#F5F3ED;
-  --border:#EAE0D2; --divider:#EFE7DB;
-  --text-primary:#2A2520; --text-secondary:#6A6157; --text-muted:#A89D8E;
-  --accent:#7A5AF0; --accent-hover:#6A49E0; --accent-subtle:#ECE6FB; --on-accent:#FFFFFF;
-  --contrast:#2A211C; --on-contrast:#FFF8F0;
-  --success:#2C9C5E; --success-subtle:#E4F4E8; --warning:#D2841F; --warning-subtle:#FAEFD8;
-  --danger:#D24E2E; --danger-subtle:#FAE6DF; --info:#3F7BD8; --info-subtle:#E6EFFA;
-  --tint-peach:#FBE0CB; --tint-blue:#DBE5F7; --tint-lilac:#ECE2F8; --tint-mint:#DDEFD8;
-  --shadow-sm:0 1px 3px rgba(90,60,30,.06);
-  --shadow-md:0 8px 22px rgba(90,60,30,.12);
-  --shadow-lg:0 22px 48px rgba(90,60,30,.18);
-  --focus-ring:rgba(122,90,240,.35); --zebra:rgba(90,60,30,.03); --scrim:rgba(40,30,15,.34);
+  --canvas:#EAD0B3; --surface:#F5E5D1; --surface-raised:#FCF4EB; --surface-sunken:#D9BBA0;
+  --border:#C8A381; --divider:#D6B798;
+  --text-primary:#4A2B12; --text-secondary:#7D573B; --text-muted:#A8866B;
+  --accent:#C74B20; --accent-hover:#A63C17; --accent-subtle:#F5C6AE; --on-accent:#FFFFFF;
+  --contrast:#3B210C; --on-contrast:#FDEBDF;
+  --success:#2A8C4C; --success-subtle:#D5EFDF; --warning:#C27616; --warning-subtle:#F9E5CA;
+  --danger:#C04222; --danger-subtle:#FADAD1; --info:#356CB8; --info-subtle:#DEEBF7;
+  --tint-peach:#F6D4B8; --tint-blue:#D1DDF1; --tint-lilac:#E8D8F4; --tint-mint:#D2EBC9;
+  --shadow-sm:0 1px 3px rgba(74,43,18,.12);
+  --shadow-md:0 8px 22px rgba(74,43,18,.18);
+  --shadow-lg:0 22px 48px rgba(74,43,18,.25);
+  --focus-ring:rgba(199,75,32,.40); --zebra:rgba(74,43,18,.05); --scrim:rgba(74,43,18,.34);
+  --pill-text-active: #FFFFFF; --pill-text-inactive: #000000;
 }
 
 :root[data-theme="deep-dark"]{
@@ -78,6 +81,7 @@
   --shadow-md:0 10px 28px rgba(0,0,0,.55);
   --shadow-lg:0 24px 52px rgba(0,0,0,.65);
   --focus-ring:rgba(139,123,255,.50); --zebra:rgba(255,255,255,.022); --scrim:rgba(0,0,0,.55);
+  --pill-text-active: #000000; --pill-text-inactive: #FFFFFF;
 }
 
 :root[data-theme="midnight-blue"]{
@@ -93,6 +97,7 @@
   --shadow-md:0 10px 28px rgba(5,10,30,.60);
   --shadow-lg:0 24px 52px rgba(5,10,30,.70);
   --focus-ring:rgba(124,140,255,.50); --zebra:rgba(255,255,255,.020); --scrim:rgba(4,8,20,.58);
+  --pill-text-active: #000000; --pill-text-inactive: #FFFFFF;
 }
 
 :root[data-theme="oled-black"]{
@@ -108,6 +113,7 @@
   --shadow-md:0 10px 28px rgba(0,0,0,.70), 0 0 0 1px rgba(255,255,255,.05);
   --shadow-lg:0 24px 52px rgba(0,0,0,.80), 0 0 0 1px rgba(255,255,255,.06);
   --focus-ring:rgba(146,127,255,.55); --zebra:rgba(255,255,255,.025); --scrim:rgba(0,0,0,.66);
+  --pill-text-active: #000000; --pill-text-inactive: #FFFFFF;
 }
 
 /* Scales */
@@ -160,7 +166,7 @@ body{
   background-color:var(--surface-raised) !important;  /* solid, never see-through */
   color:var(--text-primary);
   border:1px solid var(--border);
-  border-radius:var(--r-md);
+  border-radius:var(--r-xs);
   box-shadow:var(--shadow-md);
   backdrop-filter:none;                                /* no accidental blur */
 }
@@ -214,9 +220,7 @@ body{
 [class*="grid-row"],
 [class*="GridRow"],
 [class*="table-row"]{
-  height:var(--row-h);
-  min-height:var(--row-h);
-  max-height:var(--row-h);
+  /* Removed hardcoded heights to allow TanStack Virtualizer dynamic height */
 }
 
 [role="gridcell"],
@@ -225,13 +229,14 @@ body{
 [class*="GridCell"],
 [class*="table-cell"],
 [class*="data-cell"]{
-  height:var(--row-h);
-  line-height:calc(var(--row-h) - 2px);   /* vertical centering w/o flex shift */
+  /* Removed hardcoded heights */
+  /* line-height:calc(var(--row-h) - 2px); */   /* vertical centering w/o flex shift */
   padding:0 var(--cell-pad-x);
   white-space:nowrap;                       /* no wrapping = no overlap */
   overflow:hidden;
   text-overflow:ellipsis;                   /* clip long text cleanly */
   font-size:13px;
+  font-family: 'Aptos', var(--font-ui) !important;
   color:var(--text-primary);
   border-right:1px solid var(--divider);
   border-bottom:1px solid var(--divider);
@@ -250,7 +255,7 @@ body{
 
 /* zebra + hover (cheap: background only) */
 [role="row"]:nth-child(even),
-[class*="grid-row"]:nth-child(even){ background-color:var(--zebra); }
+[class*="grid-row"]:nth-child(even){ background-color:color-mix(in srgb, var(--text-primary) var(--zebra-opacity, 2.5%), transparent); }
 [role="row"]:hover,
 [class*="grid-row"]:hover{ background-color:var(--accent-subtle); }
 
@@ -263,6 +268,7 @@ body{
   line-height:var(--colhead-h);
   padding:0 var(--cell-pad-x);
   font-size:12px; font-weight:600; letter-spacing:.01em;
+  font-family: 'Aptos', var(--font-ui) !important;
   color:var(--text-secondary);
   background-color:var(--surface);
   border-bottom:1px solid var(--border);
@@ -277,6 +283,7 @@ body{
   background-color:var(--surface-sunken);
   color:var(--text-muted);
   font-size:12px; font-variant-numeric:tabular-nums;
+  font-family: 'Aptos', var(--font-ui) !important;
   text-align:center;
 }
 
@@ -316,8 +323,7 @@ input,select,textarea{
   transition:border-color .12s ease, box-shadow .12s ease;
 }
 input::placeholder,textarea::placeholder{ color:var(--text-muted); }
-input:focus,select:focus,textarea:focus,
-[tabindex]:focus-visible,button:focus-visible{
+input:focus,select:focus,textarea:focus {
   border-color:var(--accent);
   box-shadow:0 0 0 3px var(--focus-ring);
 }
@@ -410,4 +416,63 @@ input[type="range"]::-moz-range-thumb{ width:16px; height:16px; border-radius:50
    --------------------------------------------------------------------- */
 @media (prefers-reduced-motion:reduce){
   *{ transition:none !important; animation:none !important; }
+}
+
+/* ---------------------------------------------------------------------
+   13. NAVIGATION PILL EXPLICIT OVERRIDES
+   --------------------------------------------------------------------- */
+.nav-pill-active {
+  color: var(--pill-text-active) !important;
+}
+.nav-pill-active > div.absolute {
+  background-color: var(--contrast) !important;
+}
+.nav-pill-inactive {
+  color: var(--pill-text-inactive) !important;
+}
+.nav-pill-inactive:hover {
+  opacity: 0.75 !important;
+}
+
+
+/* Override grid line colors for midnight-blue and oled-black */
+:root[data-theme="midnight-blue"] [role="gridcell"],
+:root[data-theme="midnight-blue"] [role="cell"],
+:root[data-theme="midnight-blue"] [class*="grid-cell"],
+:root[data-theme="midnight-blue"] [class*="GridCell"],
+:root[data-theme="midnight-blue"] [class*="table-cell"],
+:root[data-theme="midnight-blue"] [class*="data-cell"],
+:root[data-theme="midnight-blue"] [role="columnheader"],
+:root[data-theme="midnight-blue"] [class*="column-header"],
+:root[data-theme="midnight-blue"] [class*="ColumnHeader"],
+:root[data-theme="midnight-blue"] [class*="header-cell"],
+:root[data-theme="oled-black"] [role="gridcell"],
+:root[data-theme="oled-black"] [role="cell"],
+:root[data-theme="oled-black"] [class*="grid-cell"],
+:root[data-theme="oled-black"] [class*="GridCell"],
+:root[data-theme="oled-black"] [class*="table-cell"],
+:root[data-theme="oled-black"] [class*="data-cell"],
+:root[data-theme="oled-black"] [role="columnheader"],
+:root[data-theme="oled-black"] [class*="column-header"],
+:root[data-theme="oled-black"] [class*="ColumnHeader"],
+:root[data-theme="oled-black"] [class*="header-cell"] {
+  border-right-color: #FFFFFF !important;
+  border-bottom-color: #FFFFFF !important;
+}
+
+
+/* Define grid line base color for inline styles */
+:root {
+  --grid-line-color: #000000;
+}
+:root[data-theme="midnight-blue"],
+:root[data-theme="oled-black"] {
+  --grid-line-color: #FFFFFF;
+}
+
+
+/* Force white text for slider labels in dark themes */
+:root[data-theme="midnight-blue"] .slider-label,
+:root[data-theme="oled-black"] .slider-label {
+  color: #FFFFFF !important;
 }

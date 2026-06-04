@@ -1,6 +1,7 @@
 import React from 'react';
 import { useStore } from '../../store/useStore';
 import { LayoutGrid, Table } from 'lucide-react';
+import { ICONS } from '../Shared/IconColorPicker';
 
 export function NavigationStrip() {
   const databases = useStore(state => state.databases);
@@ -24,30 +25,47 @@ export function NavigationStrip() {
   }
 
   return (
-    <div className="border-b border-divider flex items-center px-4 h-[52px] md:h-[var(--tabs-h)] py-2 md:py-0 bg-surface shrink-0 overflow-x-auto no-scrollbar gap-2 relative">
+    <div className="border-b border-divider flex items-center px-4 h-[var(--tabs-h)] py-2 md:py-0 bg-surface shrink-0 overflow-x-auto no-scrollbar gap-2 relative">
       
       
 
       {workspaceViews.map(view => {
         const isActive = view.id === activeViewId;
-        const ViewIcon = view.viewType === 'card' ? LayoutGrid : Table;
+        console.log(`Rendering view: ${view.id}, name: ${view.name}, isActive: ${isActive}, activeViewId: ${activeViewId}`);
+        const DefaultIcon = view.viewType === 'card' ? LayoutGrid : Table;
+        const ViewIcon = view.iconName && ICONS[view.iconName] ? ICONS[view.iconName] : DefaultIcon;
         return (
           <button
             key={view.id}
             data-view-id={view.id}
-            onClick={() => setActiveViewId(view.id)}
-            className={`flex items-center gap-1.5 px-4 h-8 md:px-3 md:h-7 rounded-full text-[14px] md:text-[13px] font-medium transition-all duration-200 focus:outline-none ${
+            onClick={() => {
+              if (React.startTransition) {
+                React.startTransition(() => setActiveViewId(view.id));
+              } else {
+                setActiveViewId(view.id);
+              }
+            }}
+            className={`relative flex items-center justify-center gap-2 px-5 h-8 rounded-full text-[14px] font-medium ${
               isActive 
-                ? 'bg-accent text-white shadow-[0_0_12px_2px_color-mix(in_srgb,var(--accent)_50%,transparent)]' 
-                : 'bg-surface-raised text-text-secondary border border-border hover:bg-surface-sunken hover:text-text-primary'
+                ? 'nav-pill-active' 
+                : 'nav-pill-inactive hover:bg-[rgba(var(--text-color),0.05)]'
             }`}
           >
-            <ViewIcon 
-              size={14} 
-              style={{ color: view.iconColor || undefined }}
-              className={!view.iconColor ? 'text-text-muted' : undefined} 
-            />
-            <span className="whitespace-nowrap">{view.name}</span>
+            {/* Active Pill Background */}
+            {isActive && (
+              <div 
+                className="absolute inset-0 rounded-full shadow-sm"
+                style={{ zIndex: 0 }}
+              />
+            )}
+            <div className="relative flex items-center gap-2 z-10">
+              <ViewIcon 
+                size={16} 
+                style={{ color: !isActive && view.iconColor ? view.iconColor : undefined }}
+                className={!view.iconColor || isActive ? 'text-current' : undefined} 
+              />
+              <span className="whitespace-nowrap">{view.name}</span>
+            </div>
           </button>
         );
       })}

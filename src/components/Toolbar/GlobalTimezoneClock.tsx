@@ -23,20 +23,20 @@ export function GlobalTimezoneClock() {
 
   return (
     <div className="flex items-center gap-2 mx-2 text-[11px] font-semibold text-text-primary tracking-wide">
-      <div className="flex items-center justify-center p-2 bg-surface-raised border border-divider shadow-sm rounded-lg hover:shadow-md transition-all">
+      <div className="flex items-center justify-center px-2 py-1 bg-surface-raised border border-divider shadow-sm rounded-lg hover:shadow-md transition-all whitespace-nowrap">
         <Clock size={12} className="text-text-muted mr-1.5" />
         <span className="text-text-muted mr-1">EST</span>
         <span>{formatTime('America/New_York')}</span>
       </div>
-      <div className="flex items-center justify-center p-2 bg-surface-raised border border-divider shadow-sm rounded-lg hover:shadow-md transition-all">
+      <div className="flex items-center justify-center px-2 py-1 bg-surface-raised border border-divider shadow-sm rounded-lg hover:shadow-md transition-all whitespace-nowrap">
         <span className="text-text-muted mr-1">CST</span>
         <span>{formatTime('America/Chicago')}</span>
       </div>
-      <div className="flex items-center justify-center p-2 bg-surface-raised border border-divider shadow-sm rounded-lg hover:shadow-md transition-all">
+      <div className="flex items-center justify-center px-2 py-1 bg-surface-raised border border-divider shadow-sm rounded-lg hover:shadow-md transition-all whitespace-nowrap">
         <span className="text-text-muted mr-1">MST</span>
         <span>{formatTime('America/Denver')}</span>
       </div>
-      <div className="flex items-center justify-center p-2 bg-surface-raised border border-divider shadow-sm rounded-lg hover:shadow-md transition-all">
+      <div className="flex items-center justify-center px-2 py-1 bg-surface-raised border border-divider shadow-sm rounded-lg hover:shadow-md transition-all whitespace-nowrap">
         <span className="text-text-muted mr-1">PST</span>
         <span>{formatTime('America/Los_Angeles')}</span>
       </div>

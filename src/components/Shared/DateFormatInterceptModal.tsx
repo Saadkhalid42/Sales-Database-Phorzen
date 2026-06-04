@@ -84,7 +84,7 @@ export const DateFormatInterceptModal = () => {
                   1. Current Format (Source)
                 </label>
                 <select 
-                  className="w-full bg-surface outline-none border border-border focus:ring-2 focus:ring-accent rounded-lg px-3 py-2.5 text-[13px] text-text-primary transition-all cursor-pointer"
+                  className="w-full bg-surface outline-none border border-border   rounded-lg px-3 py-2.5 text-[13px] text-text-primary transition-all cursor-pointer"
                   value={sourceFormat}
                   onChange={(e) => setSourceFormat(e.target.value)}
                 >
@@ -99,7 +99,7 @@ export const DateFormatInterceptModal = () => {
                   2. Display Format
                 </label>
                 <select 
-                  className="w-full bg-surface outline-none border border-border focus:ring-2 focus:ring-accent rounded-lg px-3 py-2.5 text-[13px] text-text-primary transition-all cursor-pointer"
+                  className="w-full bg-surface outline-none border border-border   rounded-lg px-3 py-2.5 text-[13px] text-text-primary transition-all cursor-pointer"
                   value={displayFormat}
                   onChange={(e) => setDisplayFormat(e.target.value)}
                 >

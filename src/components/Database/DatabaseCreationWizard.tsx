@@ -37,7 +37,8 @@ const FIELD_TYPES = [
   { value: 'multiple_select', label: 'Multiple Select' },
   { value: 'duration', label: 'Duration' },
   { value: 'file', label: 'File' },
-  { value: 'created_on', label: 'Created On' }
+  { value: 'created_on', label: 'Created On' },
+  { value: 'append_only_log', label: 'Append-Only Log' }
 ];
 
 function guessType(values: any[]): string {
@@ -317,7 +318,7 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
                     type="text" 
                     value={dbName}
                     onChange={(e) => setDbName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-md border border-border bg-surface text-text-primary focus:outline-none focus:border-primary transition-colors"
+                    className="w-full px-3 py-2 rounded-md border border-border bg-surface text-text-primary focus:outline-none focus-visible:border-primary transition-colors"
                   />
                 </div>
 
@@ -339,7 +340,7 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
                                 newM[idx].skip = !e.target.checked;
                                 setMappings(newM);
                               }}
-                              className="w-5 h-5 rounded border-border text-accent focus:ring-accent accent-accent cursor-pointer"
+                              className="w-5 h-5 rounded border-border text-accent  accent-accent cursor-pointer"
                             />
                           </div>
                         </div>
@@ -353,7 +354,7 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
                             setMappings(newM);
                           }}
                           disabled={mapping.skip}
-                          className="w-full md:flex-1 md:w-auto px-3 py-3 md:py-1.5 rounded-lg md:rounded bg-surface-sunken md:bg-transparent text-text-primary text-sm border md:border-b border-border md:border-transparent focus:border-primary focus:outline-none disabled:opacity-50 min-h-[44px] md:min-h-0"
+                          className="w-full md:flex-1 md:w-auto px-3 py-3 md:py-1.5 rounded-lg md:rounded bg-surface-sunken md:bg-transparent text-text-primary text-sm border md:border-b border-border md:border-transparent focus-visible:border-primary focus:outline-none disabled:opacity-50 min-h-[44px] md:min-h-0"
                         />
                         
                         <Select.Root 
@@ -402,7 +403,7 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
                               newM[idx].skip = !e.target.checked;
                               setMappings(newM);
                             }}
-                            className="w-3.5 h-3.5 rounded border-border text-accent focus:ring-accent accent-accent cursor-pointer"
+                            className="w-3.5 h-3.5 rounded border-border text-accent  accent-accent cursor-pointer"
                           />
                         </div>
                       </div>

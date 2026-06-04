@@ -37,7 +37,7 @@ export function DatabaseDropdown({ asInlineMobile }: { asInlineMobile?: boolean 
       {databases.map(db => (
         <div key={db.id} className="relative group">
           <button
-            className="flex w-full items-center justify-between cursor-pointer px-3 py-2 rounded-2xl text-text-primary hover:bg-accent-subtle hover:text-accent outline-none pr-10"
+            className="flex w-full items-center justify-between cursor-pointer px-3 py-2 rounded-lg text-text-primary hover:bg-accent-subtle hover:text-accent outline-none text-[13px] pr-10"
             onClick={() => setActiveDbId(db.id)}
           >
             <span className="truncate">{db.name}</span>
@@ -48,20 +48,20 @@ export function DatabaseDropdown({ asInlineMobile }: { asInlineMobile?: boolean 
           <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
-                <button className="p-1 rounded hover:bg-divider text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-accent">
+                <button className="p-1 rounded hover:bg-divider text-text-secondary hover:text-text-primary focus:outline-none  ">
                   <MoreVertical size={16} />
                 </button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
                 <DropdownMenu.Content className="mobile-bottom-sheet bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[60]" sideOffset={4} align="end">
                   <DropdownMenu.Item 
-                    className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-sm"
+                    className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
                     onSelect={() => setDialogConfig({ isOpen: true, type: 'rename', targetId: db.id, targetName: db.name })}
                   >
                     <Edit2 size={14} /> Rename
                   </DropdownMenu.Item>
                   <DropdownMenu.Item 
-                    className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-sm"
+                    className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-[13px]"
                     onSelect={() => setDialogConfig({ isOpen: true, type: 'delete', targetId: db.id, targetName: db.name })}
                   >
                     <Trash2 size={14} /> Delete
@@ -74,7 +74,7 @@ export function DatabaseDropdown({ asInlineMobile }: { asInlineMobile?: boolean 
       ))}
       <div className="h-px bg-divider my-1" />
       <button 
-        className="flex w-full items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-accent font-medium hover:bg-accent-subtle hover:text-accent outline-none"
+        className="flex w-full items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-accent text-[13px] font-medium hover:bg-accent-subtle hover:text-accent outline-none"
         onClick={() => setIsWizardOpen(true)}
       >
         <Plus size={16} /> Add New Database
@@ -106,14 +106,14 @@ export function DatabaseDropdown({ asInlineMobile }: { asInlineMobile?: boolean 
     <>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
-          <button className="flex items-center justify-center p-2 rounded-lg text-text-primary hover:text-accent hover:bg-accent-subtle data-[state=open]:text-accent data-[state=open]:bg-accent-subtle transition-colors focus:outline-none focus:ring-2 focus:ring-focus-ring">
-            <DatabaseIcon size={20} />
+          <button className="flex items-center justify-center px-2 py-1 rounded-md text-text-secondary hover:text-text-primary transition-all focus:outline-none">
+            <DatabaseIcon size={16} />
           </button>
         </DropdownMenu.Trigger>
 
         <DropdownMenu.Portal>
           <DropdownMenu.Content 
-            className="bg-surface-raised w-56 border border-border shadow-xl rounded-xl p-2 z-50 mt-1 data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out"
+            className="bg-surface-raised w-56 border border-border shadow-xl rounded-md p-2 z-50 mt-1 data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out"
             align="start"
             sideOffset={4}
             
@@ -125,7 +125,7 @@ export function DatabaseDropdown({ asInlineMobile }: { asInlineMobile?: boolean 
             {databases.map(db => (
               <div key={db.id} className="relative group">
                 <DropdownMenu.Item
-                  className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-2xl text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none pr-10"
+                  className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px] pr-10"
                   onSelect={() => setActiveDbId(db.id)}
                 >
                   <span className="truncate">{db.name}</span>
@@ -136,20 +136,20 @@ export function DatabaseDropdown({ asInlineMobile }: { asInlineMobile?: boolean 
                 <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
                   <DropdownMenu.Root>
                     <DropdownMenu.Trigger asChild>
-                      <button className="p-1 rounded hover:bg-divider text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-accent">
+                      <button className="p-1 rounded hover:bg-divider text-text-secondary hover:text-text-primary focus:outline-none  ">
                         <MoreVertical size={16} />
                       </button>
                     </DropdownMenu.Trigger>
                     <DropdownMenu.Portal>
                       <DropdownMenu.Content className="mobile-bottom-sheet bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[60]" sideOffset={4} align="end" >
                         <DropdownMenu.Item 
-                          className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-sm"
+                          className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
                           onSelect={() => setDialogConfig({ isOpen: true, type: 'rename', targetId: db.id, targetName: db.name })}
                         >
                           <Edit2 size={14} /> Rename
                         </DropdownMenu.Item>
                         <DropdownMenu.Item 
-                          className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-sm"
+                          className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-[13px]"
                           onSelect={() => setDialogConfig({ isOpen: true, type: 'delete', targetId: db.id, targetName: db.name })}
                         >
                           <Trash2 size={14} /> Delete
@@ -164,7 +164,7 @@ export function DatabaseDropdown({ asInlineMobile }: { asInlineMobile?: boolean 
             <DropdownMenu.Separator className="h-px bg-divider my-1" />
             
             <DropdownMenu.Item 
-              className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-accent font-medium data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none"
+              className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-accent text-[13px] font-medium data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none"
               onSelect={() => setIsWizardOpen(true)}
             >
               <Plus size={16} /> Add New Database

@@ -7,12 +7,12 @@ import { useStore } from '../../store/useStore';
 import { SearchableColumnSelector } from './SearchableColumnSelector';
 
 const OPERATORS: Record<string, string[]> = {
-  text: ['contains', 'is exactly', 'is empty', 'is not empty'],
+  text: ['is', 'is not', 'contains', 'doesnt contain', 'contains word', 'doesnt contain word', 'is empty', 'is not empty'],
   number: ['=', '>', '<', 'is empty', 'is not empty'],
-  select: ['is', 'is not', 'is empty', 'is not empty'],
-  date: ['is', 'is before', 'is after', 'is empty', 'is not empty'],
-  boolean: ['is'],
-  default: ['contains', 'is exactly']
+  select: ['contains', "doesn't contain", 'contains word', "doesn't contain word", 'is', 'is not', 'is any of', 'is none of', 'is empty', 'is not empty'],
+  date: ['is', 'is not', 'is before', 'is on or before', 'is after', 'is on or after', 'is within', 'day of month is', 'contains', "doesn't contain", 'is empty', 'is not empty'],
+  boolean: ['is true', 'is false'],
+  default: ['is', 'is not', 'contains', 'doesnt contain', 'contains word', 'doesnt contain word', 'is empty', 'is not empty']
 };
 
 const getOperatorsForType = (type: string) => {
@@ -87,7 +87,7 @@ export function FilterPopover({ asInlineMobile }: { asInlineMobile?: boolean }) 
                 {activeFilters.map((filter, idx) => {
                   const col = columns.find(c => c.key === filter.colKey);
                   const ops = col ? getOperatorsForType(col.type) : OPERATORS.default;
-                  const noValueNeeded = ['is empty', 'is not empty'].includes(filter.operator);
+                  const noValueNeeded = ['is empty', 'is not empty', 'is true', 'is false'].includes(filter.operator);
 
                   return (
                     <div key={idx} className="flex items-center gap-2">
@@ -98,20 +98,20 @@ export function FilterPopover({ asInlineMobile }: { asInlineMobile?: boolean }) 
                           onValueChange={(v) => updateView(activeViewId!, { filterJoinOperator: v as 'and' | 'or' })}
                           disabled={!canFilter}
                         >
-                          <Select.Trigger className="w-16 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs font-semibold focus:outline-none shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
+                          <Select.Trigger className="w-16 flex items-center justify-between px-2 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs font-semibold focus:outline-none shrink-0 disabled:opacity-50 disabled:cursor-not-allowed">
                             <Select.Value />
                             <Select.Icon><ChevronDown size={14} className="opacity-50" /></Select.Icon>
                           </Select.Trigger>
                           <Select.Portal>
                             <Select.Content position="popper" sideOffset={4} className="z-[60] overflow-hidden bg-surface rounded-lg border border-border shadow-xl w-24">
                               <Select.Viewport className="p-1">
-                                <Select.Item value="and" className="relative flex items-center gap-2 px-6 py-1.5 text-xs text-text-primary rounded-2xl cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
-                                  <Select.ItemIndicator className="absolute left-1"><Check size={12} /></Select.ItemIndicator>
+                                <Select.Item value="and" className="relative flex items-center justify-between gap-2 pl-3 pr-8 py-1.5 text-xs text-text-primary rounded-lg cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
                                   <Select.ItemText>And</Select.ItemText>
+                                  <Select.ItemIndicator className="absolute right-3"><Check size={12} /></Select.ItemIndicator>
                                 </Select.Item>
-                                <Select.Item value="or" className="relative flex items-center gap-2 px-6 py-1.5 text-xs text-text-primary rounded-2xl cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
-                                  <Select.ItemIndicator className="absolute left-1"><Check size={12} /></Select.ItemIndicator>
+                                <Select.Item value="or" className="relative flex items-center justify-between gap-2 pl-3 pr-8 py-1.5 text-xs text-text-primary rounded-lg cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
                                   <Select.ItemText>Or</Select.ItemText>
+                                  <Select.ItemIndicator className="absolute right-3"><Check size={12} /></Select.ItemIndicator>
                                 </Select.Item>
                               </Select.Viewport>
                             </Select.Content>
@@ -130,17 +130,17 @@ export function FilterPopover({ asInlineMobile }: { asInlineMobile?: boolean }) 
                       />
 
                       <Select.Root value={filter.operator} onValueChange={(v) => updateFilter(idx, 'operator', v)} disabled={!canFilter}>
-                        <Select.Trigger className="w-28 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                        <Select.Trigger className="w-40 flex items-center justify-between px-2 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs focus:outline-none focus-visible:border-primary disabled:opacity-50 disabled:cursor-not-allowed">
                           <Select.Value />
                           <Select.Icon><ChevronDown size={14} className="opacity-50" /></Select.Icon>
                         </Select.Trigger>
                         <Select.Portal>
-                          <Select.Content position="popper" sideOffset={4} className="z-[60] overflow-hidden bg-surface rounded-lg border border-border shadow-xl w-[var(--radix-select-trigger-width)]">
+                          <Select.Content position="popper" sideOffset={4} className="z-[60] overflow-hidden bg-surface rounded-lg border border-border shadow-xl min-w-[var(--radix-select-trigger-width)]">
                             <Select.Viewport className="p-1">
                               {ops.map(op => (
-                                <Select.Item key={op} value={op} className="relative flex items-center gap-2 px-6 py-1.5 text-xs text-text-primary rounded-2xl cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
-                                  <Select.ItemIndicator className="absolute left-1"><Check size={12} /></Select.ItemIndicator>
+                                <Select.Item key={op} value={op} className="relative flex items-center justify-between gap-2 pl-3 pr-8 py-1.5 text-xs text-text-primary rounded-lg cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none whitespace-nowrap">
                                   <Select.ItemText>{op}</Select.ItemText>
+                                  <Select.ItemIndicator className="absolute right-3"><Check size={12} /></Select.ItemIndicator>
                                 </Select.Item>
                               ))}
                             </Select.Viewport>
@@ -150,9 +150,9 @@ export function FilterPopover({ asInlineMobile }: { asInlineMobile?: boolean }) 
 
                       <div className="flex-1">
                         {!noValueNeeded && (
-                          col?.type === 'single_select' || col?.type === 'multiple_select' ? (
+                          (col?.type === 'single_select' || col?.type === 'multiple_select') && ['is', 'is not'].includes(filter.operator) ? (
                             <Select.Root value={filter.value} onValueChange={(v) => updateFilter(idx, 'value', v)} disabled={!canFilter}>
-                              <Select.Trigger className="w-full flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                              <Select.Trigger className="w-full flex items-center justify-between px-2 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs focus:outline-none focus-visible:border-primary disabled:opacity-50 disabled:cursor-not-allowed">
                                 <Select.Value placeholder="Select option..." />
                                 <Select.Icon><ChevronDown size={14} className="opacity-50" /></Select.Icon>
                               </Select.Trigger>
@@ -160,47 +160,26 @@ export function FilterPopover({ asInlineMobile }: { asInlineMobile?: boolean }) 
                                 <Select.Content position="popper" sideOffset={4} className="z-[60] overflow-hidden bg-surface rounded-lg border border-border shadow-xl w-[var(--radix-select-trigger-width)]">
                                   <Select.Viewport className="p-1 max-h-48 custom-scrollbar">
                                     {(col.typeOptions?.options || []).map((o: any) => (
-                                      <Select.Item key={o.label} value={o.label} className="relative flex items-center gap-2 px-6 py-1.5 text-xs text-text-primary rounded-2xl cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
-                                        <Select.ItemIndicator className="absolute left-1"><Check size={12} /></Select.ItemIndicator>
+                                      <Select.Item key={o.label} value={o.label} className="relative flex items-center justify-between gap-2 pl-3 pr-8 py-1.5 text-xs text-text-primary rounded-lg cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
                                         <div className="flex items-center gap-2">
                                           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: o.color }} />
                                           <Select.ItemText>{o.label}</Select.ItemText>
                                         </div>
+                                        <Select.ItemIndicator className="absolute right-3"><Check size={12} /></Select.ItemIndicator>
                                       </Select.Item>
                                     ))}
                                   </Select.Viewport>
                                 </Select.Content>
                               </Select.Portal>
                             </Select.Root>
-                          ) : col?.type === 'boolean' ? (
-                            <Select.Root value={filter.value === true ? 'true' : 'false'} onValueChange={(v) => updateFilter(idx, 'value', v === 'true')} disabled={!canFilter}>
-                              <Select.Trigger className="w-full flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed">
-                                <Select.Value placeholder="Select boolean..." />
-                                <Select.Icon><ChevronDown size={14} className="opacity-50" /></Select.Icon>
-                              </Select.Trigger>
-                              <Select.Portal>
-                                <Select.Content position="popper" sideOffset={4} className="z-[60] overflow-hidden bg-surface rounded-lg border border-border shadow-xl w-[var(--radix-select-trigger-width)]">
-                                  <Select.Viewport className="p-1">
-                                    <Select.Item value="true" className="relative flex items-center gap-2 px-6 py-1.5 text-xs text-text-primary rounded-2xl cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
-                                      <Select.ItemIndicator className="absolute left-1"><Check size={12} /></Select.ItemIndicator>
-                                      <Select.ItemText>Checked</Select.ItemText>
-                                    </Select.Item>
-                                    <Select.Item value="false" className="relative flex items-center gap-2 px-6 py-1.5 text-xs text-text-primary rounded-2xl cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
-                                      <Select.ItemIndicator className="absolute left-1"><Check size={12} /></Select.ItemIndicator>
-                                      <Select.ItemText>Unchecked</Select.ItemText>
-                                    </Select.Item>
-                                  </Select.Viewport>
-                                </Select.Content>
-                              </Select.Portal>
-                            </Select.Root>
-                          ) : (
+                          ) : col?.type === 'boolean' ? null : (
                             <input
                               type={['number', 'rating', 'duration'].includes(col?.type || '') ? 'number' : 'text'}
                               value={filter.value}
                               onChange={(e) => updateFilter(idx, 'value', e.target.value)}
                               placeholder="Value..."
                               disabled={!canFilter}
-                              className="w-full px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="w-full px-2 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs focus:outline-none focus-visible:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                             />
                           )
                         )}
@@ -209,7 +188,7 @@ export function FilterPopover({ asInlineMobile }: { asInlineMobile?: boolean }) 
                       {canFilter && (
                         <button 
                           onClick={() => removeFilter(idx)}
-                          className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-2xl transition-colors focus:outline-none"
+                          className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors focus:outline-none"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -223,7 +202,7 @@ export function FilterPopover({ asInlineMobile }: { asInlineMobile?: boolean }) 
             {canFilter && (
               <button 
                 onClick={addFilter}
-                className="flex items-center gap-1.5 text-xs font-medium text-text-primary hover:bg-[rgba(var(--text-color),0.05)] px-2 py-1.5 rounded-2xl self-start transition-colors mt-1"
+                className="flex items-center gap-1.5 text-xs font-medium text-text-primary hover:bg-[rgba(var(--text-color),0.05)] px-2 py-1.5 rounded-lg self-start transition-colors mt-1"
               >
                 <Plus size={14} /> Add Filter
               </button>
@@ -242,7 +221,7 @@ export function FilterPopover({ asInlineMobile }: { asInlineMobile?: boolean }) 
                       onChange={(e) => {
                         if (activeViewId) toggleFilters(activeViewId, e.target.checked);
                       }}
-                      className="w-3.5 h-3.5 rounded-sm border-border text-accent focus:ring-accent cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-3.5 h-3.5 rounded-sm border-border text-accent  cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </label>
                 </div>
@@ -259,10 +238,10 @@ export function FilterPopover({ asInlineMobile }: { asInlineMobile?: boolean }) 
     <Popover.Root>
       <Popover.Trigger asChild>
         <button 
-          className={`px-3 py-1.5 rounded-2xl border text-sm flex items-center gap-1.5 transition-colors ${
+          className={`flex items-center gap-1.5 transition-all focus:outline-none px-2 py-1 rounded-md ${
             isActive 
-              ? 'bg-accent/10 text-accent border-accent/30 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30' 
-              : 'hover:bg-[rgba(var(--text-color),0.08)] border-transparent hover:border-[rgba(var(--text-color),0.15)] text-text-primary'
+              ? 'text-accent font-semibold' 
+              : 'text-text-secondary hover:text-text-primary'
           }`}
         >
           <Filter size={14} />

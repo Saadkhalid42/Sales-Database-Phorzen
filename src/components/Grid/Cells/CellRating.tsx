@@ -8,9 +8,7 @@ export const CellRating = React.memo(function CellRating(props: CellProps) {
   const rating = Number(initialValue) || 0;
 
   const setRating = (val: number) => {
-    if (isActiveEditor) {
-      updateRecordCell(recordId, colKey, val === rating ? 0 : val);
-    }
+    updateRecordCell(recordId, colKey, val === rating ? 0 : val);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {

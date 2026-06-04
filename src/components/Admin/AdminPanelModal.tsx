@@ -458,15 +458,15 @@ export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
             <form onSubmit={handleEditUserSubmit} className="flex flex-col gap-4">
               <div>
                 <label className="block text-sm text-text-secondary mb-1">Name</label>
-                <input value={editName} onChange={e => setEditName(e.target.value)} type="text" className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-text-primary focus:ring-2 focus:ring-accent outline-none" />
+                <input value={editName} onChange={e => setEditName(e.target.value)} type="text" className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-text-primary   outline-none" />
               </div>
               <div>
                 <label className="block text-sm text-text-secondary mb-1">Email</label>
-                <input value={editEmail} onChange={e => setEditEmail(e.target.value)} type="email" className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-text-primary focus:ring-2 focus:ring-accent outline-none" />
+                <input value={editEmail} onChange={e => setEditEmail(e.target.value)} type="email" className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-text-primary   outline-none" />
               </div>
               <div>
                 <label className="block text-sm text-text-secondary mb-1">New Password (Optional)</label>
-                <input value={editPassword} onChange={e => setEditPassword(e.target.value)} type="password" placeholder="Leave blank to keep current" className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-text-primary focus:ring-2 focus:ring-accent outline-none" />
+                <input value={editPassword} onChange={e => setEditPassword(e.target.value)} type="password" placeholder="Leave blank to keep current" className="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-text-primary   outline-none" />
               </div>
               <div className="flex justify-end gap-3 mt-4">
                 <button type="button" onClick={() => setEditingUser(null)} className="px-4 py-2 rounded-lg text-sm font-medium text-text-secondary hover:bg-surface transition-colors">Cancel</button>

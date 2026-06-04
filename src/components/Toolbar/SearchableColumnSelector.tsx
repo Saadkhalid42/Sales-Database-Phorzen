@@ -15,7 +15,7 @@ export function SearchableColumnSelector({
   onValueChange, 
   columns,
   disabled,
-  className = "w-1/3 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary transition-colors"
+  className = "w-1/3 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus-visible:border-primary transition-colors"
 }: SearchableColumnSelectorProps) {
   const [open, setOpen] = React.useState(false);
   const [query, setQuery] = React.useState('');

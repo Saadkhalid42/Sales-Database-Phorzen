@@ -31,6 +31,15 @@ export interface ChangelogEntry {
   fieldName: string;
   oldValue: string;
   newValue: string;
+  userName?: string;
+  firstCellValue?: string;
+}
+
+export interface RecordSnapshot {
+  id: string;
+  name: string;
+  type: 'automation' | 'manual';
+  data: Record<string, any>;
 }
 
 export interface GridRecord {
@@ -38,6 +47,7 @@ export interface GridRecord {
   cells: Record<string, any>;
   _flagged?: Record<string, boolean>;
   changelog?: ChangelogEntry[];
+  tabs_history?: RecordSnapshot[];
   _timezone?: string | null;
   _isSoftEvicted?: boolean;
   _evictionMode?: 'click-away' | 'timer' | 'evicting';
@@ -191,6 +201,11 @@ export interface AppState {
   addRecord: (record: GridRecord) => void;
   updateRecord: (id: string, newValues: Record<string, any>) => void;
   updateRecordCell: (id: string, colKey: string, value: any) => void;
+  updateRecordSnapshotCell: (recordId: string, snapshotId: string, colKey: string, value: any) => void;
+  addRecordSnapshot: (recordId: string, type: 'automation' | 'manual', data: Record<string, any>) => void;
+  deleteRecordSnapshot: (recordId: string, snapshotId: string) => void;
+  renameRecordSnapshot: (recordId: string, snapshotId: string, newName: string) => void;
+  appendLogEntry: (recordId: string, colKey: string, newValue: any, user: string) => void;
   deleteRecord: (id: string) => void;
   updateRecordCells: (updates: { recordId: string, colId: string, value: any }[]) => void;
   calculateMissingTimezones: () => void;
@@ -571,14 +586,24 @@ export const useStore = create<AppState>()(
       },
 
       // DATABASE MUTATIONS
-      addDatabase: (db) => set((state) => ({ 
-        databases: [...state.databases, { ...db, columns: [], records: [], workspaces: [] }], 
-        activeDatabaseId: db.id 
-      })),
-      importDatabase: (db) => set((state) => ({
-        databases: [...state.databases, db],
-        activeDatabaseId: db.id
-      })),
+      addDatabase: (db) => set((state) => {
+        supabase.rpc('admin_add_tabs_history_to_table', { table_name: db.id }).then(({error}) => {
+            if (error) console.error("Failed to provision JSONB column in Supabase:", error);
+        });
+        return { 
+          databases: [...state.databases, { ...db, columns: [], records: [], workspaces: [] }], 
+          activeDatabaseId: db.id 
+        };
+      }),
+      importDatabase: (db) => set((state) => {
+        supabase.rpc('admin_add_tabs_history_to_table', { table_name: db.id }).then(({error}) => {
+            if (error) console.error("Failed to provision JSONB column in Supabase:", error);
+        });
+        return {
+          databases: [...state.databases, db],
+          activeDatabaseId: db.id
+        };
+      }),
       renameDatabase: (id, name) => set((state) => ({
         databases: state.databases.map(db => db.id === id ? { ...db, name } : db)
       })),
@@ -590,6 +615,16 @@ export const useStore = create<AppState>()(
       // COLUMN MUTATIONS
       addColumn: (col, options) => set((state) => {
         if (!state.activeDatabaseId) return state;
+
+        if (col.type === 'append_only_log') {
+           supabase.rpc('admin_create_append_only_column', { 
+               table_name: state.activeDatabaseId, 
+               column_name: col.key 
+           }).then(({error}) => {
+               if (error) console.error("Failed to provision JSONB column in Supabase:", error);
+           });
+        }
+
         return {
           databases: state.databases.map(db => {
             if (db.id !== state.activeDatabaseId) return db;
@@ -629,7 +664,11 @@ export const useStore = create<AppState>()(
               };
             });
 
-            return { ...db, columns: newCols, workspaces: newWorkspaces };
+            const newRecords = col.type === 'append_only_log' 
+              ? db.records.map(r => ({ ...r, cells: { ...r.cells, [col.key]: [] } }))
+              : db.records;
+
+            return { ...db, columns: newCols, workspaces: newWorkspaces, records: newRecords };
           })
         };
       }),
@@ -798,10 +837,20 @@ export const useStore = create<AppState>()(
       const recordIndex = newRecords.findIndex(r => r.id === recordId);
       if (recordIndex === -1) return state;
       
-      newRecords[recordIndex] = {
-        ...newRecords[recordIndex],
-        cells: { ...newRecords[recordIndex].cells, ...newValues }
-      };
+      const rec = { ...newRecords[recordIndex], cells: { ...newRecords[recordIndex].cells } };
+      if (!rec.tabs_history) rec.tabs_history = [];
+      if (rec.tabs_history.length === 0) {
+          rec.tabs_history.push({
+              id: `snap-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+              name: new Date().toISOString().split('T')[0],
+              type: 'manual',
+              data: { ...rec.cells }
+          });
+      }
+      const latestSnap = rec.tabs_history[rec.tabs_history.length - 1];
+      latestSnap.data = { ...latestSnap.data, ...newValues };
+      rec.cells = Object.assign({}, ...rec.tabs_history.map(t => t.data));
+      newRecords[recordIndex] = rec;
       
       newDb.records = newRecords;
       newDatabases[dbIndex] = newDb;
@@ -845,7 +894,14 @@ export const useStore = create<AppState>()(
               });
             }
 
-            return { ...db, records: [...db.records, { ...newRecord, _timezone }] };
+            const initialSnapshot = {
+                id: `snap-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                name: 'Original',
+                type: 'manual' as const,
+                data: { ...newRecord.cells }
+            };
+
+            return { ...db, records: [...db.records, { ...newRecord, _timezone, tabs_history: [initialSnapshot] }] };
           })
         };
       }),
@@ -887,11 +943,26 @@ export const useStore = create<AppState>()(
           }
         }
         
+        const col = db?.columns.find(c => c.key === colKey);
+        const colName = col ? col.label : colKey;
+        const firstColKey = db && db.columns.length > 0 ? db.columns[0].key : '';
+        const currentRecord = db?.records.find(r => r.id === recordId);
+        const firstCellValue = currentRecord && firstColKey ? String(currentRecord.cells[firstColKey] || '') : 'Unknown';
+        const previousCellText = currentRecord ? String(currentRecord.cells[colKey] || '') : '';
+        const userName = currentUser?.name || 'Unknown';
+        
+        const formatLogVal = (v: any) => {
+          const s = String(v || '').trim();
+          return s === '' ? '"empty"' : `"${s}"`;
+        };
+        
+        const actionDesc = `${userName} changed the ${colName} of ${firstCellValue} from ${formatLogVal(previousCellText)} to ${formatLogVal(value)}`;
+
         get().takeSnapshot(); // Re-enabled safely
         
         supabase.from('activity_logs').insert({
-          user_name: currentUser?.name || 'Unknown',
-          action_description: `${currentUser?.name || 'Unknown'} changed cell in row ${recordId}, column ${colKey} from '${db?.records.find(r => r.id === recordId)?.cells[colKey]}' to '${value}'`,
+          user_name: userName,
+          action_description: actionDesc,
           table_id: get().activeDatabaseId
         }).then(({ error }) => { if (error) console.error(error); });
         set((state) => {
@@ -922,7 +993,18 @@ export const useStore = create<AppState>()(
               isFlagged = result.isFlagged;
           }
 
-          record.cells[colKey] = parsedValue;
+          if (!record.tabs_history) record.tabs_history = [];
+          if (record.tabs_history.length === 0) {
+              record.tabs_history.push({
+                  id: `snap-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                  name: new Date().toISOString().split('T')[0],
+                  type: 'manual',
+                  data: { ...record.cells }
+              });
+          }
+          const latestSnap = record.tabs_history[record.tabs_history.length - 1];
+          latestSnap.data = { ...latestSnap.data, [colKey]: parsedValue };
+          record.cells = Object.assign({}, ...record.tabs_history.map(t => t.data));
           
           // Handle flagged invalid data
           if (isFlagged) {
@@ -946,7 +1028,9 @@ export const useStore = create<AppState>()(
             timestamp: new Date().toISOString(),
             fieldName: colName,
             oldValue: String(oldVal || ''),
-            newValue: String(parsedValue || '')
+            newValue: String(parsedValue || ''),
+            userName: currentUser?.name || 'Unknown',
+            firstCellValue: newDb.columns.length > 0 ? String(record.cells[newDb.columns[0].key] || '') : 'Unknown'
           };
           
           record.changelog = record.changelog ? [newLog, ...record.changelog] : [newLog];
@@ -973,6 +1057,7 @@ export const useStore = create<AppState>()(
         return { databases: newDatabases };
       }); },
       updateRecordCells: (updates) => {
+        const currentUser = get().currentUser;
         get().takeSnapshot();
         set((state) => {
         if (!state.activeDatabaseId) return state;
@@ -992,7 +1077,18 @@ export const useStore = create<AppState>()(
                   isFlagged = res.isFlagged;
                 }
                 
-                rec.cells[update.colId] = parsedValue;
+                if (!rec.tabs_history) rec.tabs_history = [];
+                if (rec.tabs_history.length === 0) {
+                    rec.tabs_history.push({
+                        id: `snap-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                        name: new Date().toISOString().split('T')[0],
+                        type: 'manual',
+                        data: { ...rec.cells }
+                    });
+                }
+                const latestSnap = rec.tabs_history[rec.tabs_history.length - 1];
+                latestSnap.data = { ...latestSnap.data, [update.colId]: parsedValue };
+                rec.cells = Object.assign({}, ...rec.tabs_history.map(t => t.data));
                 
                 // Handle flagged invalid data
                 if (isFlagged) {
@@ -1010,10 +1106,221 @@ export const useStore = create<AppState>()(
                 }
               }
             }
+            
+            // Log for batch updates
+            const userName = currentUser?.name || 'Unknown';
+            const logsToInsert = updates.map(update => {
+              const rec = recordsMap.get(update.recordId);
+              const col = db.columns.find(c => c.key === update.colId);
+              const colName = col ? col.label : update.colId;
+              const firstColKey = db.columns.length > 0 ? db.columns[0].key : '';
+              const firstCellValue = rec && firstColKey ? String(rec.cells[firstColKey] || '') : 'Unknown';
+              // We don't easily have old value here, but this is batch update
+              const formatLogVal = (v: any) => {
+                const s = String(v || '').trim();
+                return s === '' ? '"empty"' : `"${s}"`;
+              };
+              return {
+                user_name: userName,
+                action_description: `${userName} changed the ${colName} of ${firstCellValue} to ${formatLogVal(update.value)}`,
+                table_id: state.activeDatabaseId
+              };
+            });
+            if (logsToInsert.length > 0) {
+              supabase.from('activity_logs').insert(logsToInsert).then(({ error }) => { if (error) console.error(error); });
+            }
+
             return { ...db, records: Array.from(recordsMap.values()) };
           })
         };
       }); },
+      updateRecordSnapshotCell: (recordId, snapshotId, colKey, value) => {
+        const currentUser = get().currentUser;
+        const state = get();
+        const db = state.databases.find(d => d.id === state.activeDatabaseId);
+        
+        let actionDesc = '';
+        let colName = colKey;
+        let oldVal = '';
+        let firstCellValue = 'Unknown Row';
+        
+        if (db) {
+           const col = db.columns.find(c => c.key === colKey);
+           if (col) colName = col.label;
+           const currentRecord = db.records.find(r => r.id === recordId);
+           if (currentRecord) {
+              const firstColKey = db.columns.length > 0 ? db.columns[0].key : '';
+              firstCellValue = firstColKey ? String(currentRecord.cells[firstColKey] || '') : 'Unknown Row';
+              const snap = currentRecord.tabs_history?.find(s => s.id === snapshotId);
+              if (snap) oldVal = String(snap.data[colKey] || '');
+           }
+           const userName = currentUser?.name || 'Unknown';
+           const formatLogVal = (v: any) => {
+             const s = String(v || '').trim();
+             return s === '' ? '"empty"' : `"${s}"`;
+           };
+           actionDesc = `${userName} changed the ${colName} of ${firstCellValue} from ${formatLogVal(oldVal)} to ${formatLogVal(value)}`;
+        }
+        
+        get().takeSnapshot();
+        
+        if (actionDesc && db) {
+           supabase.from('activity_logs').insert({
+             user_name: currentUser?.name || 'Unknown',
+             action_description: actionDesc,
+             table_id: db.id
+           }).then(({ error }) => { if (error) console.error(error); });
+        }
+
+        set((state) => {
+          if (!state.activeDatabaseId) return state;
+          const dbIndex = state.databases.findIndex(d => d.id === state.activeDatabaseId);
+          if (dbIndex === -1) return state;
+          const newDatabases = [...state.databases];
+          const newDb = { ...newDatabases[dbIndex] };
+          const newRecords = [...newDb.records];
+          const recordIndex = newRecords.findIndex(r => r.id === recordId);
+          if (recordIndex > -1) {
+             const record = { ...newRecords[recordIndex], cells: { ...newRecords[recordIndex].cells } };
+             if (!record.tabs_history) return state;
+             
+             const snapIndex = record.tabs_history.findIndex(s => s.id === snapshotId);
+             if (snapIndex > -1) {
+                record.tabs_history = [...record.tabs_history];
+                record.tabs_history[snapIndex] = {
+                   ...record.tabs_history[snapIndex],
+                   data: { ...record.tabs_history[snapIndex].data, [colKey]: value }
+                };
+                record.cells = Object.assign({}, ...record.tabs_history.map(t => t.data));
+                
+                const newLog: ChangelogEntry = {
+                  id: Math.random().toString(36).substring(2, 9),
+                  timestamp: new Date().toISOString(),
+                  fieldName: colName,
+                  oldValue: oldVal,
+                  newValue: String(value || ''),
+                  userName: currentUser?.name || 'Unknown',
+                  firstCellValue: firstCellValue
+                };
+                record.changelog = record.changelog ? [newLog, ...record.changelog] : [newLog];
+             }
+
+             newRecords[recordIndex] = record;
+             newDb.records = newRecords;
+             newDatabases[dbIndex] = newDb;
+          }
+          return { databases: newDatabases };
+        });
+      },
+      addRecordSnapshot: (recordId, type, data) => {
+        get().takeSnapshot();
+        set((state) => {
+          if (!state.activeDatabaseId) return state;
+          const dbIndex = state.databases.findIndex(d => d.id === state.activeDatabaseId);
+          if (dbIndex === -1) return state;
+          const newDatabases = [...state.databases];
+          const newDb = { ...newDatabases[dbIndex] };
+          const newRecords = [...newDb.records];
+          const recordIndex = newRecords.findIndex(r => r.id === recordId);
+          if (recordIndex > -1) {
+             const record = { ...newRecords[recordIndex], cells: { ...newRecords[recordIndex].cells } };
+             if (!record.tabs_history) record.tabs_history = [];
+             record.tabs_history.push({
+                 id: `snap-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+                 name: new Date().toISOString().split('T')[0],
+                 type,
+                 data
+             });
+             record.cells = Object.assign({}, ...record.tabs_history.map(t => t.data));
+             newRecords[recordIndex] = record;
+             newDb.records = newRecords;
+             newDatabases[dbIndex] = newDb;
+          }
+          return { databases: newDatabases };
+        });
+      },
+      deleteRecordSnapshot: (recordId, snapshotId) => {
+        get().takeSnapshot();
+        set((state) => {
+          if (!state.activeDatabaseId) return state;
+          const dbIndex = state.databases.findIndex(d => d.id === state.activeDatabaseId);
+          if (dbIndex === -1) return state;
+          const newDatabases = [...state.databases];
+          const newDb = { ...newDatabases[dbIndex] };
+          const newRecords = [...newDb.records];
+          const recordIndex = newRecords.findIndex(r => r.id === recordId);
+          if (recordIndex > -1) {
+             const record = { ...newRecords[recordIndex], cells: { ...newRecords[recordIndex].cells } };
+             if (!record.tabs_history) return state;
+             
+             record.tabs_history = record.tabs_history.filter(s => s.id !== snapshotId);
+             
+             // Recompute the master cells state from remaining snapshots
+             // If no snapshots are left, we just keep whatever the master was, or maybe clear it?
+             // Usually we keep the master. But logically, master is just Object.assign of all remaining tabs.
+             if (record.tabs_history.length > 0) {
+                 record.cells = Object.assign({}, ...record.tabs_history.map(t => t.data));
+             }
+             
+             newRecords[recordIndex] = record;
+             newDb.records = newRecords;
+             newDatabases[dbIndex] = newDb;
+          }
+          return { databases: newDatabases };
+        });
+      },
+      renameRecordSnapshot: (recordId, snapshotId, newName) => {
+        get().takeSnapshot();
+        set((state) => {
+          if (!state.activeDatabaseId) return state;
+          const dbIndex = state.databases.findIndex(d => d.id === state.activeDatabaseId);
+          if (dbIndex === -1) return state;
+          const newDatabases = [...state.databases];
+          const newDb = { ...newDatabases[dbIndex] };
+          const newRecords = [...newDb.records];
+          const recordIndex = newRecords.findIndex(r => r.id === recordId);
+          if (recordIndex > -1) {
+             const record = { ...newRecords[recordIndex] };
+             if (!record.tabs_history) return state;
+             const snapIndex = record.tabs_history.findIndex(s => s.id === snapshotId);
+             if (snapIndex > -1) {
+                record.tabs_history = [...record.tabs_history];
+                record.tabs_history[snapIndex] = { ...record.tabs_history[snapIndex], name: newName };
+                newRecords[recordIndex] = record;
+                newDb.records = newRecords;
+                newDatabases[dbIndex] = newDb;
+             }
+          }
+          return { databases: newDatabases };
+        });
+      },
+      appendLogEntry: (recordId, colKey, newValue, user) => {
+        get().takeSnapshot();
+        const entry = {
+            id: Math.random().toString(36).substring(2, 9),
+            timestamp: new Date().toISOString(),
+            user,
+            value: newValue
+        };
+        set((state) => {
+          if (!state.activeDatabaseId) return state;
+          const dbIndex = state.databases.findIndex(d => d.id === state.activeDatabaseId);
+          if (dbIndex === -1) return state;
+          const newDatabases = [...state.databases];
+          const newDb = { ...newDatabases[dbIndex] };
+          const newRecords = [...newDb.records];
+          const recordIndex = newRecords.findIndex(r => r.id === recordId);
+          if (recordIndex > -1) {
+             const record = { ...newRecords[recordIndex], cells: { ...newRecords[recordIndex].cells } };
+             const currentLog = Array.isArray(record.cells[colKey]) ? record.cells[colKey] : [];
+             record.cells[colKey] = [...currentLog, entry];
+             newRecords[recordIndex] = record;
+          }
+          newDb.records = newRecords;
+          newDatabases[dbIndex] = newDb;
+          return { databases: newDatabases };
+        });
+      },
       calculateMissingTimezones: () => set((state) => {
         if (!state.activeDatabaseId) return state;
         return {

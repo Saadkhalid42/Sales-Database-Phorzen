@@ -44,10 +44,21 @@ export const CellReadOnly = React.memo(function CellReadOnly(props: CellProps) {
     return <span className="truncate w-full text-text-secondary">{String(initialValue || '')}</span>;
   };
 
+  if (props.isModalMode) {
+    return (
+      <div className="relative w-full">
+        <div className="w-full h-full flex items-center bg-surface-sunken outline-none border border-border rounded-lg text-[13px] text-text-primary px-3 py-3 min-h-[44px] overflow-hidden select-none opacity-80">
+          {renderValue()}
+        </div>
+        <Lock size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted" />
+      </div>
+    );
+  }
+
   return (
     <div
       className={`w-full h-full flex items-center px-3 py-2 text-[13px] text-text-primary overflow-hidden select-none outline-none ${
-        isActiveEditor ? 'ring-inset ring-2 ring-accent z-20 bg-surface/50' : ''
+        isActiveEditor ? (props.isMultiSelect ? 'z-20 bg-surface' : 'ring-inset ring-2 ring-accent z-20 bg-surface/50') : ''
       }`}
       onKeyDown={(e) => handleKeyDownWrapper(e, initialValue, () => {})}
       tabIndex={0}

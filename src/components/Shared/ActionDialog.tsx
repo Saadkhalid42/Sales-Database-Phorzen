@@ -105,7 +105,7 @@ export function ActionDialog({
                 autoFocus
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
-                className="flex h-10 w-full rounded-md border border-primary/30 bg-transparent px-3 py-2 text-sm text-text-primary placeholder:text-text-text-muted focus:outline-none focus:ring-2 focus:ring-accent disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex h-10 w-full rounded-md border border-primary/30 bg-transparent px-3 py-2 text-sm text-text-primary placeholder:text-text-text-muted focus:outline-none   disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Enter name..."
               />
             )}
@@ -119,11 +119,11 @@ export function ActionDialog({
                   onValueChange={(val) => { if (val) setViewType(val as any); }}
                   className="flex items-center bg-surface-sunken rounded-lg p-1 gap-1"
                 >
-                  <ToggleGroup.Item value="grid" className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-md text-primary/60 data-[state=on]:bg-white data-[state=on]:text-accent data-[state=on]:shadow-sm hover:text-primary transition-all">
+                  <ToggleGroup.Item value="grid" className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-md text-text-secondary data-[state=on]:bg-surface-raised data-[state=on]:text-accent data-[state=on]:shadow-sm data-[state=on]:ring-1 data-[state=on]:ring-accent hover:text-text-primary transition-all">
                     <Table size={20} />
                     <span className="text-xs font-medium">Grid</span>
                   </ToggleGroup.Item>
-                  <ToggleGroup.Item value="card" className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-md text-primary/60 data-[state=on]:bg-white data-[state=on]:text-accent data-[state=on]:shadow-sm hover:text-primary transition-all">
+                  <ToggleGroup.Item value="card" className="flex-1 flex flex-col items-center gap-1.5 p-3 rounded-md text-text-secondary data-[state=on]:bg-surface-raised data-[state=on]:text-accent data-[state=on]:shadow-sm data-[state=on]:ring-1 data-[state=on]:ring-accent hover:text-text-primary transition-all">
                     <LayoutGrid size={20} />
                     <span className="text-xs font-medium">Cards</span>
                   </ToggleGroup.Item>
@@ -135,14 +135,14 @@ export function ActionDialog({
               <button
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="mt-2 inline-flex items-center justify-center rounded-md border border-border bg-transparent px-4 py-2 text-sm font-medium text-text-primary hover:bg-surface-sunken focus:outline-none focus:ring-2 focus:ring-accent sm:mt-0 transition-colors"
+                className="mt-2 inline-flex items-center justify-center rounded-md border border-border bg-transparent px-4 py-2 text-sm font-medium text-text-primary hover:bg-surface-sunken focus:outline-none   sm:mt-0 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={requiresInput && !inputValue.trim()}
-                className={`inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-background transition-colors focus:outline-none focus:ring-2 focus:ring-accent disabled:opacity-50 ${
+                className={`inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium text-background transition-colors focus:outline-none   disabled:opacity-50 ${
                   isDestructive 
                     ? 'bg-red-500 hover:bg-red-600' 
                     : 'bg-primary hover:bg-primary/90'
@@ -154,7 +154,7 @@ export function ActionDialog({
           </form>
           
           <Dialog.Close asChild>
-            <button className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-accent disabled:pointer-events-none text-text-primary">
+            <button className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none   disabled:pointer-events-none text-text-primary">
               <X className="h-4 w-4" />
               <span className="sr-only">Close</span>
             </button>

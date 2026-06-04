@@ -25,7 +25,8 @@ const FIELD_TYPES = [
   { id: 'multiple_select', label: 'Multiple Select', icon: List },
   { id: 'duration', label: 'Duration', icon: Clock },
   { id: 'file', label: 'File', icon: FileIcon },
-  { id: 'created_on', label: 'Created On', icon: CalendarDays }
+  { id: 'created_on', label: 'Created On', icon: CalendarDays },
+  { id: 'append_only_log', label: 'Append-Only Log', icon: List }
 ];
 
 export const ColumnHeader = React.memo(function ColumnHeader({ col }: ColumnHeaderProps) {
@@ -158,7 +159,7 @@ export const ColumnHeader = React.memo(function ColumnHeader({ col }: ColumnHead
                type="checkbox" 
                checked={isNotified}
                readOnly
-               className="w-3.5 h-3.5 rounded border-border text-accent focus:ring-accent accent-accent cursor-pointer pointer-events-none" 
+               className="w-3.5 h-3.5 rounded border-border text-accent  accent-accent cursor-pointer pointer-events-none" 
             />
           </DropdownMenu.Item>
 

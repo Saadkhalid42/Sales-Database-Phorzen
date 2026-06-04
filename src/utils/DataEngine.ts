@@ -200,6 +200,12 @@ export function convertValue(raw: any, targetType: string, dateContext: DateForm
           return { value: phone, isFlagged: phone === null || phone.length !== 10 };
       }
           
+      case 'append_only_log': {
+          if (Array.isArray(raw)) return { value: raw, isFlagged: false };
+          if (raw === null || raw === undefined || raw === '') return { value: [], isFlagged: false };
+          return { value: [raw], isFlagged: false };
+      }
+
       default:
           return { value: raw, isFlagged: false }; // fallback for unsupported conversions
   }

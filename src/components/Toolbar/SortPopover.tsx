@@ -57,22 +57,22 @@ export function SortPopover({ asInlineMobile }: { asInlineMobile?: boolean }) {
                       onValueChange={(v) => updateSort(idx, 'colKey', v)}
                       columns={columns}
                       disabled={!canSort}
-                      className="flex-1 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="flex-1 flex items-center justify-between px-2 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs focus:outline-none focus-visible:border-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     />
 
                     <Select.Root value={sort.direction} onValueChange={(v) => updateSort(idx, 'direction', v)} disabled={!canSort}>
-                      <Select.Trigger className="w-28 flex items-center justify-between px-2 py-1.5 rounded-2xl border border-border bg-surface text-text-primary text-xs focus:outline-none focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed">
+                      <Select.Trigger className="w-28 flex items-center justify-between px-2 py-1.5 rounded-lg border border-border bg-surface text-text-primary text-xs focus:outline-none focus-visible:border-primary disabled:opacity-50 disabled:cursor-not-allowed">
                         <Select.Value />
                         <Select.Icon><ChevronDown size={14} className="opacity-50" /></Select.Icon>
                       </Select.Trigger>
                       <Select.Portal>
                         <Select.Content position="popper" sideOffset={4} className="z-[60] overflow-hidden bg-surface rounded-lg border border-border shadow-xl w-[var(--radix-select-trigger-width)]">
                           <Select.Viewport className="p-1">
-                            <Select.Item value="asc" className="relative flex items-center gap-2 px-6 py-1.5 text-xs text-text-primary rounded-2xl cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
+                            <Select.Item value="asc" className="relative flex items-center gap-2 px-6 py-1.5 text-xs text-text-primary rounded-lg cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
                               <Select.ItemIndicator className="absolute left-1"><Check size={12} /></Select.ItemIndicator>
                               <Select.ItemText>Ascending</Select.ItemText>
                             </Select.Item>
-                            <Select.Item value="desc" className="relative flex items-center gap-2 px-6 py-1.5 text-xs text-text-primary rounded-2xl cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
+                            <Select.Item value="desc" className="relative flex items-center gap-2 px-6 py-1.5 text-xs text-text-primary rounded-lg cursor-pointer select-none data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none">
                               <Select.ItemIndicator className="absolute left-1"><Check size={12} /></Select.ItemIndicator>
                               <Select.ItemText>Descending</Select.ItemText>
                             </Select.Item>
@@ -84,7 +84,7 @@ export function SortPopover({ asInlineMobile }: { asInlineMobile?: boolean }) {
                     {canSort && (
                       <button 
                         onClick={() => removeSort(idx)}
-                        className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-2xl transition-colors focus:outline-none"
+                        className="p-1.5 text-red-500 hover:bg-red-500/10 rounded-lg transition-colors focus:outline-none"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -97,7 +97,7 @@ export function SortPopover({ asInlineMobile }: { asInlineMobile?: boolean }) {
             {canSort && (
               <button 
                 onClick={addSort}
-                className="flex items-center gap-1.5 text-xs font-medium text-text-primary hover:bg-[rgba(var(--text-color),0.05)] px-2 py-1.5 rounded-2xl self-start transition-colors mt-1"
+                className="flex items-center gap-1.5 text-xs font-medium text-text-primary hover:bg-[rgba(var(--text-color),0.05)] px-2 py-1.5 rounded-lg self-start transition-colors mt-1"
               >
                 <Plus size={14} /> Add Sort
               </button>
@@ -113,10 +113,10 @@ export function SortPopover({ asInlineMobile }: { asInlineMobile?: boolean }) {
     <Popover.Root>
       <Popover.Trigger asChild>
         <button 
-          className={`px-3 py-1.5 rounded-2xl border text-sm flex items-center gap-1.5 transition-colors ${
+          className={`flex items-center gap-1.5 transition-all focus:outline-none px-2 py-1 rounded-md ${
             isActive 
-              ? 'bg-accent/10 text-accent border-accent/30 dark:bg-blue-500/20 dark:text-blue-400 dark:border-blue-500/30' 
-              : 'hover:bg-[rgba(var(--text-color),0.08)] border-transparent hover:border-[rgba(var(--text-color),0.15)] text-text-primary'
+              ? 'text-accent font-semibold' 
+              : 'text-text-secondary hover:text-text-primary'
           }`}
         >
           <ArrowUpDown size={14} />

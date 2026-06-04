@@ -36,7 +36,8 @@ const FIELD_TYPES = [
   { id: 'multiple_select', label: 'Multiple Select', icon: List },
   { id: 'duration', label: 'Duration', icon: Clock },
   { id: 'file', label: 'File', icon: FileIcon },
-  { id: 'created_on', label: 'Created On', icon: CalendarDays }
+  { id: 'created_on', label: 'Created On', icon: CalendarDays },
+  { id: 'append_only_log', label: 'Append-Only Log', icon: List }
 ];
 
 
@@ -102,7 +103,7 @@ function SortableOptionItem({ opt, idx, updateOption, deleteOption }: SortableOp
         type="text"
         value={opt.label}
         onChange={e => updateOption(idx, 'label', e.target.value)}
-        className="flex-1 px-3 py-1.5 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus:border-primary text-sm"
+        className="flex-1 px-3 py-1.5 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus-visible:border-primary text-sm"
       />
       <button 
         type="button" 
@@ -261,7 +262,7 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
                 type="text"
                 value={label}
                 onChange={e => setLabel(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus-visible:border-primary   transition-all text-sm"
               />
             </div>
 
@@ -269,7 +270,7 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-text-primary opacity-80">Field Type</label>
               <Select.Root value={type} onValueChange={handleTypeChange}>
-                <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm">
+                <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus-visible:border-primary   transition-all text-sm">
                   <Select.Value />
                   <Select.Icon>
                     <ChevronDown size={16} className="opacity-50" />
@@ -333,7 +334,7 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-text-primary opacity-80">Date Format</label>
                   <Select.Root value={typeOptions.dateFormat || 'MM/DD/YYYY'} onValueChange={v => updateTypeOption('dateFormat', v)}>
-                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm">
+                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus-visible:border-primary   transition-all text-sm">
                       <Select.Value />
                       <Select.Icon><ChevronDown size={16} className="opacity-50" /></Select.Icon>
                     </Select.Trigger>
@@ -360,7 +361,7 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
                       type="checkbox" 
                       checked={!!typeOptions.allowDecimals} 
                       onChange={e => updateTypeOption('allowDecimals', e.target.checked)}
-                      className="rounded border-border text-primary focus:ring-primary w-4 h-4"
+                      className="rounded border-border text-primary  w-4 h-4"
                     />
                     Allow Decimals
                   </label>
@@ -372,7 +373,7 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
                         min="1" max="10"
                         value={typeOptions.decimalPlaces || 2}
                         onChange={e => updateTypeOption('decimalPlaces', parseInt(e.target.value) || 2)}
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus:border-primary text-sm"
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus-visible:border-primary text-sm"
                       />
                     </div>
                   )}
@@ -387,7 +388,7 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
                     min="1" max="10"
                     value={typeOptions.maxStars || 5}
                     onChange={e => updateTypeOption('maxStars', Math.min(10, Math.max(1, parseInt(e.target.value) || 5)))}
-                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus:border-primary text-sm"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus-visible:border-primary text-sm"
                   />
                 </div>
               )}
@@ -396,7 +397,7 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-medium text-text-primary opacity-80">Duration Format</label>
                   <Select.Root value={typeOptions.durationFormat || 'h:mm'} onValueChange={v => updateTypeOption('durationFormat', v)}>
-                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm">
+                    <Select.Trigger className="w-full flex items-center justify-between px-3 py-2 rounded-lg border border-border bg-surface text-text-primary focus:outline-none focus-visible:border-primary   transition-all text-sm">
                       <Select.Value />
                       <Select.Icon><ChevronDown size={16} className="opacity-50" /></Select.Icon>
                     </Select.Trigger>
@@ -423,7 +424,7 @@ export function EditFieldDialog({ isOpen, onOpenChange, column }: EditFieldDialo
                       type="checkbox" 
                       checked={!!typeOptions.showTime} 
                       onChange={e => updateTypeOption('showTime', e.target.checked)}
-                      className="rounded border-border text-primary focus:ring-primary w-4 h-4"
+                      className="rounded border-border text-primary  w-4 h-4"
                     />
                     Show Time
                   </label>

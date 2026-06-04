@@ -70,6 +70,41 @@
     background-color: color-mix(in srgb, var(--surface-raised) 85%, var(--accent)) !important;
 }
 
+[data-theme="theme-warm-light"] {
+  --canvas: #EAD0B3;
+  --surface: #F5E5D1;
+  --surface-raised: #FCF4EB;
+  --surface-sunken: #D9BBA0;
+  --border: #C8A381;
+  --divider: #D6B798;
+  --text-primary: #4A2B12;
+  --text-secondary: #7D573B;
+  --text-muted: #A8866B;
+  --accent: #C74B20;
+  --accent-hover: #A63C17;
+  --accent-subtle: #F5C6AE;
+  --on-accent: #FFFFFF;
+  --contrast: #3B210C;
+  --on-contrast: #FDEBDF;
+  --success: #2A8C4C;
+  --success-subtle: #D5EFDF;
+  --warning: #C27616;
+  --warning-subtle: #F9E5CA;
+  --danger: #C04222;
+  --danger-subtle: #FADAD1;
+  --info: #356CB8;
+  --info-subtle: #DEEBF7;
+  --tint-peach: #F6D4B8;
+  --tint-blue: #D1DDF1;
+  --tint-lilac: #E8D8F4;
+  --tint-mint: #D2EBC9;
+  --shadow-sm: 0 1px 3px rgba(74, 43, 18, .12);
+  --shadow-md: 0 8px 22px rgba(74, 43, 18, .18);
+  --shadow-lg: 0 22px 48px rgba(74, 43, 18, .25);
+  --focus-ring: rgba(199, 75, 32, .40);
+  --zebra: rgba(74, 43, 18, .05);
+}
+
 body {
   background-color: var(--canvas);
   color: var(--text-primary);
@@ -179,3 +214,13 @@ body {
 .remote-cell-flash {
   animation: livePulse 1s ease-out;
 }
+
+.toolbar-test-btn { background-color: #ff0000 !important; }
+
+
+/* Remove all native browser focus outlines globally */
+*:focus,
+*:focus-visible {
+  outline: none !important;
+}
+

@@ -34,13 +34,13 @@ function SortableViewItem({ view, activeViewId, setActiveViewId, setDialogConfig
   const VIcon = view.iconName && ICONS[view.iconName] ? ICONS[view.iconName] : LayoutGrid;
 
   return (
-    <div ref={setNodeRef} style={style} className="relative group flex items-center pr-10 hover:bg-[rgba(var(--text-color),0.02)] rounded-2xl">
+    <div ref={setNodeRef} style={style} className="relative group flex items-center pr-10 hover:bg-[rgba(var(--text-color),0.02)] rounded-lg">
       <div {...attributes} {...listeners} className="cursor-grab p-2 opacity-0 group-hover:opacity-50 hover:!opacity-100 transition-opacity">
         <GripVertical size={14} />
       </div>
       {asInlineMobile ? (
         <button
-          className="flex-1 flex items-center justify-between cursor-pointer py-2 text-text-primary hover:bg-accent-subtle hover:text-accent outline-none rounded-2xl px-1 w-full"
+          className="flex-1 flex items-center justify-between cursor-pointer py-2 text-text-primary hover:bg-accent-subtle hover:text-accent outline-none rounded-lg px-1 w-full text-[13px]"
           onClick={() => setActiveViewId(view.id)}
         >
           <span className="flex items-center gap-2 truncate">
@@ -51,7 +51,7 @@ function SortableViewItem({ view, activeViewId, setActiveViewId, setDialogConfig
         </button>
       ) : (
         <DropdownMenu.Item
-          className="flex-1 flex items-center justify-between cursor-pointer py-2 text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none rounded-2xl px-1"
+          className="flex-1 flex items-center justify-between cursor-pointer py-2 text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none rounded-lg px-1 text-[13px]"
           onSelect={() => setActiveViewId(view.id)}
         >
           <span className="flex items-center gap-2 truncate">
@@ -65,26 +65,26 @@ function SortableViewItem({ view, activeViewId, setActiveViewId, setDialogConfig
       {(currentUser?.role?.toLowerCase() === 'admin' || view.ownerId === currentUser?.id) && <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <button className="p-1 rounded hover:bg-divider text-text-secondary hover:text-text-primary focus:outline-none focus:ring-2 focus:ring-accent">
+            <button className="p-1 rounded hover:bg-divider text-text-secondary hover:text-text-primary focus:outline-none  ">
               <MoreVertical size={16} />
             </button>
           </DropdownMenu.Trigger>
           <DropdownMenu.Portal>
             <DropdownMenu.Content className="mobile-bottom-sheet bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[60]" sideOffset={4} align="end" >
               <DropdownMenu.Item 
-                className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-sm"
+                className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
                 onSelect={() => setDialogConfig({ isOpen: true, type: 'rename', targetId: view.id, targetName: view.name, iconName: view.iconName, iconColor: view.iconColor })}
               >
                 <Edit2 size={14} /> Edit
               </DropdownMenu.Item>
               <DropdownMenu.Item 
-                className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-sm"
+                className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
                 onSelect={() => duplicateView(view.id)}
               >
                 <Plus size={14} /> Duplicate View
               </DropdownMenu.Item>
               <DropdownMenu.Item 
-                className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-sm"
+                className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-[13px]"
                 onSelect={() => setDialogConfig({ isOpen: true, type: 'delete', targetId: view.id, targetName: view.name })}
               >
                 <Trash2 size={14} /> Delete
@@ -186,7 +186,7 @@ export function ViewDropdown({ asInlineMobile }: { asInlineMobile?: boolean }) {
           <div className="h-px bg-divider my-1" />
           
           <button 
-            className="flex w-full items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-accent font-medium hover:bg-accent-subtle hover:text-accent outline-none"
+            className="flex w-full items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-accent text-[13px] font-medium hover:bg-accent-subtle hover:text-accent outline-none"
             onClick={openAdd}
             disabled={!activeWsId}
           >
@@ -224,7 +224,7 @@ export function ViewDropdown({ asInlineMobile }: { asInlineMobile?: boolean }) {
     <>
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
-          <button className="flex items-center justify-center p-2.5 rounded-[16px] text-text-primary bg-surface-raised border border-divider shadow-sm hover:shadow-md hover:text-accent transition-all focus:outline-none focus:ring-2 focus:ring-focus-ring">
+          <button className="flex items-center justify-center px-2 py-1 rounded-md text-text-secondary hover:text-text-primary transition-all focus:outline-none">
             <ActiveIcon size={16} color={activeView?.iconColor || 'currentColor'} className="flex-shrink-0" />
             
             
@@ -233,7 +233,7 @@ export function ViewDropdown({ asInlineMobile }: { asInlineMobile?: boolean }) {
 
         <DropdownMenu.Portal>
           <DropdownMenu.Content 
-            className="bg-surface-raised w-64 border border-border shadow-xl rounded-xl p-2 z-50 mt-1 data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out"
+            className="bg-surface-raised w-64 border border-border shadow-xl rounded-md p-2 z-50 mt-1 data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out"
             align="start"
             sideOffset={4}
             
@@ -264,7 +264,7 @@ export function ViewDropdown({ asInlineMobile }: { asInlineMobile?: boolean }) {
                 <DropdownMenu.Separator className="h-px bg-divider my-1" />
                 
                 <DropdownMenu.Item 
-                  className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-2xl text-accent font-medium data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none"
+                  className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-accent text-[13px] font-medium data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none"
                   onSelect={openAdd}
                   disabled={!activeWsId}
                 >

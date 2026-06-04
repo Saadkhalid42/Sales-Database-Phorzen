@@ -46,24 +46,73 @@ export function useProjectedData() {
       if (activeFilters.length > 0 && !isFilterDisabled) {
         const evaluateSingleFilter = (f: any) => {
           const val = r.cells[f.colKey];
+          
+          if (f.operator === 'is empty') return val == null || val === '' || (Array.isArray(val) && val.length === 0);
+          if (f.operator === 'is not empty') return val != null && val !== '' && (!Array.isArray(val) || val.length > 0);
+
           const isArr = Array.isArray(val);
           const strVal = isArr ? val.join(',').toLowerCase() : String(val || '').toLowerCase();
           const fVal = String(f.value || '').toLowerCase();
           const numVal = Number(val);
           const numFVal = Number(f.value);
 
+          const escapeRegExp = (string: string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
           switch (f.operator) {
+            // Text & Select
+            case 'is exactly':
+            case 'is': {
+              if (typeof val === 'boolean' || f.operator === 'is true' || f.operator === 'is false') {
+                 // handled below
+              } else if (isArr) {
+                return val.includes(f.value);
+              }
+              return strVal === fVal;
+            }
+            case 'is not': return isArr ? !val.includes(f.value) : strVal !== fVal;
             case 'contains': return strVal.includes(fVal);
-            case 'is exactly': return strVal === fVal;
+            case 'doesnt contain': return !strVal.includes(fVal);
+            case 'contains word': return new RegExp('\\b' + escapeRegExp(fVal) + '\\b', 'i').test(strVal);
+            case 'doesnt contain word': return !new RegExp('\\b' + escapeRegExp(fVal) + '\\b', 'i').test(strVal);
+            
+            // Numbers
             case '=': return numVal === numFVal;
             case '>': return numVal > numFVal;
             case '<': return numVal < numFVal;
-            case 'is': return isArr ? val.includes(f.value) : val === f.value;
-            case 'is not': return isArr ? !val.includes(f.value) : val !== f.value;
-            case 'is empty': return val == null || val === '';
-            case 'is not empty': return val != null && val !== '';
+
+            // Arrays / Multiple Select fallback
+            case 'is any of': {
+              const options = String(f.value || '').split(',').map(v => v.trim().toLowerCase());
+              if (isArr) {
+                return options.some(opt => val.map((v: string) => String(v).toLowerCase()).includes(opt));
+              }
+              return options.includes(strVal);
+            }
+            case 'is none of': {
+              const options = String(f.value || '').split(',').map(v => v.trim().toLowerCase());
+              if (isArr) {
+                return !options.some(opt => val.map((v: string) => String(v).toLowerCase()).includes(opt));
+              }
+              return !options.includes(strVal);
+            }
+
+            // Dates
             case 'is before': return new Date(val) < new Date(f.value);
+            case 'is on or before': return new Date(val) <= new Date(f.value);
             case 'is after': return new Date(val) > new Date(f.value);
+            case 'is on or after': return new Date(val) >= new Date(f.value);
+            case 'is within': {
+              const days = parseInt(f.value);
+              if (isNaN(days)) return false;
+              const diffDays = (new Date().getTime() - new Date(val).getTime()) / (1000 * 3600 * 24);
+              return diffDays >= 0 && diffDays <= days;
+            }
+            case 'day of month is': return new Date(val).getDate() === parseInt(f.value);
+            
+            // Boolean
+            case 'is true': return !!val === true;
+            case 'is false': return !!val === false;
+
             default: return true;
           }
         };

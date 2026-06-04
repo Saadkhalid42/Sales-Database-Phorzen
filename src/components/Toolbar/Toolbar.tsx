@@ -2,7 +2,7 @@ import React from 'react';
 import { useStore } from '../../store/useStore';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Slider from '@radix-ui/react-slider';
-import { Search, Undo2, Redo2, Settings, Check, Clock, ChevronRight, Palette, Palette as PaletteIcon, Sun, Moon, Menu, X, RefreshCw } from 'lucide-react';
+import { Search, Undo2, Redo2, Settings, Check, Clock, ChevronRight, Palette, Palette as PaletteIcon, Sun, Moon, Menu, X, RefreshCw, User, ChevronDown } from 'lucide-react';
 import { DatabaseDropdown } from './DatabaseDropdown';
 import { WorkspaceDropdown } from './WorkspaceDropdown';
 import { ViewDropdown } from './ViewDropdown';
@@ -21,7 +21,7 @@ const THEMES = [
   { id: 'oled-black', name: 'OLED Black', type: 'dark' },
 ];
 
-export function Toolbar() {
+export function Toolbar({ projectedData }: { projectedData?: any[] }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isAdminModalOpen, setIsAdminModalOpen] = React.useState(false);
 
@@ -89,57 +89,74 @@ export function Toolbar() {
 
 
   return (
-    <div className="flex items-center justify-between w-full h-[var(--header-h)] px-4 border-b border-divider bg-surface/95  sticky top-0 z-50 shrink-0 gap-2">
-      
-      {/* Mobile Hamburger Trigger */}
-      <div className="flex md:hidden items-center">
-        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 -ml-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-sunken transition-colors outline-none">
-          <Menu size={20} />
-        </button>
-      </div>
-
-      {/* Left Group (Desktop) */}
-      <div className="hidden md:flex items-center gap-2">
-        <DatabaseDropdown />
-        <WorkspaceDropdown />
-        <ViewDropdown />
+    <div className="flex items-center justify-between w-full h-[var(--header-h)] px-4 border-b border-divider bg-surface shrink-0 gap-2 z-50 overflow-x-auto no-scrollbar">
         
-        <div className="w-px h-6 bg-divider mx-1" />
-        
-        <FilterPopover />
-        <SortPopover />
-        <HideFieldsPopover />
-        
-        <SettingsMenu />
-      </div>
-
-      {timeWidgetEnabled && (
-        <div className="flex-1 flex justify-center scale-75 md:scale-100 origin-center">
-          <GlobalTimezoneClock />
-        </div>
-      )}
-
-      {/* Right Group */}
-      <div className="flex items-center gap-2 ml-auto">
-        {/* Global Search */}
-        <div className="relative group w-40 md:w-64">
-          <input
-            type="text"
-            placeholder="Search"
-            className="w-full bg-surface-sunken hover:bg-surface focus:bg-surface border border-transparent focus:outline-none focus:ring-[3px] focus:ring-focus-ring rounded-full h-8 px-4 text-[13px] transition-all placeholder:text-text-muted text-text-primary"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+        {/* Mobile Hamburger Trigger */}
+        <div className="flex lg:hidden items-center shrink-0">
+          <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 rounded-full text-text-secondary hover:text-text-primary hover:bg-surface-sunken transition-colors outline-none">
+            <Menu size={20} />
+          </button>
         </div>
 
-        <div className="w-px h-6 bg-divider hidden md:block" />
+        {/* Left Group (Desktop) */}
+        <div className="hidden lg:flex items-center gap-1 shrink-0">
+          {currentUser && currentUser.name ? (
+            <div className="flex items-center pr-3 border-r border-divider mr-1">
+              <SettingsMenu 
+                projectedData={projectedData}
+                onOpenAdmin={() => setIsAdminModalOpen(true)}
+                triggerNode={
+                  <button className="flex items-center hover:bg-surface-sunken hover:opacity-80 transition-all rounded outline-none cursor-pointer py-1 px-1.5">
+                    <User size={14} className="text-text-secondary mr-1" />
+                    <span className="text-[13px] font-bold text-text-primary px-1 whitespace-nowrap">
+                      {currentUser.name}
+                    </span>
+                    <ChevronDown size={14} className="text-text-secondary ml-1" />
+                  </button>
+                }
+              />
+            </div>
+          ) : (
+            <SettingsMenu projectedData={projectedData} onOpenAdmin={() => setIsAdminModalOpen(true)} />
+          )}
+          <DatabaseDropdown />
+          <WorkspaceDropdown />
+          <ViewDropdown />
+          
+          <div className="w-px h-6 bg-divider mx-2" />
+          
+          <FilterPopover />
+          <SortPopover />
+          <HideFieldsPopover />
+        </div>
 
-        {/* Undo/Redo */}
-        <div className="flex items-center gap-1">
+        {timeWidgetEnabled && (
+          <div className="hidden xl:flex flex-1 justify-center origin-center">
+            <GlobalTimezoneClock />
+          </div>
+        )}
+
+        {/* Right Group */}
+        <div className="flex items-center gap-2 ml-auto shrink-0">
+          {/* Global Search */}
+          <div className="relative group w-40 md:w-64">
+            <input
+              type="text"
+              placeholder="Search"
+              className="w-full bg-surface-sunken hover:bg-surface-sunken focus:bg-surface border border-transparent focus:outline-none   rounded-full h-[34px] pl-4 pr-4 text-[13px] transition-all placeholder:text-text-muted text-text-primary"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div className="w-px h-6 bg-divider hidden md:block mx-1" />
+
+          {/* Undo/Redo */}
+          <div className="flex items-center gap-2">
           <button 
             onClick={() => undo()}
             disabled={pastStates?.length === 0}
-            className="flex items-center justify-center p-2 rounded-full text-text-muted hover:text-text-secondary hover:bg-surface-sunken disabled:opacity-30 disabled:hover:bg-transparent transition-all focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            className="flex items-center justify-center px-1 text-text-muted hover:text-text-primary disabled:opacity-30 transition-colors focus:outline-none"
             title="Undo (Cmd+Z)"
           >
             <Undo2 size={16} />
@@ -147,7 +164,7 @@ export function Toolbar() {
           <button 
             onClick={() => redo()}
             disabled={futureStates?.length === 0}
-            className="flex items-center justify-center p-2 rounded-full text-text-muted hover:text-text-secondary hover:bg-surface-sunken disabled:opacity-30 disabled:hover:bg-transparent transition-all focus:outline-none focus:ring-2 focus:ring-focus-ring"
+            className="flex items-center justify-center px-1 text-text-muted hover:text-text-primary disabled:opacity-30 transition-colors focus:outline-none"
             title="Redo (Cmd+Shift+Z)"
           >
             <Redo2 size={16} />
@@ -157,30 +174,17 @@ export function Toolbar() {
               forceEvictAll();
               syncFromCloud();
             }}
-            className={`flex items-center justify-center p-2 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-focus-ring ${Object.keys(stagedEvictions).length > 0 ? 'text-danger hover:bg-danger/10 bg-danger/5 animate-pulse' : 'text-text-muted hover:text-text-secondary hover:bg-surface-sunken'}`}
+            className={`flex items-center justify-center px-1 transition-colors focus:outline-none ${Object.keys(stagedEvictions).length > 0 ? 'text-danger hover:text-danger animate-pulse' : 'text-text-muted hover:text-text-primary'}`}
             title="Refresh Database & View"
           >
             <RefreshCw size={16} className={isSyncing || Object.keys(stagedEvictions).length > 0 ? "animate-spin" : ""} />
           </button>
-          
-          {currentUser?.role?.toLowerCase() === 'admin' && (
-            <button 
-              onClick={() => setIsAdminModalOpen(true)}
-              className="flex items-center justify-center p-2 rounded-full text-accent hover:bg-accent/10 transition-all focus:outline-none focus:ring-2 focus:ring-focus-ring ml-1 relative group"
-              title="Admin Logs"
-            >
-              <ShieldAlert size={16} />
-              <div className="absolute top-full mt-2 left-1/2 -translate-x-1/2 px-2 py-1 bg-surface-raised border border-border/50 text-text-primary text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50 shadow-xl">
-                Admin Logs
-              </div>
-            </button>
-          )}
         </div>
-      </div>
+        </div>
 
       {/* Mobile Slide-out Drawer */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[200] flex md:hidden animate-in fade-in">
+        <div className="fixed inset-0 z-[200] flex lg:hidden animate-in fade-in">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
           <div className="relative w-[85%] max-w-sm h-full bg-surface-raised shadow-2xl flex flex-col animate-in slide-in-from-left">
             <div className="p-4 border-b border-divider flex items-center justify-between bg-surface sticky top-0 z-10">
@@ -215,7 +219,7 @@ export function Toolbar() {
               </MobileAccordionSection>
               
               <MobileAccordionSection title="Settings">
-                <SettingsMenu asInlineMobile={true} />
+                <SettingsMenu asInlineMobile={true} projectedData={projectedData} />
               </MobileAccordionSection>
             </div>
           </div>

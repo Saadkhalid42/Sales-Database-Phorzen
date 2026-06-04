@@ -145,10 +145,10 @@ function App() {
 
   return (
     <div className="min-h-screen h-screen flex flex-col bg-surface text-text-primary transition-colors duration-300 overflow-hidden">
-      <Toolbar />
+      <Toolbar projectedData={projectedData} />
       <NavigationStrip />
       
-      <main className="flex-1 overflow-hidden relative flex flex-col">
+      <main className="flex-1 overflow-hidden relative flex flex-col bg-canvas">
         {viewType === 'grid' && <DataGrid records={projectedData} />}
         {viewType === 'card' && <CardView records={projectedData} />}
 
