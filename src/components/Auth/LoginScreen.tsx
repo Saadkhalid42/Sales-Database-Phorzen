@@ -45,6 +45,9 @@ export function LoginScreen() {
             can_delete_rows: permsRes.data.can_delete_rows,
             can_create_views: permsRes.data.can_create_views,
             can_change_field_types: permsRes.data.can_change_field_types,
+            can_create_workspaces: permsRes.data.can_create_workspaces,
+            can_filter: permsRes.data.can_filter,
+            can_sort: permsRes.data.can_sort,
           }
         });
       }
