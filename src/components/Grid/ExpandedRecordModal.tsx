@@ -294,7 +294,7 @@ export function ExpandedRecordModal() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex items-center gap-2 border-b border-divider pb-2 md:pb-3 px-1 overflow-x-auto custom-scrollbar">
+            <div className="flex items-center gap-2 border-b border-divider pb-2 md:pb-3 px-1 overflow-x-auto no-scrollbar">
               <button
                 onClick={() => setActiveTabId('master')}
                 className={`px-4 py-1.5 rounded-xl text-sm font-semibold transition-all shrink-0 flex items-center gap-2 border ${activeTabId === 'master' ? 'bg-accent/10 border-accent/20 text-accent shadow-sm' : 'bg-transparent border-transparent text-text-muted hover:bg-surface-sunken hover:text-text-primary'}`}
@@ -430,7 +430,7 @@ export function ExpandedRecordModal() {
                   </DropdownMenu.Root>
                 </div>
               </div>
-              <div className="flex gap-1.5 md:gap-2 overflow-x-auto custom-scrollbar pb-1 md:pb-2 px-1 pt-1 -mx-1">
+              <div className="flex gap-1.5 md:gap-2 overflow-x-auto no-scrollbar pb-1 md:pb-2 px-1 pt-1 -mx-1">
                 {orderedCols
                   .filter(c => c.label.toLowerCase().includes(searchQuery.toLowerCase()))
                   .map(col => {
@@ -452,7 +452,7 @@ export function ExpandedRecordModal() {
           {/* Body: Split Layout */}
           <div className="flex-1 overflow-y-auto md:overflow-hidden md:grid md:grid-cols-3 h-full">
             {/* Left Side (Form) */}
-            <div className="md:col-span-2 md:overflow-y-auto custom-scrollbar p-6 md:p-8 space-y-6 md:space-y-5 relative">
+            <div className="md:col-span-2 md:overflow-y-auto no-scrollbar p-6 md:p-8 space-y-6 md:space-y-5 relative">
               {visibleCols.map(col => {
                 if (showChangedOnly && activeTabId !== 'master' && !hasFieldChanged(col.key)) {
                   return null;
@@ -563,7 +563,7 @@ export function ExpandedRecordModal() {
             </div>
 
             {/* Right Side (Changelog) */}
-            <div className="md:col-span-1 bg-surface-sunken md:border-l border-t md:border-t-0 border-divider md:overflow-y-auto custom-scrollbar p-6 flex flex-col">
+            <div className="md:col-span-1 bg-surface-sunken md:border-l border-t md:border-t-0 border-divider md:overflow-y-auto no-scrollbar p-6 flex flex-col">
               <h3 className="text-sm font-bold text-text-primary uppercase tracking-wider mb-6 flex items-center gap-2">
                 <Activity size={16} className="text-accent" />
                 Activity Log
