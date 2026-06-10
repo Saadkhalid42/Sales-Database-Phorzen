@@ -57,6 +57,39 @@ function App() {
     }
   }, [activeWorkspaceId, initRealtime]);
 
+  // Ensure active workspace and view are valid and accessible to the current user
+  useEffect(() => {
+    if (!currentUser || !activeDb) return;
+
+    let needsUpdate = false;
+    let nextWsId = activeWorkspaceId;
+    let nextViewId = activeViewId;
+
+    const validWorkspaces = activeDb.workspaces.filter(ws => !ws.ownerId || ws.ownerId === currentUser.id);
+    const isValidWs = validWorkspaces.some(ws => ws.id === nextWsId);
+    
+    if (!isValidWs && validWorkspaces.length > 0) {
+      nextWsId = validWorkspaces[0].id;
+      needsUpdate = true;
+    }
+
+    const activeWsObj = validWorkspaces.find(ws => ws.id === nextWsId);
+    if (activeWsObj) {
+      const validViews = activeWsObj.views.filter(v => !v.ownerId || v.ownerId === currentUser.id);
+      const isValidView = validViews.some(v => v.id === nextViewId);
+      
+      if (!isValidView && validViews.length > 0) {
+        nextViewId = validViews[0].id;
+        needsUpdate = true;
+      }
+    }
+
+    if (needsUpdate) {
+      if (nextWsId !== activeWorkspaceId) useStore.getState().setActiveWorkspaceId(nextWsId);
+      if (nextViewId !== activeViewId) useStore.getState().setActiveViewId(nextViewId);
+    }
+  }, [activeDatabaseId, activeWorkspaceId, activeViewId, databases, currentUser]);
+
   useEffect(() => {
     hydrateStore();
     
