@@ -4,6 +4,7 @@ import { useStore } from '../../store/useStore';
 import { format, parse } from 'date-fns';
 
 const sourceOptions = [
+  { label: 'MMM D, YYYY (e.g. Apr 18, 2026)', value: 'MMM d, yyyy' },
   { label: 'MM/DD/YYYY (e.g. 12/31/2026)', value: 'MM/dd/yyyy' },
   { label: 'DD/MM/YYYY (e.g. 31/12/2026)', value: 'dd/MM/yyyy' },
   { label: 'YYYY-MM-DD (e.g. 2026-12-31)', value: 'yyyy-MM-dd' },
