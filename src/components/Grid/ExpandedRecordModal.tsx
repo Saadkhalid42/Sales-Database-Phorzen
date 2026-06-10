@@ -271,9 +271,9 @@ export function ExpandedRecordModal() {
           )}
 
           {/* Header */}
-          <div className="flex flex-col px-6 md:px-10 py-6 md:py-6 shrink-0 border-b border-divider bg-surface-raised sticky top-0 z-20 shadow-sm gap-4">
+          <div className="flex flex-col px-4 md:px-10 py-4 md:py-6 shrink-0 border-b border-divider bg-surface-raised sticky top-0 z-20 shadow-sm gap-3 md:gap-4">
             <div className="flex items-center justify-between">
-              <Dialog.Title className="text-3xl md:text-4xl font-bold text-text-primary truncate pr-4 tracking-tight">
+              <Dialog.Title className="text-2xl md:text-4xl font-bold text-text-primary truncate pr-4 tracking-tight">
                 {headerTitle}
               </Dialog.Title>
               <Dialog.Description className="sr-only">
@@ -294,7 +294,7 @@ export function ExpandedRecordModal() {
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex items-center gap-2 border-b border-divider pb-3 px-1 overflow-x-auto custom-scrollbar">
+            <div className="flex items-center gap-2 border-b border-divider pb-2 md:pb-3 px-1 overflow-x-auto custom-scrollbar">
               <button
                 onClick={() => setActiveTabId('master')}
                 className={`px-4 py-1.5 rounded-xl text-sm font-semibold transition-all shrink-0 flex items-center gap-2 border ${activeTabId === 'master' ? 'bg-accent/10 border-accent/20 text-accent shadow-sm' : 'bg-transparent border-transparent text-text-muted hover:bg-surface-sunken hover:text-text-primary'}`}
@@ -366,25 +366,11 @@ export function ExpandedRecordModal() {
               </DropdownMenu.Root>
             </div>
 
-            {/* Diff Filter Toggle */}
-            {activeTabId !== 'master' && (
-              <div className="flex items-center gap-2 mt-1 px-1">
-                <input 
-                  type="checkbox" 
-                  id="showChangedOnly" 
-                  checked={showChangedOnly} 
-                  onChange={(e) => setShowChangedOnly(e.target.checked)}
-                  className="w-4 h-4 rounded border-border text-accent  accent-accent cursor-pointer"
-                />
-                <label htmlFor="showChangedOnly" className="text-sm font-medium text-text-secondary cursor-pointer select-none">
-                  Show Changed Fields Only
-                </label>
-              </div>
-            )}
+
 
             {/* Search, Actions, and Navigation Pills */}
-            <div className="flex flex-col gap-3">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="flex flex-col gap-2 md:gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3">
                 <div className="relative flex-1">
                   <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input 
@@ -397,23 +383,54 @@ export function ExpandedRecordModal() {
                   />
                 </div>
                 <div className="flex items-center gap-2 shrink-0 flex-wrap pb-1 sm:pb-0 px-1 py-1 -m-1">
-                  <button 
-                    onClick={handleCopyValues}
-                    className="shrink-0 px-3 py-2 rounded-lg bg-surface border border-border shadow-sm text-xs font-semibold text-text-primary hover:bg-surface-raised hover:border-accent/50 transition-all focus:outline-none   flex items-center gap-1.5"
-                  >
-                    <Copy size={14} />
-                    Copy Values
-                  </button>
-                  <button 
-                    onClick={handleCopyWithHeaders}
-                    className="shrink-0 px-3 py-2 rounded-lg bg-surface border border-border shadow-sm text-xs font-semibold text-text-primary hover:bg-surface-raised hover:border-accent/50 transition-all focus:outline-none   flex items-center gap-1.5"
-                  >
-                    <FileText size={14} />
-                    Copy with Headers
-                  </button>
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger asChild>
+                      <button className="shrink-0 p-2 md:p-2.5 rounded-lg bg-surface border border-border shadow-sm text-text-primary hover:bg-surface-raised hover:border-accent/50 transition-all focus:outline-none flex items-center justify-center">
+                        <MoreVertical size={16} />
+                      </button>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Portal>
+                      <DropdownMenu.Content align="end" className="bg-surface-raised border border-border shadow-lg rounded-xl p-1 z-[120] min-w-[240px] flex flex-col gap-1 animate-in fade-in zoom-in-95">
+                        {activeTabId !== 'master' && (
+                          <>
+                            <DropdownMenu.Item 
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                setShowChangedOnly(!showChangedOnly);
+                              }}
+                              className="px-3 py-2 text-sm text-text-primary hover:bg-surface cursor-pointer rounded-lg transition-colors outline-none font-medium flex items-center gap-3 justify-between"
+                            >
+                              <span className="whitespace-nowrap">Show Changed Fields Only</span>
+                              <input 
+                                type="checkbox" 
+                                checked={showChangedOnly} 
+                                readOnly
+                                className="w-4 h-4 shrink-0 rounded border-border text-accent accent-accent pointer-events-none"
+                              />
+                            </DropdownMenu.Item>
+                            <DropdownMenu.Separator className="h-px bg-divider my-0.5 mx-1" />
+                          </>
+                        )}
+                        <DropdownMenu.Item 
+                          onSelect={handleCopyValues}
+                          className="px-3 py-2 text-sm text-text-primary hover:bg-surface cursor-pointer rounded-lg transition-colors outline-none font-medium flex items-center gap-2"
+                        >
+                          <Copy size={16} className="text-text-muted" />
+                          Copy Values
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item 
+                          onSelect={handleCopyWithHeaders}
+                          className="px-3 py-2 text-sm text-text-primary hover:bg-surface cursor-pointer rounded-lg transition-colors outline-none font-medium flex items-center gap-2"
+                        >
+                          <FileText size={16} className="text-text-muted" />
+                          Copy with Headers
+                        </DropdownMenu.Item>
+                      </DropdownMenu.Content>
+                    </DropdownMenu.Portal>
+                  </DropdownMenu.Root>
                 </div>
               </div>
-              <div className="flex gap-2 overflow-x-auto custom-scrollbar pb-2 px-1 pt-1 -mx-1">
+              <div className="flex gap-1.5 md:gap-2 overflow-x-auto custom-scrollbar pb-1 md:pb-2 px-1 pt-1 -mx-1">
                 {orderedCols
                   .filter(c => c.label.toLowerCase().includes(searchQuery.toLowerCase()))
                   .map(col => {
