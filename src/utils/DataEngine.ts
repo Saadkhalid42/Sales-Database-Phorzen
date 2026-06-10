@@ -1,4 +1,4 @@
-import { parse, isValid } from 'date-fns';
+import { parse, isValid, format } from 'date-fns';
 
 export type DateFormatContext = 'MDY' | 'DMY' | 'YMD' | 'AMBIGUOUS' | string;
 
@@ -161,9 +161,21 @@ export function convertValue(raw: any, targetType: string, dateContext: DateForm
 
   switch (targetType) {
       case 'single_line_text':
-      case 'long_text':
+      case 'long_text': {
           if (Array.isArray(raw)) return { value: raw.join(', '), isFlagged: false };
-          return { value: String(raw), isFlagged: false };
+          const strVal = String(raw);
+          if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(.\d{3})?Z$/.test(strVal)) {
+              const d = new Date(strVal);
+              if (isValid(d)) {
+                  try {
+                      // Avoid top level import cycle if not already imported, though we can import format directly.
+                      // Since we use date-fns locally, we should add format to the imports at the top
+                      return { value: format(d, 'MMM d, yyyy'), isFlagged: false };
+                  } catch(e) {}
+              }
+          }
+          return { value: strVal, isFlagged: false };
+      }
           
       case 'number': {
           const num = parseNumber(raw);
