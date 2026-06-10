@@ -222,3 +222,26 @@ export function convertValue(raw: any, targetType: string, dateContext: DateForm
           return { value: raw, isFlagged: false }; // fallback for unsupported conversions
   }
 }
+
+export function formatCellValueForDisplay(value: any, colType: string, colOptions?: any): string {
+    if (value === null || value === undefined || value === '') return '';
+    
+    if (colType === 'date' || colType === 'created_on' || colType === 'last_modified') {
+        try {
+            const d = typeof value === 'string' ? new Date(value) : value;
+            if (isValid(d)) {
+                let fmt = colOptions?.dateFormat?.replace('YYYY', 'yyyy').replace('DD', 'dd');
+                if (!fmt) {
+                    fmt = (colOptions?.showTime) ? 'MMM d, yyyy h:mm a' : 'MMM d, yyyy';
+                }
+                return format(d, fmt);
+            }
+        } catch (e) {}
+    }
+    
+    if (Array.isArray(value)) {
+        return value.join(', ');
+    }
+    
+    return String(value);
+}

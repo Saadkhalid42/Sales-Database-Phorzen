@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { formatCellValueForDisplay } from '../../utils/DataEngine';
 import { X, Clock, Activity, ChevronRight, ChevronDown, Search, Plus, Copy, FileText, Trash2, MoreVertical } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { GridCell } from './GridCell';
@@ -185,29 +186,29 @@ export function ExpandedRecordModal() {
     });
   };
 
-  const getColCopyValue = (colKey: string) => {
+  const getColCopyValue = (col: any) => {
+    let rawVal: any;
     if (activeTabId === 'master') {
-      const vals = getMasterMultiValues(colKey);
+      const vals = getMasterMultiValues(col.key);
       if (vals.length === 0) return '';
-      return vals.join(', ').replace(/\n/g, ' ');
+      rawVal = vals;
     } else {
-      const val = activeData[colKey];
-      if (val === undefined || val === null) return '';
-      if (typeof val === 'object') return JSON.stringify(val);
-      return String(val).replace(/\n/g, ' ');
+      rawVal = activeData[col.key];
     }
+    const formatted = formatCellValueForDisplay(rawVal, col.type, col.typeOptions);
+    return formatted.replace(/\n/g, ' ');
   };
 
   const handleCopyValues = () => {
     const visibleCols = getVisibleCols();
-    const values = visibleCols.map(col => getColCopyValue(col.key));
+    const values = visibleCols.map(col => getColCopyValue(col));
     navigator.clipboard.writeText(values.join('\t'));
   };
 
   const handleCopyWithHeaders = () => {
     const visibleCols = getVisibleCols();
     const headers = visibleCols.map(col => col.label.replace(/\n/g, ' '));
-    const values = visibleCols.map(col => getColCopyValue(col.key));
+    const values = visibleCols.map(col => getColCopyValue(col));
     const tsv = `${headers.join('\t')}\n${values.join('\t')}`;
     navigator.clipboard.writeText(tsv);
   };

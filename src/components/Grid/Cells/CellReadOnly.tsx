@@ -3,6 +3,8 @@ import { Lock } from 'lucide-react';
 
 import React from 'react';
 
+import { formatCellValueForDisplay } from '../../../utils/DataEngine';
+
 export const CellReadOnly = React.memo(function CellReadOnly(props: CellProps) {
   const { columnType, initialValue, isActiveEditor, handleKeyDownWrapper } = props;
 
@@ -30,15 +32,7 @@ export const CellReadOnly = React.memo(function CellReadOnly(props: CellProps) {
     }
 
     if (columnType === 'created_on' || columnType === 'last_modified') {
-      try {
-        if (!initialValue) return '';
-        const d = new Date(initialValue);
-        return props.columnTypeOptions?.showTime 
-          ? d.toLocaleString(undefined, { year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: '2-digit' })
-          : d.toLocaleDateString();
-      } catch {
-        return String(initialValue);
-      }
+      return <span className="truncate w-full text-text-secondary">{formatCellValueForDisplay(initialValue, columnType, props.columnTypeOptions)}</span>;
     }
     
     return <span className="truncate w-full text-text-secondary">{String(initialValue || '')}</span>;

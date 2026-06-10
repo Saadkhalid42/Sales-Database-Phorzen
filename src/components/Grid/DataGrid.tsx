@@ -8,6 +8,7 @@ import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { MoreVertical, Trash2, Maximize2, Copy, X } from 'lucide-react';
 
 // COLUMNS removed, read from store instead
+import { formatCellValueForDisplay } from '../../utils/DataEngine';
 
 export function DataGrid({ records }: { records: GridRecord[] }) {
   const databases = useStore(state => state.databases);
@@ -676,7 +677,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
           <button 
             onClick={() => {
               const rows = viewRecords.filter(r => selectedRowIds.includes(r.id));
-              const tsv = rows.map(r => visibleColumns.map(c => r.cells[c.key] || '').join('\t')).join('\n');
+              const tsv = rows.map(r => visibleColumns.map(c => formatCellValueForDisplay(r.cells[c.key], c.type, c.typeOptions)).join('\t')).join('\n');
               navigator.clipboard.writeText(tsv);
               clearRowSelection && clearRowSelection();
             }}
@@ -688,7 +689,7 @@ export function DataGrid({ records }: { records: GridRecord[] }) {
             onClick={() => {
               const rows = viewRecords.filter(r => selectedRowIds.includes(r.id));
               const headers = visibleColumns.map(c => c.label).join('\t');
-              const tsv = rows.map(r => visibleColumns.map(c => r.cells[c.key] || '').join('\t')).join('\n');
+              const tsv = rows.map(r => visibleColumns.map(c => formatCellValueForDisplay(r.cells[c.key], c.type, c.typeOptions)).join('\t')).join('\n');
               navigator.clipboard.writeText(headers + '\n' + tsv);
               clearRowSelection && clearRowSelection();
             }}
