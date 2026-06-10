@@ -370,7 +370,7 @@ export function ExpandedRecordModal() {
 
             {/* Search, Actions, and Navigation Pills */}
             <div className="flex flex-col gap-2 md:gap-3">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 md:gap-3">
+              <div className="flex flex-row items-center gap-2 md:gap-3">
                 <div className="relative flex-1">
                   <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                   <input 
