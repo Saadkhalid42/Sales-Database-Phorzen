@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import { createClient } from '@supabase/supabase-js';
-import { X, Shield, ScrollText, UserPlus, CheckSquare, Square, Loader2, Edit2, Trash2, AlertTriangle } from 'lucide-react';
+import { X, Shield, ScrollText, UserPlus, CheckSquare, Square, Loader2, Edit2, Trash2, AlertTriangle, Webhook } from 'lucide-react';
+import { MetaIntegrationSettings } from './MetaIntegrationSettings';
 
 interface AdminPanelModalProps {
   onClose: () => void;
 }
 
-type Tab = 'users' | 'logs';
+type Tab = 'users' | 'logs' | 'integrations';
 
 export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
   const [activeTab, setActiveTab] = useState<Tab>('users');
@@ -278,6 +279,12 @@ export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
           >
             <ScrollText size={18} /> Audit Logs
           </button>
+          <button 
+            onClick={() => setActiveTab('integrations')}
+            className={`flex items-center gap-2 px-4 py-2 border-b-2 transition-colors ${activeTab === 'integrations' ? 'border-accent text-accent' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+          >
+            <Webhook size={18} /> Integrations
+          </button>
         </div>
 
         {/* Content */}
@@ -441,6 +448,14 @@ export function AdminPanelModal({ onClose }: AdminPanelModalProps) {
                   )}
                 </div>
               </div>
+            </div>
+          )}
+
+          {activeTab === 'integrations' && (
+            <div className="absolute inset-0 flex flex-col p-4 bg-surface overflow-y-auto">
+               <div className="max-w-2xl mx-auto w-full p-6 rounded-xl border border-border/50 bg-surface-raised/30 shadow-sm">
+                 <MetaIntegrationSettings />
+               </div>
             </div>
           )}
           
