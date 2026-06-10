@@ -11,8 +11,10 @@ export function NavigationStrip() {
   const setActiveViewId = useStore(state => state.setActiveViewId);
 
   const activeDb = databases.find(db => db.id === activeDatabaseId);
+  const currentUser = useStore(state => state.currentUser);
   const activeWs = activeDb?.workspaces.find(ws => ws.id === activeWsId);
-  const workspaceViews = activeWs?.views || [];
+  const allWorkspaceViews = activeWs?.views || [];
+  const workspaceViews = allWorkspaceViews.filter(v => !v.ownerId || v.ownerId === currentUser?.id);
 
 
 

@@ -116,7 +116,6 @@ export function ViewDropdown({ asInlineMobile }: { asInlineMobile?: boolean }) {
   const allWorkspaceViews = activeWs?.views || [];
   
   const workspaceViews = allWorkspaceViews.filter(v => {
-    if (currentUser?.role?.toLowerCase() === 'admin') return true;
     return !v.ownerId || v.ownerId === currentUser?.id;
   });
   

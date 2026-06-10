@@ -19,7 +19,6 @@ export function WorkspaceDropdown({ asInlineMobile }: { asInlineMobile?: boolean
   const allWorkspaces = activeDb?.workspaces || [];
   
   const workspaces = allWorkspaces.filter(ws => {
-    if (currentUser?.role?.toLowerCase() === 'admin') return true;
     return !ws.ownerId || ws.ownerId === currentUser?.id;
   });
   const activeWs = workspaces.find(ws => ws.id === activeWsId) || workspaces[0];
