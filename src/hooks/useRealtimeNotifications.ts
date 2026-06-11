@@ -46,7 +46,8 @@ export function useRealtimeNotifications() {
 
                 // We only notify if permission is granted
                 if ('Notification' in window && Notification.permission === 'granted') {
-                  new Notification(`${primaryName} ${colName} updated`);
+                  // Handled by the realtime broadcast channel in useStore.ts
+                  // new Notification(`${primaryName} ${colName} updated`);
                 }
               }
             }

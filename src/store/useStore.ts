@@ -551,9 +551,22 @@ export const useStore = create<AppState>()(
 
         const channel = supabase.channel(`workspace:${workspaceId}`);
         channel.on('broadcast', { event: 'cell_mutation' }, (payload) => {
-          const { row_id, field_id, new_value, client_id } = payload.payload;
+          const { row_id, field_id, new_value, client_id, old_value, user_name, field_name, first_cell_value } = payload.payload;
           
           if (client_id === CLIENT_ID) return; // Skip our own broadcast
+
+          // Trigger local notification if enabled
+          const currentStore = get();
+          if (currentStore.notificationsEnabled && currentStore.notifiedFieldKeys.includes(field_id)) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+              const formatLogVal = (v: any) => {
+                const s = String(v || '').trim();
+                return s === '' ? 'empty' : s;
+              };
+              const title = `${user_name || 'Someone'} changed the ${field_name || 'field'} from ${formatLogVal(old_value)} to ${formatLogVal(new_value)} of ${first_cell_value || 'Record'}`;
+              new Notification(title);
+            }
+          }
 
           set((s) => {
             if (!s.activeDatabaseId) return s;
@@ -1060,7 +1073,11 @@ export const useStore = create<AppState>()(
                  row_id: recordId,
                  field_id: colKey,
                  new_value: parsedValue,
-                 client_id: CLIENT_ID
+                 old_value: oldVal,
+                 client_id: CLIENT_ID,
+                 user_name: currentUser?.name || 'Unknown',
+                 field_name: colName,
+                 first_cell_value: newDb.columns.length > 0 ? String(record.cells[newDb.columns[0].key] || '') : 'Unknown'
                }
              });
           }
