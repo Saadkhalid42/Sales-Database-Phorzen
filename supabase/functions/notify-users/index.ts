@@ -33,7 +33,7 @@ Deno.serve(async (req) => {
     )
 
     const payload = await req.json()
-    const { username, old_value, new_value, field_name, first_cell_value, field_id } = payload
+    const { user_name, old_value, new_value, field_name, first_cell_value, field_id } = payload
 
     if (!field_id) {
       return new Response(JSON.stringify({ error: 'Missing field_id' }), { status: 400, headers: corsHeaders })
@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
     if (subError) throw subError;
 
     const formatVal = (v: any) => (v === '' || v === null || v === undefined) ? 'empty' : v;
-    const title = `${username || 'Someone'} changed the ${field_name || 'field'} from ${formatVal(old_value)} to ${formatVal(new_value)} of ${first_cell_value || 'Record'}`;
+    const title = `${user_name || 'Someone'} changed the ${field_name || 'field'} from ${formatVal(old_value)} to ${formatVal(new_value)} of ${first_cell_value || 'Record'}`;
     
     const pushPayload = JSON.stringify({
       title: "Field Update",

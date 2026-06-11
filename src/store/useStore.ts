@@ -1022,8 +1022,13 @@ export const useStore = create<AppState>()(
         const db = state.databases.find(d => d.id === state.activeDatabaseId);
         if (db) {
           const currentRecord = db.records.find(r => r.id === recordId);
-          if (currentRecord && currentRecord.cells[colKey] === value) {
-            return; // Do nothing if unchanged
+          if (currentRecord) {
+            const oldVal = currentRecord.cells[colKey];
+            let isEq = oldVal === value;
+            if (!isEq && typeof oldVal === 'object' && typeof value === 'object' && oldVal !== null && value !== null) {
+               isEq = JSON.stringify(oldVal) === JSON.stringify(value);
+            }
+            if (isEq) return; // Do nothing if unchanged
           }
         }
         
