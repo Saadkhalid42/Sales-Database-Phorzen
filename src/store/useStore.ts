@@ -123,8 +123,8 @@ export interface AppState {
   setAltColoringEnabled: (enabled: boolean) => void;
   timeWidgetEnabled?: boolean;
   setTimeWidgetEnabled?: (enabled: boolean) => void;
-  notificationsEnabled?: boolean;
-  setNotificationsEnabled?: (enabled: boolean) => void;
+  notificationsEnabled: boolean;
+  setNotificationsEnabled: (enabled: boolean) => void;
   rowHeight: 'compact' | 'standard' | 'tall';
   setRowHeight: (height: 'compact' | 'standard' | 'tall') => void;
 
@@ -278,7 +278,25 @@ export const useStore = create<AppState>()(
       remoteMutations: {},
       activeRealtimeChannel: null,
       currentUser: null,
-      setCurrentUser: (user) => set({ currentUser: user }),
+      setCurrentUser: (user) => {
+        set({ currentUser: user });
+        if (user) {
+          try {
+            const saved = localStorage.getItem(`antigravity_notifs_${user.id}`);
+            if (saved) {
+              const data = JSON.parse(saved);
+              set({ 
+                notifiedFieldKeys: data.keys || [],
+                notificationsEnabled: !!data.enabled
+              });
+            } else {
+              set({ notifiedFieldKeys: [], notificationsEnabled: false });
+            }
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      },
       selectedRowIds: [],
       toggleRowSelection: (recordId) => set((state) => {
         const isSelected = state.selectedRowIds.includes(recordId);
@@ -417,9 +435,7 @@ export const useStore = create<AppState>()(
           ...(deviceState?.theme && { theme: deviceState.theme }),
           ...(deviceState?.altColoringEnabled !== undefined && { altColoringEnabled: deviceState.altColoringEnabled }),
           ...(deviceState?.timeWidgetEnabled !== undefined && { timeWidgetEnabled: deviceState.timeWidgetEnabled }),
-          ...(deviceState?.notificationsEnabled !== undefined && { notificationsEnabled: deviceState.notificationsEnabled }),
-          ...(deviceState?.rowHeight && { rowHeight: deviceState.rowHeight }),
-          ...(deviceState?.notifiedFieldKeys && { notifiedFieldKeys: deviceState.notifiedFieldKeys }),
+          ...(deviceState?.rowHeight && { rowHeight: deviceState.rowHeight })
         });
       },
       theme: 'theme-default-light',
@@ -433,6 +449,13 @@ export const useStore = create<AppState>()(
       notificationsEnabled: false,
       setNotificationsEnabled: (enabled) => {
         set({ notificationsEnabled: enabled });
+        const user = get().currentUser;
+        if (user) {
+          localStorage.setItem(`antigravity_notifs_${user.id}`, JSON.stringify({
+            keys: get().notifiedFieldKeys,
+            enabled
+          }));
+        }
         if (enabled && 'Notification' in window && Notification.permission !== 'granted') {
           Notification.requestPermission();
         }
@@ -480,7 +503,14 @@ export const useStore = create<AppState>()(
         } else {
           keys.delete(colKey);
         }
-        return { notifiedFieldKeys: Array.from(keys) };
+        const newKeys = Array.from(keys);
+        if (state.currentUser) {
+          localStorage.setItem(`antigravity_notifs_${state.currentUser.id}`, JSON.stringify({
+            keys: newKeys,
+            enabled: state.notificationsEnabled
+          }));
+        }
+        return { notifiedFieldKeys: newKeys };
       }),
 
       confirmModal: {
@@ -1659,7 +1689,6 @@ useStore.subscribe((state) => {
         activeDatabaseId,
         activeWorkspaceId,
         activeViewId,
-        notifiedFieldKeys,
         databases
       } = state;
 
@@ -1689,7 +1718,6 @@ useStore.subscribe((state) => {
         activeDatabaseId,
         activeWorkspaceId,
         activeViewId,
-        notifiedFieldKeys,
         databaseConfigs
       };
 
