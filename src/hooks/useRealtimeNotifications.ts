@@ -50,11 +50,11 @@ export function useRealtimeNotifications() {
                 
                 const formatText = (t: string) => t === '' ? 'empty' : t;
 
-                // We only notify if permission is granted
-                if ('Notification' in window && Notification.permission === 'granted') {
-                  const title = `${username} changed the ${colName} from ${formatText(oldText)} to ${formatText(newText)} of ${firstCell}`;
-                  new Notification(title);
-                }
+                // Handled perfectly by Broadcast now, so removing redundant fallback
+                // if ('Notification' in window && Notification.permission === 'granted') {
+                //   const title = `${username} changed the ${colName} from ${formatText(oldText)} to ${formatText(newText)} of ${firstCell}`;
+                //   new Notification(title);
+                // }
               }
             }
           }

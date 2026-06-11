@@ -585,6 +585,24 @@ export const useStore = create<AppState>()(
           
           if (client_id === CLIENT_ID) return; // Skip our own broadcast
 
+          const currentStore = get();
+          if (currentStore.notifiedFieldKeys.includes(field_id)) {
+            const formatLogVal = (v: any) => {
+              const s = String(v || '').trim();
+              return s === '' ? 'empty' : s;
+            };
+            const title = `${user_name || 'Someone'} changed the ${field_name || 'field'} from ${formatLogVal(old_value)} to ${formatLogVal(new_value)} of ${first_cell_value || 'Record'}`;
+            
+            // Show toast so it's always visible in UI
+            currentStore.setToastMessage(`Notification: ${title}`);
+            setTimeout(() => currentStore.setToastMessage(null), 5000);
+
+            // Trigger system notification
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(title);
+            }
+          }
+
           set((s) => {
             if (!s.activeDatabaseId) return s;
             const dbIndex = s.databases.findIndex(d => d.id === s.activeDatabaseId);
