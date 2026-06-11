@@ -183,45 +183,43 @@ export function Toolbar({ projectedData }: { projectedData?: any[] }) {
         </div>
 
       {/* Mobile Slide-out Drawer */}
-      {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[200] flex lg:hidden animate-in fade-in">
-          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
-          <div className="relative w-[85%] max-w-sm h-full bg-surface-raised shadow-2xl flex flex-col animate-in slide-in-from-left">
-            <div className="p-4 border-b border-divider flex items-center justify-between bg-surface sticky top-0 z-10">
-              <span className="font-bold text-text-primary text-lg">Menu</span>
-              <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2 rounded-full hover:bg-surface-sunken text-text-secondary outline-none">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3 bg-canvas">
+      <div className={`fixed inset-0 z-[200] flex lg:hidden transition-all duration-300 ease-out ${isMobileMenuOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}>
+        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)} />
+        <div className={`relative w-[85%] max-w-sm h-full bg-surface-raised shadow-2xl flex flex-col transition-transform duration-300 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="p-4 border-b border-divider flex items-center justify-between bg-surface sticky top-0 z-10">
+            <span className="font-bold text-text-primary text-lg">Menu</span>
+            <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 -mr-2 rounded-full hover:bg-surface-sunken text-text-secondary outline-none">
+              <X size={20} />
+            </button>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3 bg-canvas">
 
-              <MobileAccordionSection title="Workspace">
-                <WorkspaceDropdown asInlineMobile={true} />
-              </MobileAccordionSection>
+            <MobileAccordionSection title="Workspace">
+              <WorkspaceDropdown asInlineMobile={true} />
+            </MobileAccordionSection>
 
-              <MobileAccordionSection title="Views">
-                <ViewDropdown asInlineMobile={true} />
-              </MobileAccordionSection>
+            <MobileAccordionSection title="Views">
+              <ViewDropdown asInlineMobile={true} />
+            </MobileAccordionSection>
 
-              <MobileAccordionSection title="Filter">
-                <FilterPopover asInlineMobile={true} />
-              </MobileAccordionSection>
-              
-              <MobileAccordionSection title="Sort">
-                <SortPopover asInlineMobile={true} />
-              </MobileAccordionSection>
+            <MobileAccordionSection title="Filter">
+              <FilterPopover asInlineMobile={true} />
+            </MobileAccordionSection>
+            
+            <MobileAccordionSection title="Sort">
+              <SortPopover asInlineMobile={true} />
+            </MobileAccordionSection>
 
-              <MobileAccordionSection title="Hide">
-                <HideFieldsPopover asInlineMobile={true} />
-              </MobileAccordionSection>
-              
-              <MobileAccordionSection title="Settings">
-                <SettingsMenu asInlineMobile={true} projectedData={projectedData} />
-              </MobileAccordionSection>
-            </div>
+            <MobileAccordionSection title="Hide">
+              <HideFieldsPopover asInlineMobile={true} />
+            </MobileAccordionSection>
+            
+            <MobileAccordionSection title="Settings">
+              <SettingsMenu asInlineMobile={true} projectedData={projectedData} />
+            </MobileAccordionSection>
           </div>
         </div>
-      )}
+      </div>
       
       {isAdminModalOpen && (
         <AdminPanelModal onClose={() => setIsAdminModalOpen(false)} />
@@ -239,13 +237,17 @@ function MobileAccordionSection({ title, children, defaultOpen = false }: { titl
         className="flex items-center justify-between w-full text-left py-2 px-1 outline-none group rounded hover:bg-surface-sunken transition-colors"
       >
         <h4 className="text-[10px] font-bold text-text-muted uppercase tracking-wider group-hover:text-text-primary transition-colors">{title}</h4>
-        <ChevronRight size={14} className={`text-text-muted transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`} />
+        <ChevronRight size={14} className={`text-text-muted transition-transform duration-300 ease-out ${isOpen ? 'rotate-90' : ''}`} />
       </button>
-      {isOpen && (
-        <div className="flex flex-col gap-2 pt-2 animate-in slide-in-from-top-1 fade-in duration-200">
-          {children}
+      <div 
+        className={`grid transition-all duration-300 ease-out ${isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0 pointer-events-none'}`}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-col gap-2 pt-2 pb-1">
+            {children}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

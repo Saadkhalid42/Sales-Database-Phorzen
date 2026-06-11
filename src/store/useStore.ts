@@ -123,6 +123,8 @@ export interface AppState {
   setAltColoringEnabled: (enabled: boolean) => void;
   timeWidgetEnabled?: boolean;
   setTimeWidgetEnabled?: (enabled: boolean) => void;
+  notificationsEnabled?: boolean;
+  setNotificationsEnabled?: (enabled: boolean) => void;
   rowHeight: 'compact' | 'standard' | 'tall';
   setRowHeight: (height: 'compact' | 'standard' | 'tall') => void;
 
@@ -415,6 +417,7 @@ export const useStore = create<AppState>()(
           ...(deviceState?.theme && { theme: deviceState.theme }),
           ...(deviceState?.altColoringEnabled !== undefined && { altColoringEnabled: deviceState.altColoringEnabled }),
           ...(deviceState?.timeWidgetEnabled !== undefined && { timeWidgetEnabled: deviceState.timeWidgetEnabled }),
+          ...(deviceState?.notificationsEnabled !== undefined && { notificationsEnabled: deviceState.notificationsEnabled }),
           ...(deviceState?.rowHeight && { rowHeight: deviceState.rowHeight }),
           ...(deviceState?.notifiedFieldKeys && { notifiedFieldKeys: deviceState.notifiedFieldKeys }),
         });
@@ -426,6 +429,14 @@ export const useStore = create<AppState>()(
       setAltColoringEnabled: (enabled) => set({ altColoringEnabled: enabled }),
       timeWidgetEnabled: true,
       setTimeWidgetEnabled: (enabled) => set({ timeWidgetEnabled: enabled }),
+      
+      notificationsEnabled: false,
+      setNotificationsEnabled: (enabled) => {
+        set({ notificationsEnabled: enabled });
+        if (enabled && 'Notification' in window && Notification.permission !== 'granted') {
+          Notification.requestPermission();
+        }
+      },
       
       rowHeight: 'standard',
       setRowHeight: (height) => set({ rowHeight: height }),

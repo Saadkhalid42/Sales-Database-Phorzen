@@ -15,8 +15,9 @@ export function useRealtimeNotifications() {
         (payload) => {
           const state = useStore.getState();
           const notifiedKeys = state.notifiedFieldKeys;
+          const notificationsEnabled = state.notificationsEnabled;
 
-          if (notifiedKeys.length === 0) return;
+          if (!notificationsEnabled || notifiedKeys.length === 0) return;
 
           // Parse incoming state
           const newDatabases = payload.new.state_data as Database[];

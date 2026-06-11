@@ -1,7 +1,7 @@
 import React from 'react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Slider from '@radix-ui/react-slider';
-import { Settings, Clock, Check, Palette as PaletteIcon, ChevronRight, Palette, Sun, Moon, LogOut, Download, ShieldAlert } from 'lucide-react';
+import { Settings, Clock, Check, Palette as PaletteIcon, ChevronRight, Palette, Sun, Moon, LogOut, Download, ShieldAlert, Bell } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useStore } from '../../store/useStore';
 import Papa from 'papaparse';
@@ -28,6 +28,8 @@ export function SettingsMenu({ asInlineMobile, projectedData, triggerNode, onOpe
   
   const timeWidgetEnabled = useStore(state => state.timeWidgetEnabled);
   const setTimeWidgetEnabled = useStore(state => state.setTimeWidgetEnabled);
+  const notificationsEnabled = useStore(state => state.notificationsEnabled);
+  const setNotificationsEnabled = useStore(state => state.setNotificationsEnabled);
   
   const rowHeight = useStore(state => state.rowHeight);
   const setRowHeight = useStore(state => state.setRowHeight);
@@ -153,6 +155,24 @@ export function SettingsMenu({ asInlineMobile, projectedData, triggerNode, onOpe
           type="checkbox"
           checked={timeWidgetEnabled}
           onChange={(e) => setTimeWidgetEnabled?.(e.target.checked)}
+          className="w-4 h-4 rounded border-border text-accent "
+        />
+      </label>
+
+      <label className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-lg text-text-primary hover:bg-accent-subtle hover:text-accent transition-colors">
+        <div className="flex items-center gap-2">
+          <Bell size={16} />
+          <span className="text-sm">Notifications</span>
+        </div>
+        <input 
+          type="checkbox"
+          checked={notificationsEnabled}
+          onChange={(e) => {
+            setNotificationsEnabled?.(e.target.checked);
+            if (e.target.checked && 'Notification' in window && Notification.permission === 'granted') {
+              new Notification('Notifications enabled!', { body: 'You will now receive updates.' });
+            }
+          }}
           className="w-4 h-4 rounded border-border text-accent "
         />
       </label>
@@ -314,6 +334,25 @@ export function SettingsMenu({ asInlineMobile, projectedData, triggerNode, onOpe
             <div className="flex items-center gap-2 flex-1">
               <Clock size={14} />
               <span>Time Widget</span>
+            </div>
+            <DropdownMenu.ItemIndicator className="animate-scale-in will-change-transform">
+              <Check size={14} />
+            </DropdownMenu.ItemIndicator>
+          </DropdownMenu.CheckboxItem>
+
+          <DropdownMenu.CheckboxItem 
+            checked={notificationsEnabled}
+            onCheckedChange={(v) => {
+              setNotificationsEnabled?.(v);
+              if (v && 'Notification' in window && Notification.permission === 'granted') {
+                new Notification('Notifications enabled!', { body: 'You will now receive updates.' });
+              }
+            }} 
+            className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-full text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
+          >
+            <div className="flex items-center gap-2 flex-1">
+              <Bell size={14} />
+              <span>Notifications</span>
             </div>
             <DropdownMenu.ItemIndicator className="animate-scale-in will-change-transform">
               <Check size={14} />
