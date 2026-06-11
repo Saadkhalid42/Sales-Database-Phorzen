@@ -39,15 +39,21 @@ export function useRealtimeNotifications() {
               const newVal = newRecord.cells[colKey];
 
               if (oldVal !== newVal) {
-                // Determine primary name and field name
-                const primaryColKey = newDb.columns[0]?.key;
-                const primaryName = newRecord.cells[primaryColKey] || 'Record';
                 const colName = newDb.columns.find(c => c.key === colKey)?.label || 'Field';
+
+                // Find the newest changelog entry to get the exact user and values
+                const logEntry = newRecord.changelog?.find(log => log.fieldName === colName);
+                const username = logEntry?.userName || 'Someone';
+                const firstCell = logEntry?.firstCellValue || 'Record';
+                const oldText = String(oldVal || '').trim();
+                const newText = String(newVal || '').trim();
+                
+                const formatText = (t: string) => t === '' ? 'empty' : t;
 
                 // We only notify if permission is granted
                 if ('Notification' in window && Notification.permission === 'granted') {
-                  // Handled by the realtime broadcast channel in useStore.ts
-                  // new Notification(`${primaryName} ${colName} updated`);
+                  const title = `${username} changed the ${colName} from ${formatText(oldText)} to ${formatText(newText)} of ${firstCell}`;
+                  new Notification(title);
                 }
               }
             }

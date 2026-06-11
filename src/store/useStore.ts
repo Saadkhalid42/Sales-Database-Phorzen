@@ -585,19 +585,6 @@ export const useStore = create<AppState>()(
           
           if (client_id === CLIENT_ID) return; // Skip our own broadcast
 
-          // Trigger local notification if enabled
-          const currentStore = get();
-          if (currentStore.notificationsEnabled && currentStore.notifiedFieldKeys.includes(field_id)) {
-            if ('Notification' in window && Notification.permission === 'granted') {
-              const formatLogVal = (v: any) => {
-                const s = String(v || '').trim();
-                return s === '' ? 'empty' : s;
-              };
-              const title = `${user_name || 'Someone'} changed the ${field_name || 'field'} from ${formatLogVal(old_value)} to ${formatLogVal(new_value)} of ${first_cell_value || 'Record'}`;
-              new Notification(title);
-            }
-          }
-
           set((s) => {
             if (!s.activeDatabaseId) return s;
             const dbIndex = s.databases.findIndex(d => d.id === s.activeDatabaseId);
