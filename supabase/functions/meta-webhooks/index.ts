@@ -51,6 +51,12 @@ serve(async (req) => {
     if (req.method === 'POST') {
       const payload = await req.json();
 
+      await supabase.from('activity_logs').insert({
+        user_name: 'Meta Webhook',
+        action_description: `Received Webhook Payload: ${JSON.stringify(payload)}`.substring(0, 500),
+        timestamp: new Date().toISOString()
+      });
+
       if (payload.object === 'page') {
         for (const entry of payload.entry) {
           for (const change of entry.changes) {
@@ -70,8 +76,20 @@ serve(async (req) => {
 
               if (leadData.error) {
                 console.error('Error fetching lead data:', leadData.error);
+                await supabase.from('activity_logs').insert({
+                  user_name: 'Meta Webhook',
+                  action_description: `Meta API Error: ${JSON.stringify(leadData.error)}`,
+                  timestamp: new Date().toISOString()
+                });
                 continue;
               }
+
+              // Log the full raw lead data from Meta so the user can see all available fields
+              await supabase.from('activity_logs').insert({
+                user_name: 'Meta Webhook',
+                action_description: `Raw Lead Data Received from Meta: ${JSON.stringify(leadData)}`,
+                timestamp: new Date().toISOString()
+              });
 
               // Transform the field_data array into a simple key-value object
               const transformedData: Record<string, any> = {};
@@ -88,15 +106,6 @@ serve(async (req) => {
               transformedData['_leadgen_id'] = leadgenId;
               transformedData['_created_time'] = leadData.created_time;
 
-              // Determine target database based on form_mappings
-              // For simplicity, we fallback to inserting into a "Meta Leads" grid if no mapping exists,
-              // or just appending to the primary database.
-              // Note: Because the entire grid is in `app_state`, updating from the backend requires:
-              // 1. Fetching `app_state` where id = 'main_state'
-              // 2. Finding the mapped database (or default)
-              // 3. Appending the record
-              // 4. Saving `app_state`
-              
               let targetDbId = form_mappings?.[formId]?.databaseId || null;
               
               // Fetch app_state
@@ -115,7 +124,6 @@ serve(async (req) => {
               
               let targetDb = databases.find((db: any) => db.id === targetDbId);
               if (!targetDb) {
-                  // Fallback to the first database if no mapping matches
                   targetDb = databases[0];
               }
               
@@ -135,8 +143,18 @@ serve(async (req) => {
                       
                   if (updateError) {
                       console.error('Error updating app_state:', updateError);
+                      await supabase.from('activity_logs').insert({
+                        user_name: 'Meta Webhook',
+                        action_description: `Database Error: ${JSON.stringify(updateError)}`,
+                        timestamp: new Date().toISOString()
+                      });
                   } else {
                       console.log('Successfully inserted lead into database:', newRecord.id);
+                      await supabase.from('activity_logs').insert({
+                        user_name: 'Meta Webhook',
+                        action_description: `Successfully imported lead: ${leadgenId}`,
+                        timestamp: new Date().toISOString()
+                      });
                   }
               }
 

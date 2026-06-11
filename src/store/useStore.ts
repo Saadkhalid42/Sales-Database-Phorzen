@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
+import { subscribeUserToPush } from '../lib/pushNotifications';
 import { analyzeDateColumn, extractSelectOptions, convertValue } from '../utils/DataEngine';
 import { temporal } from 'zundo';
 import Papa from 'papaparse';
@@ -278,19 +279,35 @@ export const useStore = create<AppState>()(
       remoteMutations: {},
       activeRealtimeChannel: null,
       currentUser: null,
-      setCurrentUser: (user) => {
+      setCurrentUser: async (user) => {
         set({ currentUser: user });
         if (user) {
           try {
-            const saved = localStorage.getItem(`antigravity_notifs_${user.id}`);
-            if (saved) {
-              const data = JSON.parse(saved);
-              set({ 
-                notifiedFieldKeys: data.keys || [],
-                notificationsEnabled: !!data.enabled
-              });
+            const { data } = await supabase
+              .from('user_notification_settings')
+              .select('notified_field_keys')
+              .eq('user_id', user.id)
+              .single();
+
+            if (data) {
+              set({ notifiedFieldKeys: data.notified_field_keys });
+              subscribeUserToPush(user.id);
             } else {
-              set({ notifiedFieldKeys: [], notificationsEnabled: false });
+              const saved = localStorage.getItem(`antigravity_notifs_${user.id}`);
+              if (saved) {
+                const localData = JSON.parse(saved);
+                set({ 
+                  notifiedFieldKeys: localData.keys || [],
+                  notificationsEnabled: !!localData.enabled
+                });
+                await supabase.from('user_notification_settings').upsert({
+                  user_id: user.id,
+                  notified_field_keys: localData.keys || []
+                });
+                if (localData.enabled) subscribeUserToPush(user.id);
+              } else {
+                set({ notifiedFieldKeys: [], notificationsEnabled: false });
+              }
             }
           } catch (e) {
             console.error(e);
@@ -457,7 +474,11 @@ export const useStore = create<AppState>()(
           }));
         }
         if (enabled && 'Notification' in window && Notification.permission !== 'granted') {
-          Notification.requestPermission();
+          Notification.requestPermission().then(perm => {
+            if (perm === 'granted' && user) subscribeUserToPush(user.id);
+          });
+        } else if (enabled && Notification.permission === 'granted' && user) {
+          subscribeUserToPush(user.id);
         }
       },
       
@@ -505,10 +526,18 @@ export const useStore = create<AppState>()(
         }
         const newKeys = Array.from(keys);
         if (state.currentUser) {
-          localStorage.setItem(`antigravity_notifs_${state.currentUser.id}`, JSON.stringify({
-            keys: newKeys,
-            enabled: state.notificationsEnabled
-          }));
+          supabase.from('user_notification_settings').upsert({
+            user_id: state.currentUser.id,
+            notified_field_keys: newKeys
+          }).then();
+          
+          if (enabled && 'Notification' in window && Notification.permission !== 'granted') {
+            Notification.requestPermission().then(perm => {
+               if (perm === 'granted') subscribeUserToPush(state.currentUser!.id);
+            });
+          } else if (enabled && Notification.permission === 'granted') {
+            subscribeUserToPush(state.currentUser.id);
+          }
         }
         return { notifiedFieldKeys: newKeys };
       }),
@@ -1097,20 +1126,27 @@ export const useStore = create<AppState>()(
           // Broadcast mutation to active realtime channel
           const currentChannel = get().activeRealtimeChannel;
           if (currentChannel) {
-             currentChannel.send({
-               type: 'broadcast',
-               event: 'cell_mutation',
-               payload: {
+             const payload = {
                  row_id: recordId,
                  field_id: colKey,
                  new_value: parsedValue,
                  old_value: oldVal,
                  client_id: CLIENT_ID,
+                 user_id: currentUser?.id,
                  user_name: currentUser?.name || 'Unknown',
                  field_name: colName,
                  first_cell_value: newDb.columns.length > 0 ? String(record.cells[newDb.columns[0].key] || '') : 'Unknown'
-               }
+             };
+             currentChannel.send({
+               type: 'broadcast',
+               event: 'cell_mutation',
+               payload
              });
+             
+             // Trigger push notifications
+             supabase.functions.invoke('notify-users', {
+               body: payload
+             }).catch(e => console.error('Failed to invoke notify-users', e));
           }
         }
         return { databases: newDatabases };
