@@ -593,10 +593,6 @@ export const useStore = create<AppState>()(
             };
             const title = `${user_name || 'Someone'} changed the ${field_name || 'field'} from ${formatLogVal(old_value)} to ${formatLogVal(new_value)} of ${first_cell_value || 'Record'}`;
             
-            // Show toast so it's always visible in UI
-            currentStore.setToastMessage(`Notification: ${title}`);
-            setTimeout(() => currentStore.setToastMessage(null), 5000);
-
             // Trigger system notification
             if ('Notification' in window && Notification.permission === 'granted') {
               new Notification(title);
