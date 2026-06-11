@@ -1,12 +1,12 @@
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
-import { Database as DatabaseIcon, MoreVertical, Plus, Edit2, Trash2, Check } from 'lucide-react';
+import { Database as DatabaseIcon, MoreVertical, Plus, Edit2, Trash2, Check, ChevronRight } from 'lucide-react';
 import { useState } from 'react';
 import { useStore } from '../../store/useStore';
 import { ActionDialog } from '../Shared/ActionDialog';
 import { DatabaseCreationWizard } from '../Database/DatabaseCreationWizard';
 import { Upload } from 'lucide-react';
 
-export function DatabaseDropdown({ asInlineMobile }: { asInlineMobile?: boolean }) {
+export function DatabaseDropdown({ asInlineMobile, asSubmenu }: { asInlineMobile?: boolean, asSubmenu?: boolean }) {
   const databases = useStore(state => state.databases);
   const activeDbId = useStore(state => state.activeDatabaseId);
   const setActiveDbId = useStore(state => state.setActiveDatabaseId);
@@ -102,6 +102,100 @@ export function DatabaseDropdown({ asInlineMobile }: { asInlineMobile?: boolean 
     );
   }
 
+  const renderContent = () => (
+    <>
+      {databases.map(db => (
+        <div key={db.id} className="relative group">
+          <DropdownMenu.Item
+            className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px] pr-10"
+            onSelect={() => setActiveDbId(db.id)}
+          >
+            <span className="truncate">{db.name}</span>
+            {activeDbId === db.id && <Check size={16} className="text-primary flex-shrink-0" />}
+          </DropdownMenu.Item>
+          
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger asChild>
+                <button className="p-1 rounded hover:bg-divider text-text-secondary hover:text-text-primary focus:outline-none  ">
+                  <MoreVertical size={16} />
+                </button>
+              </DropdownMenu.Trigger>
+              <DropdownMenu.Portal>
+                <DropdownMenu.Content className="mobile-bottom-sheet bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[60]" sideOffset={4} align="end" >
+                  <DropdownMenu.Item 
+                    className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
+                    onSelect={() => setDialogConfig({ isOpen: true, type: 'rename', targetId: db.id, targetName: db.name })}
+                  >
+                    <Edit2 size={14} /> Rename
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Item 
+                    className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-[13px]"
+                    onSelect={() => setDialogConfig({ isOpen: true, type: 'delete', targetId: db.id, targetName: db.name })}
+                  >
+                    <Trash2 size={14} /> Delete
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Portal>
+            </DropdownMenu.Root>
+          </div>
+        </div>
+      ))}
+      
+      <DropdownMenu.Separator className="h-px bg-divider my-1" />
+      
+      <DropdownMenu.Item 
+        className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-accent text-[13px] font-medium data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none"
+        onSelect={() => setIsWizardOpen(true)}
+      >
+        <Plus size={16} /> Add New Database
+      </DropdownMenu.Item>
+    </>
+  );
+
+  const renderDialogs = () => (
+    <>
+      <ActionDialog
+        isOpen={dialogConfig.isOpen}
+        onOpenChange={(open) => setDialogConfig(prev => ({ ...prev, isOpen: open }))}
+        title={dialogConfig.type === 'rename' ? 'Rename Database' : 'Delete Database'}
+        description={dialogConfig.type === 'delete' ? `Are you sure you want to delete "${dialogConfig.targetName}"? This action cannot be undone.` : undefined}
+        defaultValue={dialogConfig.type === 'rename' ? dialogConfig.targetName : ''}
+        requiresInput={dialogConfig.type !== 'delete'}
+        isDestructive={dialogConfig.type === 'delete'}
+        confirmText={dialogConfig.type === 'rename' ? 'Rename' : 'Delete'}
+        onConfirm={handleConfirm}
+      />
+
+      <DatabaseCreationWizard 
+        open={isWizardOpen} 
+        onOpenChange={setIsWizardOpen} 
+      />
+    </>
+  );
+
+  if (asSubmenu) {
+    return (
+      <>
+        <DropdownMenu.Sub>
+          <DropdownMenu.SubTrigger className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-full text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px] data-[state=open]:bg-accent-subtle data-[state=open]:text-accent">
+            <div className="flex items-center gap-2">
+              <DatabaseIcon size={14} />
+              <span>Databases</span>
+            </div>
+            <ChevronRight size={14} />
+          </DropdownMenu.SubTrigger>
+          <DropdownMenu.Portal>
+            <DropdownMenu.SubContent className="w-56 border border-border shadow-md rounded-lg p-2 z-[210] flex flex-col gap-1 bg-surface-raised data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out max-md:!fixed max-md:!top-1/2 max-md:!left-1/2 max-md:!-translate-x-1/2 max-md:!-translate-y-1/2 max-md:!w-64 max-md:!max-w-[90vw] max-md:!max-h-[85vh] max-md:!overflow-y-auto" sideOffset={8}>
+              {renderContent()}
+            </DropdownMenu.SubContent>
+          </DropdownMenu.Portal>
+        </DropdownMenu.Sub>
+        {renderDialogs()}
+      </>
+    );
+  }
+
   return (
     <>
       <DropdownMenu.Root>
@@ -121,76 +215,11 @@ export function DatabaseDropdown({ asInlineMobile }: { asInlineMobile?: boolean 
             <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-text-secondary">
               Databases
             </div>
-            
-            {databases.map(db => (
-              <div key={db.id} className="relative group">
-                <DropdownMenu.Item
-                  className="flex items-center justify-between cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px] pr-10"
-                  onSelect={() => setActiveDbId(db.id)}
-                >
-                  <span className="truncate">{db.name}</span>
-                  {activeDbId === db.id && <Check size={16} className="text-primary flex-shrink-0" />}
-                </DropdownMenu.Item>
-                
-                {/* 3-Dot Context Menu inside the item hover state */}
-                <div className="absolute right-1 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                  <DropdownMenu.Root>
-                    <DropdownMenu.Trigger asChild>
-                      <button className="p-1 rounded hover:bg-divider text-text-secondary hover:text-text-primary focus:outline-none  ">
-                        <MoreVertical size={16} />
-                      </button>
-                    </DropdownMenu.Trigger>
-                    <DropdownMenu.Portal>
-                      <DropdownMenu.Content className="mobile-bottom-sheet bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[60]" sideOffset={4} align="end" >
-                        <DropdownMenu.Item 
-                          className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
-                          onSelect={() => setDialogConfig({ isOpen: true, type: 'rename', targetId: db.id, targetName: db.name })}
-                        >
-                          <Edit2 size={14} /> Rename
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Item 
-                          className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-[13px]"
-                          onSelect={() => setDialogConfig({ isOpen: true, type: 'delete', targetId: db.id, targetName: db.name })}
-                        >
-                          <Trash2 size={14} /> Delete
-                        </DropdownMenu.Item>
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Portal>
-                  </DropdownMenu.Root>
-                </div>
-              </div>
-            ))}
-            
-            <DropdownMenu.Separator className="h-px bg-divider my-1" />
-            
-            <DropdownMenu.Item 
-              className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-accent text-[13px] font-medium data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none"
-              onSelect={() => setIsWizardOpen(true)}
-            >
-              <Plus size={16} /> Add New Database
-            </DropdownMenu.Item>
-
-
+            {renderContent()}
           </DropdownMenu.Content>
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
-
-      <ActionDialog
-        isOpen={dialogConfig.isOpen}
-        onOpenChange={(open) => setDialogConfig(prev => ({ ...prev, isOpen: open }))}
-        title={dialogConfig.type === 'rename' ? 'Rename Database' : 'Delete Database'}
-        description={dialogConfig.type === 'delete' ? `Are you sure you want to delete "${dialogConfig.targetName}"? This action cannot be undone.` : undefined}
-        defaultValue={dialogConfig.type === 'rename' ? dialogConfig.targetName : ''}
-        requiresInput={dialogConfig.type !== 'delete'}
-        isDestructive={dialogConfig.type === 'delete'}
-        confirmText={dialogConfig.type === 'rename' ? 'Rename' : 'Delete'}
-        onConfirm={handleConfirm}
-      />
-
-      <DatabaseCreationWizard 
-        open={isWizardOpen} 
-        onOpenChange={setIsWizardOpen} 
-      />
+      {renderDialogs()}
     </>
   );
 }

@@ -117,13 +117,13 @@ export function HideFieldsPopover({ asInlineMobile }: { asInlineMobile?: boolean
   const renderContent = () => (
     <div className="flex flex-col gap-2 max-h-[400px]">
       <div className="flex items-center gap-2 px-2 py-1.5 rounded-lg border border-border bg-surface mb-2">
-        <Search size={14} className="text-text-muted" />
+        <Search size={14} className="text-text-muted shrink-0" />
         <input 
           type="text" 
           placeholder="Find a field..." 
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
-          className="flex-1 bg-transparent text-xs text-text-primary focus:outline-none"
+          className="flex-1 min-w-0 w-full bg-transparent text-xs text-text-primary focus:outline-none"
         />
       </div>
 
@@ -186,7 +186,7 @@ export function HideFieldsPopover({ asInlineMobile }: { asInlineMobile?: boolean
       </Popover.Trigger>
       <Popover.Portal>
         <Popover.Content 
-          className="w-64 border border-border shadow-xl rounded-lg overflow-hidden p-3 z-[60] mt-1 bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 flex flex-col gap-2 max-h-[400px]"
+          className="w-72 border border-border shadow-xl rounded-lg overflow-hidden p-3 z-[60] mt-1 bg-surface-raised data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 flex flex-col gap-2 max-h-[400px]"
           
           align="start"
           sideOffset={4}

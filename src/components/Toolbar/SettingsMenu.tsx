@@ -5,6 +5,7 @@ import { Settings, Clock, Check, Palette as PaletteIcon, ChevronRight, Palette, 
 import { supabase } from '../../lib/supabase';
 import { useStore } from '../../store/useStore';
 import Papa from 'papaparse';
+import { DatabaseDropdown } from './DatabaseDropdown';
 const THEMES = [
   { id: 'clinical-light', name: 'Clinical Light', type: 'light' },
   { id: 'warm-light', name: 'Warm Light', type: 'light' },
@@ -239,6 +240,15 @@ export function SettingsMenu({ asInlineMobile, projectedData, triggerNode, onOpe
         </button>
       )}
 
+      {currentUser?.role?.toLowerCase() === 'admin' && (
+        <div className="flex flex-col w-full">
+          <div className="px-3 pt-2 pb-1 text-xs font-semibold text-text-muted uppercase tracking-wider">
+            Databases
+          </div>
+          <DatabaseDropdown asInlineMobile={true} />
+        </div>
+      )}
+
       <button 
         onClick={handleCSVExport}
         className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-text-primary hover:bg-surface-raised transition-colors w-full text-left"
@@ -405,6 +415,10 @@ export function SettingsMenu({ asInlineMobile, projectedData, triggerNode, onOpe
                 <span>Security & Proxy</span>
               </div>
             </DropdownMenu.Item>
+          )}
+
+          {currentUser?.role?.toLowerCase() === 'admin' && (
+            <DatabaseDropdown asSubmenu={true} />
           )}
 
           <DropdownMenu.Item 

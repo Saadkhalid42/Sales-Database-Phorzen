@@ -3,7 +3,7 @@ import { useStore } from '../../store/useStore';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import * as Slider from '@radix-ui/react-slider';
 import { Search, Undo2, Redo2, Settings, Check, Clock, ChevronRight, Palette, Palette as PaletteIcon, Sun, Moon, Menu, X, RefreshCw, User, ChevronDown } from 'lucide-react';
-import { DatabaseDropdown } from './DatabaseDropdown';
+
 import { WorkspaceDropdown } from './WorkspaceDropdown';
 import { ViewDropdown } from './ViewDropdown';
 import { SortPopover } from './SortPopover';
@@ -119,7 +119,7 @@ export function Toolbar({ projectedData }: { projectedData?: any[] }) {
           ) : (
             <SettingsMenu projectedData={projectedData} onOpenAdmin={() => setIsAdminModalOpen(true)} />
           )}
-          <DatabaseDropdown />
+
           <WorkspaceDropdown />
           <ViewDropdown />
           
@@ -194,10 +194,7 @@ export function Toolbar({ projectedData }: { projectedData?: any[] }) {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto custom-scrollbar p-4 flex flex-col gap-3 bg-canvas">
-              <MobileAccordionSection title="Database" defaultOpen={true}>
-                <DatabaseDropdown asInlineMobile={true} />
-              </MobileAccordionSection>
-              
+
               <MobileAccordionSection title="Workspace">
                 <WorkspaceDropdown asInlineMobile={true} />
               </MobileAccordionSection>
