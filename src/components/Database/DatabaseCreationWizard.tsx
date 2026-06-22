@@ -41,35 +41,6 @@ const FIELD_TYPES = [
   { value: 'append_only_log', label: 'Append-Only Log' }
 ];
 
-function guessType(values: any[]): string {
-  if (values.length === 0) return 'single_line_text';
-  
-  let isNumber = true;
-  let isBoolean = true;
-  let isDate = true;
-
-  for (const v of values) {
-    if (v === null || v === undefined || v === '') continue;
-    
-    const str = String(v).trim().toLowerCase();
-    
-    // Check number
-    if (isNaN(Number(v))) isNumber = false;
-    
-    // Check boolean
-    if (!['true', 'false', 'yes', 'no', '1', '0'].includes(str)) isBoolean = false;
-    
-    // Check date (simple heuristic: Date.parse works and it's not just a number)
-    if (!isNaN(Number(v)) || isNaN(Date.parse(str))) isDate = false;
-  }
-
-  if (isBoolean) return 'boolean';
-  if (isNumber) return 'number';
-  if (isDate) return 'date';
-  
-  return 'single_line_text';
-}
-
 function generateUUID() {
   return 'id-' + Math.random().toString(36).substring(2, 15);
 }
@@ -114,11 +85,10 @@ export function DatabaseCreationWizard({ open, onOpenChange }: DatabaseCreationW
         const sampleRows = data.slice(0, 10);
 
         const initialMappings = headers.map(header => {
-          const values = sampleRows.map((row: any) => row[header]);
           return {
             originalKey: header,
             name: header,
-            type: guessType(values),
+            type: 'single_line_text',
             skip: false
           };
         });
