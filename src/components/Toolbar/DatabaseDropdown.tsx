@@ -53,16 +53,16 @@ export function DatabaseDropdown({ asInlineMobile, asSubmenu }: { asInlineMobile
                 </button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
-                <DropdownMenu.Content className="mobile-bottom-sheet bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[60]" sideOffset={4} align="end">
+                <DropdownMenu.Content className="mobile-bottom-sheet bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[300]" sideOffset={4} align="end">
                   <DropdownMenu.Item 
                     className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
-                    onSelect={() => setDialogConfig({ isOpen: true, type: 'rename', targetId: db.id, targetName: db.name })}
+                    onSelect={(e) => { e.preventDefault(); setDialogConfig({ isOpen: true, type: 'rename', targetId: db.id, targetName: db.name }); }}
                   >
                     <Edit2 size={14} /> Rename
                   </DropdownMenu.Item>
                   <DropdownMenu.Item 
                     className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-[13px]"
-                    onSelect={() => setDialogConfig({ isOpen: true, type: 'delete', targetId: db.id, targetName: db.name })}
+                    onSelect={(e) => { e.preventDefault(); setDialogConfig({ isOpen: true, type: 'delete', targetId: db.id, targetName: db.name }); }}
                   >
                     <Trash2 size={14} /> Delete
                   </DropdownMenu.Item>
@@ -75,7 +75,7 @@ export function DatabaseDropdown({ asInlineMobile, asSubmenu }: { asInlineMobile
       <div className="h-px bg-divider my-1" />
       <button 
         className="flex w-full items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-accent text-[13px] font-medium hover:bg-accent-subtle hover:text-accent outline-none"
-        onClick={() => setIsWizardOpen(true)}
+        onClick={(e) => { e.preventDefault(); setIsWizardOpen(true); }}
       >
         <Plus size={16} /> Add New Database
       </button>
@@ -122,16 +122,16 @@ export function DatabaseDropdown({ asInlineMobile, asSubmenu }: { asInlineMobile
                 </button>
               </DropdownMenu.Trigger>
               <DropdownMenu.Portal>
-                <DropdownMenu.Content className="mobile-bottom-sheet bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[60]" sideOffset={4} align="end" >
+                <DropdownMenu.Content className="mobile-bottom-sheet bg-surface-raised min-w-[140px] border border-border rounded-lg p-1 shadow-xl z-[300]" sideOffset={4} align="end" >
                   <DropdownMenu.Item 
                     className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-text-primary data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none text-[13px]"
-                    onSelect={() => setDialogConfig({ isOpen: true, type: 'rename', targetId: db.id, targetName: db.name })}
+                    onSelect={(e) => { e.preventDefault(); setDialogConfig({ isOpen: true, type: 'rename', targetId: db.id, targetName: db.name }); }}
                   >
                     <Edit2 size={14} /> Rename
                   </DropdownMenu.Item>
                   <DropdownMenu.Item 
                     className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-red-600 data-[highlighted]:bg-red-600 data-[highlighted]:text-accent outline-none text-[13px]"
-                    onSelect={() => setDialogConfig({ isOpen: true, type: 'delete', targetId: db.id, targetName: db.name })}
+                    onSelect={(e) => { e.preventDefault(); setDialogConfig({ isOpen: true, type: 'delete', targetId: db.id, targetName: db.name }); }}
                   >
                     <Trash2 size={14} /> Delete
                   </DropdownMenu.Item>
@@ -146,7 +146,7 @@ export function DatabaseDropdown({ asInlineMobile, asSubmenu }: { asInlineMobile
       
       <DropdownMenu.Item 
         className="flex items-center gap-2 cursor-pointer px-3 py-2 rounded-lg text-accent text-[13px] font-medium data-[highlighted]:bg-accent-subtle data-[highlighted]:text-accent outline-none"
-        onSelect={() => setIsWizardOpen(true)}
+        onSelect={(e) => { e.preventDefault(); setIsWizardOpen(true); }}
       >
         <Plus size={16} /> Add New Database
       </DropdownMenu.Item>
